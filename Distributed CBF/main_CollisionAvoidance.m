@@ -1,5 +1,6 @@
 close all
 clear all
+clc
 
 % Objective: Trajectory tracking and Collision Avoidance with CLF+CBF
 global u_save u_nom
@@ -7,7 +8,7 @@ global u_save u_nom
 % Load system parameters
 dimensions = 2;          % Number of axis (x,y,z)
 states = 2*dimensions;   % Number of states
-N_a = 6;                 % Number of agents
+N_a = 3;                 % Number of agents
 m = 0.01;                % Mass
 d = 0.1;                 % Damping coefficient
 agent_radius = 1;        % Radius of agent
@@ -71,6 +72,6 @@ linewidth = 2;
 t_stop = t_span(end);    % Determines when to freeze the updating plot
 
 
-plot_real_time_trajectories(p, t_step, N_a, update_interval, xlimits, ylimits, fontsize, agent_radius, linewidth, u0, u, num_steps, t_span, t_stop); 
+plot_real_time_trajectories(p(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, agent_radius, linewidth, u0, u, num_steps, t_span, t_stop); 
 
 
