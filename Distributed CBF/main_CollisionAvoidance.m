@@ -12,7 +12,6 @@ N_a = 4;                 % Number of agents
 m = 0.01;                % Mass
 d = 0.1;                 % Damping coefficient
 agent_radius = 0.05;     % Radius of agent
-u_min = -10;             % Minimum control force
 u_max = 10;              % Maximum control force
 
 % Initial positions
@@ -34,7 +33,7 @@ mu = 1/2;
 % CLF parameters for nominal control
 l2 = 20;
 l3 = 20;
-lambda = 30;
+lambda = 50;
 
 % Add possible static obstacles
 % ob = [-2; -2.5];
@@ -42,12 +41,13 @@ lambda = 30;
 save('Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'agent_radius', 'u_max', 'p0', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
 
 % Nominal trajectories
-origin_min = -0.2;
-origin_max = -origin_min;
+use_V_ref = false;      % Determines whether or not to use reference velocity in CLF nominal control calculation
+origin_max = 0.2;
+origin_min = -origin_max;
 A_min = 0.2;
 A_max = 0.5;
 f_min = 1;
-f_max = 2;
+f_max = 3;
 phi_max = pi;
 phi_min = -pi;
 origin_rand = (origin_max-origin_min)*rand(2,N_a)+origin_min;
@@ -55,7 +55,7 @@ A_rand = (A_max-A_min)*rand(1,N_a)+A_min;
 f_rand = (f_max-f_min)*rand(1,N_a)+f_min;
 phi_rand = (phi_max-phi_min)*rand(1,N_a)+phi_min;
 sign_rand = sign(randi([0, 1], dimensions, N_a) - 0.5);
-save('TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand');
+save('TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref');
 
 
 % Time vector
@@ -69,7 +69,7 @@ num_steps = length(t_span);
 u_nom_save = reshape(u_nom_save, dimensions, N_a, length(u_nom_save));
 u_save = reshape(u_save, dimensions, N_a, length(u_save));
 
-p_nom = zeros(dimensions,N_a,num_steps);
+p_nom = zeros(states,N_a,num_steps);
 u_nom = zeros(dimensions,N_a,num_steps);
 u = zeros(dimensions,N_a,num_steps);
 for t_index = 1:num_steps
@@ -90,7 +90,7 @@ linewidth = 2;
 t_stop = t_span(end);    % Determines when to freeze the updating plot
 
 
-plot_real_time_trajectories(p(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, agent_radius, linewidth, p_nom, u_nom, u, num_steps, t_span, t_stop); 
+plot_real_time_trajectories(p(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, agent_radius, linewidth, p_nom(1:2,:,:), u_nom, u, num_steps, t_span, t_stop); 
 
 
 

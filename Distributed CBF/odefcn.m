@@ -17,7 +17,7 @@ function dpdt = odefcn(t,p)
     %% CLF nominal controller
     % Nominal trajectories
     p_nom = nominal_trajectories(t);
-    u_nom = zeros(size(p_nom));
+    u_nom = zeros(dimensions,N_a);
 
     H = 2*eye(dimensions);
     F = zeros(1,dimensions);
@@ -25,10 +25,10 @@ function dpdt = odefcn(t,p)
         A = [];
         b = [];
         V = 1/2*(p(1,i)-p_nom(1,i))^2 + 1/2*(p(2,i)-p_nom(2,i))^2 + 1/2*(p(3,i)+l2*(p(1,i)-p_nom(1,i)))^2 + 1/2*(p(4,i)+l3*(p(2,i)-p_nom(2,i)))^2;
-        gradV = [p(1,i) - p_nom(1,i) + 2*l2*(p(3,i)+l2*(p(1,i)-p_nom(1,i)));
-                 p(2,i) - p_nom(2,i) + 2*l3*(p(4,i)+l3*(p(2,i)-p_nom(2,i)));
-                 2*(p(3,i)+l2*(p(1,i)-p_nom(1,i)));
-                 2*(p(4,i)+l3*(p(2,i)-p_nom(2,i)))];
+        gradV = [p(1,i) - p_nom(1,i) + l2*(p(3,i)-p_nom(3,i)+l2*(p(1,i)-p_nom(1,i)));
+                 p(2,i) - p_nom(2,i) + l3*(p(4,i)-p_nom(4,i)+l3*(p(2,i)-p_nom(2,i)));
+                 p(3,i) - p_nom(3,i) + l2*(p(1,i)-p_nom(1,i));
+                 p(4,i) - p_nom(4,i) + l3*(p(2,i)-p_nom(2,i))];
         L_fV= dot(gradV, f);
         L_gV= [dot(gradV, g(:,1)), dot(gradV, g(:,2))];
         A = L_gV;
