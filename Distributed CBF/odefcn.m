@@ -2,7 +2,7 @@
 function dpdt = odefcn(t,p)      
     global u_save u_nom_save
 
-    load('parameters.mat');
+    load('Parameters.mat');
     
     p = reshape(p, states, N_a);
     dpdt = zeros(states, N_a);
@@ -16,7 +16,7 @@ function dpdt = odefcn(t,p)
 
     %% CLF nominal controller
     % Nominal trajectories
-    p_nom = sign_rand.*[A_rand; A_rand].*[cos(f_rand*t + phi_rand); sin(f_rand*t + phi_rand)] + origin_rand;
+    p_nom = nominal_trajectories(t);
     u_nom = zeros(size(p_nom));
 
     H = 2*eye(dimensions);
@@ -35,7 +35,7 @@ function dpdt = odefcn(t,p)
         b = -L_fV-lambda*V;
         % Add input constraints, to prevent u_nom from exploding
         A = [A; [1, 0; 0, -1]];
-        b = [b; 100; 100];
+        b = [b; u_max; u_max];
 
         u_nom(:,i) = quadprog(H, F, A, b);
     end
@@ -61,12 +61,9 @@ function dpdt = odefcn(t,p)
         F = -2*u_nom(:,i);
         % Add input constraints, to prevent u from exploding
         A = [A; [1, 0; 0, -1]];
-        b = [b; 100; 100];
+        b = [b; u_max; u_max];
         u(:,i) = quadprog(H, F, A, b);
     end
-
-
-    u = u_nom;
 
     u_nom_save=[u_nom_save, reshape(u_nom, dimensions*N_a, 1)];
     u_save=[u_save, reshape(u, dimensions*N_a, 1)];
