@@ -1,4 +1,4 @@
-function p_nom = nominal_trajectories(t)
+function p_nom = calculate_nominal_trajectories(t)
     load('TrajectoryParameters.mat');
 
     % Reference position

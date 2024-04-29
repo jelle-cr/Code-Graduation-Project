@@ -16,7 +16,7 @@ function dpdt = odefcn(t,p)
 
     %% CLF nominal controller
     % Nominal trajectories
-    p_nom = nominal_trajectories(t);
+    p_nom = calculate_nominal_trajectories(t);
     u_nom = zeros(dimensions,N_a);
 
     H = 2*eye(dimensions);
@@ -55,7 +55,7 @@ function dpdt = odefcn(t,p)
                 b_ij = 2*1/m*xi_ij.';
 
                 A = [A; -b_ij];
-                b = [b; mu*a_ij];
+                b = [b; mu(i,j)*a_ij];
             end
         end
         F = -2*u_nom(:,i);

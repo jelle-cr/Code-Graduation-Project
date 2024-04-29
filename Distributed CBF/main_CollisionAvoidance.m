@@ -21,31 +21,12 @@ if states == 2*dimensions   % Add initial velocities to the states
     p0 = [p0; zeros(dimensions, N_a)];
 end
 
-% CBF parameters for safety filter
-l0 = 600;           
-l1 = 50;
-D = l1^2-4*l0   
-roots = -l1 + sqrt(D)   % Check if roots are negative
-pause(0.5)
-% Full responsibility mu = 1, or half responsibility mu = 1/2
-mu = 1/2;
-
-% CLF parameters for nominal control
-l2 = 20;
-l3 = 20;
-lambda = 50;
-
-% Add possible static obstacles
-% ob = [-2; -2.5];
-% r_ob = 1.5;
-save('Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'agent_radius', 'u_max', 'p0', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
-
 % Nominal trajectories
-use_V_ref = false;      % Determines whether or not to use reference velocity in CLF nominal control calculation
-origin_max = 0.2;
+use_V_ref = false;       % Determines whether or not to use reference velocity in CLF nominal control calculation
+origin_max = 0.0;
 origin_min = -origin_max;
-A_min = 0.2;
-A_max = 0.5;
+A_min = 0.1;
+A_max = 0.3;
 f_min = 1;
 f_max = 3;
 phi_max = pi;
@@ -57,6 +38,22 @@ phi_rand = (phi_max-phi_min)*rand(1,N_a)+phi_min;
 sign_rand = sign(randi([0, 1], dimensions, N_a) - 0.5);
 save('TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref');
 
+% CBF parameters for safety filter
+l0 = 600;           
+l1 = 50;
+D = l1^2-4*l0   
+roots = -l1 + sqrt(D)   % Check if roots are negative
+pause(0.5)
+% Calculate mu based on the assigned agent weights, higher weight allows agent to stay closer to reference position
+agent_responsibility_weights = [1; 0.5; 0.1; 0.01].*ones(N_a,1); % Value between 0 and 1, the ratio for each agent determines the value of mu
+mu = calculate_agent_mu(N_a, agent_responsibility_weights);
+
+% CLF parameters for nominal control
+l2 = 20;
+l3 = 20;
+lambda = 50;
+
+save('Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'agent_radius', 'u_max', 'p0', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
 
 % Time vector
 t_end = 2;
@@ -74,7 +71,7 @@ u_nom = zeros(dimensions,N_a,num_steps);
 u = zeros(dimensions,N_a,num_steps);
 for t_index = 1:num_steps
     t = (t_index-1)*t_step;
-    p_nom(:,:,t_index) = nominal_trajectories(t);
+    p_nom(:,:,t_index) = calculate_nominal_trajectories(t);
     u_nom(:,:,t_index) = u_nom_save(:,:,1+(t_index-1)*4);
     u(:,:,t_index) = u_save(:,:,1+(t_index-1)*4);
 end
@@ -82,13 +79,13 @@ end
 %% Plot results
 close all;
 update_interval = 0;
-xlimits = 1.2*[-(A_max+origin_max) (A_max+origin_max)];
-ylimits = 1.2*[-(A_max+origin_max) (A_max+origin_max)];
+axlimit = max(abs(min(min(min(p(1:2,:,:))))), max(max(max(p(1:2,:,:)))))+agent_radius;  % Find abs max position value, add agent_radius to always be within frame        
+xlimits = 1.2*[-axlimit axlimit];
+ylimits = xlimits; 
 fontsize = 14;
 markersize = 10;
 linewidth = 2;
 t_stop = t_span(end);    % Determines when to freeze the updating plot
-
 
 plot_real_time_trajectories(p(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, agent_radius, linewidth, p_nom(1:2,:,:), u_nom, u, num_steps, t_span, t_stop); 
 

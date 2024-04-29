@@ -71,29 +71,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
                                              'YData', p(2, agent_id, trail_start:t));
             end
         end
-        for agent_id = 1:N_a    % This for loop is required to always plot the agents on top
-            x_current = p_nom(1, agent_id, t);
-            y_current = p_nom(2, agent_id, t);
-
-            % Update or create the nominal agent circle
-            if circle_handles_nom(agent_id) == 0
-                th = 0:pi/50:2*pi; % Angles for creating the circle shape
-                xunit = agent_radius * cos(th) + x_current;
-                yunit = agent_radius * sin(th) + y_current;
-                circle_handles_nom(agent_id) = patch(xunit, yunit, colors(agent_id,:), ...
-                                              'FaceColor', 'none', ...
-                                              'EdgeColor', colors(agent_id,:), ...
-                                              'HandleVisibility', 'off');
-                % Create circle in legend
-                % plot(NaN, NaN, 'o', 'MarkerEdgeColor', colors(agent_id,:), ...
-                %                               'MarkerFaceColor', 'none', ...
-                %                               'MarkerSize', 15, ...
-                %                               'DisplayName', sprintf('Goal Agent %d', agent_id));
-            else
-                set(circle_handles_nom(agent_id), 'XData', agent_radius * cos(th) + x_current, ...
-                                              'YData', agent_radius * sin(th) + y_current);
-            end
-    
+        for agent_id = 1:N_a    % This for loop is required to always plot the agents on top of the trajectory
             x_current = p(1, agent_id, t);
             y_current = p(2, agent_id, t);
             % Update or create the actual agent circle
@@ -115,7 +93,29 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
                                               'YData', agent_radius * sin(th) + y_current);
             end
         end
+        for agent_id = 1:N_a    % This for loop is required to always plot the goal positions on top
+            x_current = p_nom(1, agent_id, t);
+            y_current = p_nom(2, agent_id, t);
 
+            % Update or create the nominal agent circle
+            if circle_handles_nom(agent_id) == 0
+                th = 0:pi/50:2*pi; % Angles for creating the circle shape
+                xunit = agent_radius * cos(th) + x_current;
+                yunit = agent_radius * sin(th) + y_current;
+                circle_handles_nom(agent_id) = patch(xunit, yunit, colors(agent_id,:), ...
+                                              'FaceColor', 'none', ...
+                                              'EdgeColor', colors(agent_id,:), ...
+                                              'HandleVisibility', 'off');
+                % Create circle in legend
+                % plot(NaN, NaN, 'o', 'MarkerEdgeColor', colors(agent_id,:), ...
+                %                               'MarkerFaceColor', 'none', ...
+                %                               'MarkerSize', 15, ...
+                %                               'DisplayName', sprintf('Goal Agent %d', agent_id));
+            else
+                set(circle_handles_nom(agent_id), 'XData', agent_radius * cos(th) + x_current, ...
+                                              'YData', agent_radius * sin(th) + y_current);
+            end
+        end
         % Collision Detection and plotting
         for i = 1:N_a
             for j = 1:N_a
