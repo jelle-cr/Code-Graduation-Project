@@ -1,4 +1,4 @@
-function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_values, ylim_values, fontsize, agent_radius, linewidth, u0, u, num_steps, t_span, t_stop)
+function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_values, ylim_values, fontsize, agent_radius, linewidth, p_nom, u_nom, u, num_steps, t_span, t_stop)
     % PLOT_REAL_TIME_TRAJECTORIES Plots multiple trajectories in real time
     %   p: 3D matrix containing trajectories (x, y, time)
     %   N_a: Number of agents
@@ -21,6 +21,8 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     ylabel('$y$ [m]', 'Interpreter', 'latex', 'FontSize', fontsize);
     
     % Storage for plot handles (markers and trails)
+    circle_handles_nom = zeros(N_a, 1);
+    trail_handles_nom = zeros(N_a, 1);
     circle_handles = zeros(N_a, 1);
     trail_handles = zeros(N_a, 1);
     
@@ -32,7 +34,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     subplot(1,2,2);
     grid on; hold on;
     for agent_id = 1:N_a
-        diff = squeeze(u0(:,agent_id,:))-squeeze(u(:,agent_id,:)); 
+        diff = squeeze(u_nom(:,agent_id,:))-squeeze(u(:,agent_id,:)); 
         for t = 1:num_steps
             norms(agent_id, t) = norm(diff(:, t)); % Calculate norm at each time step
         end
@@ -53,7 +55,24 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
         subplot(1,2,1);     % Update subplot 1
         for agent_id = 1:N_a
     
-            % Update or create the trail
+            % Update or create the nominal trail
+            if trail_handles_nom(agent_id) == 0
+                trail_handles_nom(agent_id) = plot(p_nom(1, agent_id, 1:t), p_nom(2, agent_id, 1:t), ...
+                                               '.', 'Color', colors(agent_id,:), ...
+                                               'LineWidth', linewidth, ...
+                                               'HandleVisibility', 'off');
+            else
+                trail_time = 0.5;
+                if(t*t_step > trail_time)
+                    trail_start = t-(trail_time/t_step);
+                else
+                    trail_start = 1;
+                end
+                set(trail_handles_nom(agent_id), 'XData', p_nom(1, agent_id, trail_start:t), ...
+                                             'YData', p_nom(2, agent_id, trail_start:t));
+            end
+
+            % Update or create the actual trail
             if trail_handles(agent_id) == 0
                 trail_handles(agent_id) = plot(p(1, agent_id, 1:t), p(2, agent_id, 1:t), ...
                                                '-', 'Color', colors(agent_id,:), ...
@@ -69,12 +88,32 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
                 set(trail_handles(agent_id), 'XData', p(1, agent_id, trail_start:t), ...
                                              'YData', p(2, agent_id, trail_start:t));
             end
-        end
-        for agent_id = 1:N_a
+
+            x_current = p_nom(1, agent_id, t);
+            y_current = p_nom(2, agent_id, t);
+
+            % Update or create the nominal agent circle
+            if circle_handles_nom(agent_id) == 0
+                th = 0:pi/50:2*pi; % Angles for creating the circle shape
+                xunit = agent_radius * cos(th) + x_current;
+                yunit = agent_radius * sin(th) + y_current;
+                circle_handles_nom(agent_id) = patch(xunit, yunit, colors(agent_id,:), ...
+                                              'FaceColor', 'none', ...
+                                              'EdgeColor', colors(agent_id,:), ...
+                                              'HandleVisibility', 'off');
+                % % Create circle in legend
+                % plot(NaN, NaN, 'o', 'MarkerEdgeColor', colors(agent_id,:), ...
+                %                               'MarkerFaceColor', colors(agent_id,:), ...
+                %                               'MarkerSize', 15, ...
+                %                               'DisplayName', sprintf('Agent %d', agent_id));
+            else
+                set(circle_handles_nom(agent_id), 'XData', agent_radius * cos(th) + x_current, ...
+                                              'YData', agent_radius * sin(th) + y_current);
+            end
+    
             x_current = p(1, agent_id, t);
             y_current = p(2, agent_id, t);
-    
-            % Update or create the circle
+            % Update or create the actual agent circle
             if circle_handles(agent_id) == 0
                 th = 0:pi/50:2*pi; % Angles for creating the circle shape
                 xunit = agent_radius * cos(th) + x_current;

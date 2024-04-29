@@ -1,6 +1,6 @@
 %% Second order (added nominal trajectory)
 function dpdt = odefcn(t,p)      
-    global u_save u_nom
+    global u_save u_nom_save
 
     load('parameters.mat');
     
@@ -10,14 +10,39 @@ function dpdt = odefcn(t,p)
     % time
     t
 
-    % Full responsibility mu = 1, or half responsibility mu = 1/2
-    mu = 1/2;
+    %% Dynamics
+    f = [p(3); p(4); -d/m*p(3); -d/m*p(4)];
+    g = [0 0; 0 0; 1/m 0; 0 1/m];
 
-    % Nominal controls
-    u0 = sign_rand.*[A_rand; A_rand].*[cos(f_rand*t); sin(f_rand*t)];
+    %% CLF nominal controller
+    % Nominal trajectories
+    p_nom = sign_rand.*[A_rand; A_rand].*[cos(f_rand*t + phi_rand); sin(f_rand*t + phi_rand)]
+    u_nom = zeros(size(p_nom));
 
-    %% Dynamic model
+    H = 2*eye(dimensions);
+    F = zeros(1,dimensions);
+    for i = 1:N_a
+        A = [];
+        b = [];
+        V = 1/2*(p(1)-p_nom(1,i))^2 + 1/2*(p(2)-p_nom(2,i))^2 + 1/2*(p(3)+l2*(p(1)-p_nom(1,i)))^2 + 1/2*(p(4)+l3*(p(2)-p_nom(2,i)))^2;
+        gradV = [p(1) - p_nom(1,i) + 2*l2*(p(3)+l2*(p(1)-p_nom(1,i)));
+                 p(2) - p_nom(2,i) + 2*l3*(p(4)+l3*(p(2)-p_nom(2,i)));
+                 2*(p(3)+l2*(p(1)-p_nom(1,i)));
+                 2*(p(4)+l3*(p(2)-p_nom(2,i)))];
+        L_fV= dot(gradV, f);
+        L_gV= [dot(gradV, g(:,1)), dot(gradV, g(:,2))];
+        A = L_gV;
+        b = -L_fV-lambda*V;
+        % Add input constraints, to prevent u_nom from exploding
+        A = [A; [1, 0; 0, -1]];
+        b = [b; 100; 100];
+
+        u_nom(:,i) = quadprog(H, F, A, b);
+    end
+
+    %% CBF Safety filter
     u = zeros(dimensions, N_a);
+    H = 2*eye(dimensions);
     for i = 1:N_a%1%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1:N_a
         A = [];
         b = [];
@@ -33,15 +58,20 @@ function dpdt = odefcn(t,p)
                 b = [b; mu*a_ij];
             end
         end
-        H = 2*eye(dimensions);
-        f = -2*u0(:,i);
-        u(:,i) = quadprog(H, f, A, b);
+        F = -2*u_nom(:,i);
+        % Add input constraints, to prevent u from exploding
+        A = [A; [1, 0; 0, -1]];
+        b = [b; 100; 100];
+        u(:,i) = quadprog(H, F, A, b);
     end
 
-    u_nom=[u_nom, reshape(u0, dimensions*N_a, 1)];
+
+    u = u_nom
+
+    u_nom_save=[u_nom_save, reshape(u_nom, dimensions*N_a, 1)];
     u_save=[u_save, reshape(u, dimensions*N_a, 1)];
 
-    %% Dynamics of the system
+    %% ODE
     % Actual trajectory
     dpdt(1,:) = p(3,:);                           
     dpdt(2,:) = p(4,:);
