@@ -11,7 +11,7 @@ states = 2*dimensions;   % Number of states
 N_a = 2;                 % Number of agents
 m = 0.01;                % Mass
 d = 0.1;                 % Damping coefficient
-agent_radius = 1;        % Radius of agent
+agent_radius = 0.05;     % Radius of agent
 agent_spacing = 0.3;     % Spacing of formation circle agents (0.3 or 0.5 works well)
 
 p0 = generate_circular_initial_positions(N_a, agent_radius, agent_spacing);
@@ -20,12 +20,15 @@ if states == 2*dimensions   % Add initial velocities to the states
 end
 
 % Nominal trajectories
-A_min = 8;
-A_max = 12;
-f_min = 0.1;
-f_max = 0.2;
+origin_min = -0.5;
+origin_max = -origin_min;
+A_min = 0.3;
+A_max = 1;
+f_min = 0.5;
+f_max = 1;
 phi_max = pi;
 phi_min = -pi;
+origin_rand = (origin_max-origin_min)*rand(2,N_a)+origin_min;
 A_rand = (A_max-A_min)*rand(1,N_a)+A_min;
 f_rand = (f_max-f_min)*rand(1,N_a)+f_min;
 phi_rand = (phi_max-phi_min)*rand(1,N_a)+phi_min;
@@ -42,9 +45,9 @@ pause(0.5)
 mu = 1/2;
 
 % CLF parameters for nominal control
-l2 = 1;
-l3 = 1;
-lambda = 20;
+l2 = 20;
+l3 = 20;
+lambda = 50;
 
 % Add possible static obstacles
 % ob = [-2; -2.5];
@@ -52,11 +55,11 @@ lambda = 20;
 
 
 
-save('parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'agent_radius', 'p0', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'nominal_tolerance', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
+save('parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'agent_radius', 'p0', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'nominal_tolerance', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
 
 
 % Time vector
-t_end = 0.5;
+t_end = 2;
 t_step = 0.01;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
@@ -71,7 +74,7 @@ u_nom = zeros(dimensions,N_a,num_steps);
 u = zeros(dimensions,N_a,num_steps);
 for t_index = 1:num_steps
     t = (t_index-1)*t_step;
-    p_nom(:,:,t_index) = sign_rand.*[A_rand; A_rand].*[cos(f_rand*t + phi_rand); sin(f_rand*t + phi_rand)];
+    p_nom(:,:,t_index) = sign_rand.*[A_rand; A_rand].*[cos(f_rand*t + phi_rand); sin(f_rand*t + phi_rand)] + origin_rand;
     u_nom(:,:,t_index) = u_nom_save(:,:,1+(t_index-1)*4);
     u(:,:,t_index) = u_save(:,:,1+(t_index-1)*4);
 end
@@ -79,10 +82,12 @@ end
 %% Plot results
 close all;
 update_interval = 0;
-xlimits = [min(min(p(1,:,:)))-2 max(max(p(1,:,:)))+2];
-ylimits = [min(min(p(2,:,:)))-2 max(max(p(2,:,:)))+2];
-xlimits = [-20 20];
-ylimits = [-20 20];
+xlimits = 1.5*[min(min(p(1,:,:))) max(max(p(1,:,:)))];
+ylimits = 1.5*[min(min(p(2,:,:))) max(max(p(2,:,:)))];
+xlimits = 1.5*[min(min(p_nom(1,:,:))) max(max(p_nom(1,:,:)))];
+ylimits = 1.5*[min(min(p_nom(2,:,:))) max(max(p_nom(2,:,:)))];
+% xlimits = [-20 20];
+% ylimits = [-20 20];
 fontsize = 14;
 markersize = 10;
 linewidth = 2;
