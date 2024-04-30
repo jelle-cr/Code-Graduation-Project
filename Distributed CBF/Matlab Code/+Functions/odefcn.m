@@ -2,7 +2,7 @@
 function dpdt = odefcn(t,p)      
     global u_save u_nom_save
 
-    load('Parameters.mat');
+    load('./Data/Parameters.mat');
     
     p = reshape(p, states, N_a);
     dpdt = zeros(states, N_a);
@@ -16,7 +16,7 @@ function dpdt = odefcn(t,p)
 
     %% CLF nominal controller
     % Nominal trajectories
-    p_nom = calculate_nominal_trajectories(t);
+    p_nom = Functions.calculate_nominal_trajectories(t);
     u_nom = zeros(dimensions,N_a);
 
     H = 2*eye(dimensions);

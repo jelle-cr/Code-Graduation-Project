@@ -1,5 +1,5 @@
 function p_nom = calculate_nominal_trajectories(t)
-    load('TrajectoryParameters.mat');
+    load('./Data/TrajectoryParameters.mat');
 
     % Reference position
     p_ref = sign_rand.*[A_rand; A_rand].*[cos(f_rand*t + phi_rand); sin(f_rand*t + phi_rand)] + origin_rand;

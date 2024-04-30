@@ -16,7 +16,7 @@ u_max = 10;              % Maximum control force
 
 % Initial positions
 agent_spacing = 0.3;     % Spacing of formation circle agents (0.3 or 0.5 works well)
-p0 = generate_circular_initial_positions(N_a, agent_radius, agent_spacing);
+p0 = Functions.generate_circular_initial_positions(N_a, agent_radius, agent_spacing);
 if states == 2*dimensions   % Add initial velocities to the states
     p0 = [p0; zeros(dimensions, N_a)];
 end
@@ -37,8 +37,8 @@ f_rand = (f_max-f_min)*rand(1,N_a)+f_min;
 phi_rand = (phi_max-phi_min)*rand(1,N_a)+phi_min;
 sign_rand = sign(randi([0, 1], dimensions, N_a) - 0.5);
 
-% load('FixedTrajectoryParameters.mat');    % Uncomment to use specific saved nominal trajectories
-save('TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
+load('Data/FixedTrajectoryParameters.mat');    % Uncomment to use specific saved nominal trajectories
+save('Data/TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
 
 % CBF parameters for safety filter
 l0 = 600;           
@@ -48,22 +48,22 @@ roots = -l1 + sqrt(D)   % Check if roots are negative
 pause(0.5)
 % Calculate mu based on the assigned agent weights, higher weight allows agent to stay closer to reference position
 agent_responsibility_weights = ones(N_a,1); % Value between 0 and 1, the ratio for each agent determines the value of mu
-mu = calculate_agent_mu(N_a, agent_responsibility_weights);
+mu = Functions.calculate_agent_mu(N_a, agent_responsibility_weights);
 
 % CLF parameters for nominal control
 l2 = 20;
 l3 = 20;
 lambda = 50;
 
-save('Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'agent_radius', 'u_max', 'p0', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
+save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'agent_radius', 'u_max', 'p0', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
 
 % Time vector
-t_end = 2;
-t_step = 0.01;
+t_end = 5;
+t_step = 0.005;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
 
-[p] = reshape(ode4(@odefcn, t_span, reshape(p0, [], 1)).', height(p0), N_a, num_steps);   % p is of size 4 by N_a by t
+[p] = reshape(Functions.ode4(@Functions.odefcn, t_span, reshape(p0, [], 1)).', height(p0), N_a, num_steps);   % p is of size 4 by N_a by t
 
 u_nom_save = reshape(u_nom_save, dimensions, N_a, length(u_nom_save));
 u_save = reshape(u_save, dimensions, N_a, length(u_save));
@@ -89,5 +89,5 @@ markersize = 10;
 linewidth = 2;
 t_stop = t_span(end);    % Determines when to freeze the updating plot
 
-plot_real_time_trajectories(p(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, agent_radius, linewidth, p_nom(1:2,:,:), u_nom, u, num_steps, t_span, t_stop); 
+Functions.plot_real_time_trajectories(p(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, agent_radius, linewidth, p_nom(1:2,:,:), u_nom, u, num_steps, t_span, t_stop); 
 
