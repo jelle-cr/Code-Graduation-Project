@@ -15,7 +15,7 @@ agent_radius = 0.05;     % Radius of agent
 u_max = 10;              % Maximum control force
 
 % Initial positions
-agent_spacing = 0.3;     % Spacing of formation circle agents (0.3 or 0.5 works well)
+agent_spacing = 0.5;     % Spacing of formation circle agents (0.3 or 0.5 works well)
 p0 = Functions.generate_circular_initial_positions(N_a, agent_radius, agent_spacing);
 if states == 2*dimensions   % Add initial velocities to the states
     p0 = [p0; zeros(dimensions, N_a)];
@@ -23,10 +23,10 @@ end
 
 % Nominal trajectories
 use_V_ref = false;       % Determines whether or not to use reference velocity in CLF nominal control calculation
-origin_max = 0.1;
+origin_max = 0.2;
 origin_min = -origin_max;
-A_min = 0.1;
-A_max = 0.3;
+A_min = 0.2;
+A_max = 0.4;
 f_min = 2;
 f_max = 3;
 phi_max = pi;
@@ -39,6 +39,8 @@ sign_rand = sign(randi([0, 1], dimensions, N_a) - 0.5);
 
 % load('Data/FixedTrajectoryParameters.mat');    % Uncomment to use specific saved nominal trajectories
 save('Data/TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
+% % save('Data/FixedTrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
+
 
 % CBF parameters for safety filter
 l0 = 600;           
@@ -58,8 +60,8 @@ lambda = 50;
 save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'agent_radius', 'u_max', 'p0', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
 
 % Time vector
-t_end = 2;
-t_step = 0.005;
+t_end = 2.5;
+t_step = 0.01;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
 
@@ -88,6 +90,7 @@ fontsize = 14;
 markersize = 10;
 linewidth = 2;
 t_stop = t_span(end);    % Determines when to freeze the updating plot
+pauseplotting = false;   % Pauses the plot to set up recording software
 
-Functions.plot_real_time_trajectories(p(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, agent_radius, linewidth, p_nom(1:2,:,:), u_nom, u, num_steps, t_span, t_stop); 
+Functions.plot_real_time_trajectories(p(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, agent_radius, linewidth, p_nom(1:2,:,:), u_nom, u, num_steps, t_span, t_stop, pauseplotting); 
 

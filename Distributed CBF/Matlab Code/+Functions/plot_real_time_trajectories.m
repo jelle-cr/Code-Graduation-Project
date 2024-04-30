@@ -1,4 +1,4 @@
-function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_values, ylim_values, fontsize, agent_radius, linewidth, p_nom, u_nom, u, num_steps, t_span, t_stop)
+function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_values, ylim_values, fontsize, agent_radius, linewidth, p_nom, u_nom, u, num_steps, t_span, t_stop, pauseplotting)
     % PLOT_REAL_TIME_TRAJECTORIES Plots multiple trajectories in real time
     %   p: 3D matrix containing trajectories (x, y, time)
     %   N_a: Number of agents
@@ -10,7 +10,9 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     % Initialize subplots
     figure('Position', [100 150 1400 600]);
     
-    pause(10)
+    if pauseplotting
+        pause(10)
+    end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 1 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     subplot(1,2,1);
     grid on; hold on;
