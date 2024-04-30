@@ -37,7 +37,7 @@ f_rand = (f_max-f_min)*rand(1,N_a)+f_min;
 phi_rand = (phi_max-phi_min)*rand(1,N_a)+phi_min;
 sign_rand = sign(randi([0, 1], dimensions, N_a) - 0.5);
 
-load('FixedTrajectoryParameters.mat');
+% load('FixedTrajectoryParameters.mat');    % Uncomment to use specific saved nominal trajectories
 save('TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
 
 % CBF parameters for safety filter
@@ -58,8 +58,8 @@ lambda = 50;
 save('Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'agent_radius', 'u_max', 'p0', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
 
 % Time vector
-t_end = 5;
-t_step = 0.005;
+t_end = 2;
+t_step = 0.01;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
 
