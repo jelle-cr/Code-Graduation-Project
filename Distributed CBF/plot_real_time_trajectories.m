@@ -23,7 +23,12 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     % Storage for plot handles (markers and trails)
     circle_handles_nom = zeros(N_a, 1);
     circle_handles = zeros(N_a, 1);
-    trail_handles = zeros(N_a, 1);
+    % Storage for trail dots (per agent)
+    trail_dots = cell(N_a, 1);
+
+    % Dotted trail parameters
+    trail_points = 40;      % Number of dots on the trail
+    trail_interval = 0.01;  % Seconds between each new dot
     
     % Collision detection
     overlap_marker = zeros(N_a, N_a);                % Initialize
@@ -47,29 +52,40 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     
     % Storage for plot handles (markers)
     time_marker_norms = zeros(N_a,1);
-    
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Main loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for t = 1:(t_stop+t_step + 0.00001)/t_step
         subplot(1,2,1);     % Update subplot 1
         for agent_id = 1:N_a
-    
-            % Update or create the trail
-            if trail_handles(agent_id) == 0
-                trail_handles(agent_id) = plot(p(1, agent_id, 1:t), p(2, agent_id, 1:t), ...
-                                               '.', 'Color', colors(agent_id,:), ...
-                                               'LineWidth', linewidth, ...
-                                               'HandleVisibility', 'off');
-            else
-                trail_time = 0.75;
-                if(t*t_step > trail_time)
-                    trail_start = t-(trail_time/t_step);
-                else
-                    trail_start = 1;
+            x_current = p(1, agent_id, t);
+            y_current = p(2, agent_id, t);
+            % Determine if it's time to add a new dot
+            if mod(t, trail_interval/t_step) == 0
+                % Create initial trail dots (if needed)
+                if isempty(trail_dots{agent_id})
+                    trail_dots{agent_id} = plot(x_current, y_current, '.', ...
+                                            'Color', colors(agent_id,:), ...
+                                            'HandleVisibility', 'off'); 
                 end
-                set(trail_handles(agent_id), 'XData', p(1, agent_id, trail_start:t), ...
-                                             'YData', p(2, agent_id, trail_start:t));
-            end
+
+                % Get the existing dot positions
+                x_data = get(trail_dots{agent_id}, 'XData');
+                y_data = get(trail_dots{agent_id}, 'YData');
+
+                % Add new dot at the front 
+                x_data = [x_current, x_data]; 
+                y_data = [y_current, y_data];
+
+                % Remove the oldest dot (if necessary)
+                if length(x_data) > trail_points
+                    x_data = x_data(1:trail_points); 
+                    y_data = y_data(1:trail_points);
+                end
+
+                % Update the trail plot object
+                set(trail_dots{agent_id}, 'XData', x_data, 'YData', y_data);
+            end 
+            uistack(trail_dots{agent_id}, 'bottom')
         end
         for agent_id = 1:N_a    % This for loop is required to always plot the agents on top of the trajectory
             x_current = p(1, agent_id, t);
