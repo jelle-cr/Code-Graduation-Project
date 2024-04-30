@@ -10,6 +10,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     % Initialize subplots
     figure('Position', [100 150 1400 600]);
     
+    pause(10)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 1 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     subplot(1,2,1);
     grid on; hold on;
