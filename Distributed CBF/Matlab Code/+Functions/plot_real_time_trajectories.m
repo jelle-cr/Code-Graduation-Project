@@ -1,4 +1,4 @@
-function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_values, ylim_values, fontsize, agent_radius, linewidth, p_nom, u_nom, u, num_steps, t_span, t_stop, pauseplotting)
+function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_values, ylim_values, fontsize, r_a, linewidth, p_nom, u_nom, u, num_steps, t_span, t_stop, pauseplotting)
     % PLOT_REAL_TIME_TRAJECTORIES Plots multiple trajectories in real time
     %   p: 3D matrix containing trajectories (x, y, time)
     %   N_a: Number of agents
@@ -96,8 +96,8 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
             % Update or create the actual agent circle
             if circle_handles(agent_id) == 0
                 th = 0:pi/50:2*pi; % Angles for creating the circle shape
-                xunit = agent_radius * cos(th) + x_current;
-                yunit = agent_radius * sin(th) + y_current;
+                xunit = r_a * cos(th) + x_current;
+                yunit = r_a * sin(th) + y_current;
                 circle_handles(agent_id) = patch(xunit, yunit, colors(agent_id,:), ...
                                               'FaceColor', colors(agent_id,:), ...
                                               'EdgeColor', 'none', ...
@@ -108,8 +108,8 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
                                               'MarkerSize', 15, ...
                                               'DisplayName', sprintf('Agent %d', agent_id));
             else
-                set(circle_handles(agent_id), 'XData', agent_radius * cos(th) + x_current, ...
-                                              'YData', agent_radius * sin(th) + y_current);
+                set(circle_handles(agent_id), 'XData', r_a * cos(th) + x_current, ...
+                                              'YData', r_a * sin(th) + y_current);
             end
         end
         for agent_id = 1:N_a    % This for loop is required to always plot the goal positions on top
@@ -119,8 +119,8 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
             % Update or create the nominal agent circle
             if circle_handles_nom(agent_id) == 0
                 th = 0:pi/50:2*pi; % Angles for creating the circle shape
-                xunit = agent_radius * cos(th) + x_current;
-                yunit = agent_radius * sin(th) + y_current;
+                xunit = r_a * cos(th) + x_current;
+                yunit = r_a * sin(th) + y_current;
                 circle_handles_nom(agent_id) = patch(xunit, yunit, colors(agent_id,:), ...
                                               'FaceColor', 'none', ...
                                               'EdgeColor', colors(agent_id,:), ...
@@ -131,8 +131,8 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
                 %                               'MarkerSize', 15, ...
                 %                               'DisplayName', sprintf('Goal Agent %d', agent_id));
             else
-                set(circle_handles_nom(agent_id), 'XData', agent_radius * cos(th) + x_current, ...
-                                              'YData', agent_radius * sin(th) + y_current);
+                set(circle_handles_nom(agent_id), 'XData', r_a * cos(th) + x_current, ...
+                                              'YData', r_a * sin(th) + y_current);
             end
         end
         % Collision Detection and plotting
@@ -148,7 +148,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
                     dx = p(1, i, t) - p(1, j, t);
                     dy = p(2, i, t) - p(2, j, t);
                     distance = sqrt(dx^2 + dy^2);
-                    if distance < 2*agent_radius 
+                    if distance < 2*r_a 
                         overlap_center_x = (p(1, i, t) + p(1, j, t))/2; 
                         overlap_center_y = (p(2, i, t) + p(2, j, t))/2; 
 

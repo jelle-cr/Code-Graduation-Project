@@ -8,25 +8,27 @@ global u_save u_nom_save
 % Quadcopter parameters
 dimensions = 2;          % Number of axis (x,y,z)
 states = 2*dimensions;   % Number of states
-N_a = 4;                 % Number of agents
+N_a = 2;                 % Number of agents
 m = 0.01;                % Mass
 d = 0.1;                 % Damping coefficient
-agent_radius = 0.05;     % Radius of agent
+r_a = 0.05;              % Radius of agent
 u_max = 10;              % Maximum control force
 
 % Initial positions
 agent_spacing = 0.5;     % Spacing of formation circle agents (0.3 or 0.5 works well)
-p0 = Functions.generate_circular_initial_positions(N_a, agent_radius, agent_spacing);
+p0 = Functions.generate_circular_initial_positions(N_a, r_a, agent_spacing);
 if states == 2*dimensions   % Add initial velocities to the states
     p0 = [p0; zeros(dimensions, N_a)];
 end
 
+% p0 = [[1, 0; 1, 0]; -[1, 0; 1, 0]];
+
 % Nominal trajectories
 use_V_ref = false;       % Determines whether or not to use reference velocity in CLF nominal control calculation
-origin_max = 0.2;
+origin_max = 0.01;
 origin_min = -origin_max;
-A_min = 0.2;
-A_max = 0.4;
+A_min = 0.01;
+A_max = 0.02;
 f_min = 2;
 f_max = 3;
 phi_max = pi;
@@ -51,16 +53,17 @@ pause(0.5)
 % Calculate mu based on the assigned agent weights, higher weight allows agent to stay closer to reference position
 agent_responsibility_weights = ones(N_a,1); % Value between 0 and 1, the ratio for each agent determines the value of mu
 mu = Functions.calculate_agent_mu(N_a, agent_responsibility_weights);
+% mu = [0, -0.5; 1.5, 0];
 
 % CLF parameters for nominal control
 l2 = 20;
 l3 = 20;
 lambda = 50;
 
-save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'agent_radius', 'u_max', 'p0', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
+save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'p0', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
 
 % Time vector
-t_end = 2.5;
+t_end = 0.25;
 t_step = 0.01;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
@@ -83,7 +86,7 @@ end
 %% Plot results
 close all;
 update_interval = 0;
-axlimit = max(abs(min(min(min(p(1:2,:,:))))), max(max(max(p(1:2,:,:)))))+agent_radius;  % Find abs max position value, add agent_radius to always be within frame        
+axlimit = max(abs(min(min(min(p(1:2,:,:))))), max(max(max(p(1:2,:,:)))))+r_a;  % Find abs max position value, add r_a to always be within frame        
 xlimits = 1.2*[-axlimit axlimit];
 ylimits = xlimits; 
 fontsize = 14;
@@ -92,5 +95,5 @@ linewidth = 2;
 t_stop = t_span(end);    % Determines when to freeze the updating plot
 pauseplotting = false;   % Pauses the plot to set up recording software
 
-Functions.plot_real_time_trajectories(p(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, agent_radius, linewidth, p_nom(1:2,:,:), u_nom, u, num_steps, t_span, t_stop, pauseplotting); 
+Functions.plot_real_time_trajectories(p(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, r_a, linewidth, p_nom(1:2,:,:), u_nom, u, num_steps, t_span, t_stop, pauseplotting); 
 

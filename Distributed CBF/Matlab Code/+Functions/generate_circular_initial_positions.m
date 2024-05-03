@@ -1,6 +1,6 @@
-function p = generate_circular_initial_positions(N_a, agent_radius, agent_spacing)
+function p = generate_circular_initial_positions(N_a, r_a, agent_spacing)
     % Calculate formation circle radius   
-    formation_radius = agent_radius + agent_spacing*N_a*agent_radius;
+    formation_radius = r_a + agent_spacing*N_a*r_a;
     
     % Generate angles for agents around the circle
     theta = linspace(0, 2*pi*(N_a - 1)/N_a, N_a); 
