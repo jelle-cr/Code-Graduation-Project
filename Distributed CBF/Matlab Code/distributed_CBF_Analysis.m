@@ -1,11 +1,10 @@
 clear all
 close all
 
-n = 101;
-n2 = 11;
+n = 21;
 
 xi_ij = linspace(-1, 1, n);
-v_ij = linspace(-1, 1, n2);
+v_ij = linspace(-1, 1, n);
 mmesh = meshgrid(xi_ij,v_ij);
 % xi_ij = [-20;0];
 % v_ij = [0;0];
@@ -25,13 +24,13 @@ roots = -l1 + sqrt(D)   % Check if roots are negative
 
 for i = 1:n
     h(i) = xi_ij(i).'*xi_ij(i) - (2*r_a)^2;
-    for j = 1:n2
+    for j = 1:n
         a_ij(i,j) = 2*v_ij(j).'*v_ij(j) + 2*(l1-d/m)*xi_ij(i).'*v_ij(j) + l0*h(i);
         % b_ij(i) = 2*1/m*xi_ij(i).';
     end
 end
 
-index_X = find(xi_ij == -100)
+index_X = find(xi_ij == -10)
 index_Y = find(v_ij == 0)
 Z_desired = a_ij(index_X, index_Y)
 

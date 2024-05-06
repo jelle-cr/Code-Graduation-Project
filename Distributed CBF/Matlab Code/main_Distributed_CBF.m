@@ -21,11 +21,9 @@ if states == 2*dimensions   % Add initial velocities to the states
     p0 = [p0; zeros(dimensions, N_a)];
 end
 
-% p0 = [[1, 0; 1, 0]; -[1, 0; 1, 0]];
-
 % Nominal trajectories
 use_V_ref = false;       % Determines whether or not to use reference velocity in CLF nominal control calculation
-origin_max = 0.01;
+origin_max = 0.02;
 origin_min = -origin_max;
 A_min = 0.01;
 A_max = 0.02;
@@ -45,25 +43,26 @@ save('Data/TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_ra
 
 
 % CBF parameters for safety filter
-l0 = 600;           
-l1 = 50;
+barrierFunctionRadiusMultiplier = 1.05;  % Virtually multiplies agent radius in barrier function
+barrierFunctionMaxDistance = 4*r_a;      % Every agent outside of this distance is not taken into account with CBF
+l0 = 1;           
+l1 = 2;
 D = l1^2-4*l0   
 roots = -l1 + sqrt(D)   % Check if roots are negative
 pause(0.5)
 % Calculate mu based on the assigned agent weights, higher weight allows agent to stay closer to reference position
 agent_responsibility_weights = ones(N_a,1); % Value between 0 and 1, the ratio for each agent determines the value of mu
 mu = Functions.calculate_agent_mu(N_a, agent_responsibility_weights);
-% mu = [0, -0.5; 1.5, 0];
 
 % CLF parameters for nominal control
 l2 = 20;
 l3 = 20;
 lambda = 50;
 
-save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'p0', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
+save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'p0', 'barrierFunctionRadiusMultiplier', 'barrierFunctionMaxDistance', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
 
 % Time vector
-t_end = 0.25;
+t_end = 1;
 t_step = 0.01;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
