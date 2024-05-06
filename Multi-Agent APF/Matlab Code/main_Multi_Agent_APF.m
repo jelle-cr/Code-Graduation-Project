@@ -2,13 +2,12 @@ close all
 clear all
 clc
 
-% Objective: Trajectory tracking and Collision Avoidance with CLF+CBF
-global u_save u_nom_save
+global u_att_save u_rep_save
 
 % Quadcopter parameters
 dimensions = 2;          % Number of axis (x,y,z)
 states = 2*dimensions;   % Number of states
-N_a = 12;                 % Number of agents
+N_a = 6;                 % Number of agents
 m = 0.01;                % Mass
 d = 0.1;                 % Damping coefficient
 r_a = 0.05;              % Radius of agent
@@ -37,49 +36,36 @@ f_rand = (f_max-f_min)*rand(1,N_a)+f_min;
 phi_rand = (phi_max-phi_min)*rand(1,N_a)+phi_min;
 sign_rand = sign(randi([0, 1], dimensions, N_a) - 0.5);
 
-load('Data/FixedTrajectoryParameters.mat');    % Uncomment to use specific saved nominal trajectories
+% load('Data/FixedTrajectoryParameters.mat');    % Uncomment to use specific saved nominal trajectories
 save('Data/TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
 % % save('Data/FixedTrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
 
+% APF parameters
+K_att = 1;
+K_rep = 0.0001;
+rho_0 = r_a;
 
-% CBF parameters for safety filter
-barrierFunctionRadiusMultiplier = 1.025;  % Virtually multiplies agent radius in barrier function
-barrierFunctionMaxDistance = 8*r_a;      % Every agent outside of this distance is not taken into account with CBF
-l0 = 600;           
-l1 = 50;
-D = l1^2-4*l0   
-roots = -l1 + sqrt(D)   % Check if roots are negative
-pause(0.5)
-% Calculate mu based on the assigned agent weights, higher weight allows agent to stay closer to reference position
-agent_responsibility_weights = ones(N_a,1); % Value between 0 and 1, the ratio for each agent determines the value of mu
-mu = Functions.calculate_agent_mu(N_a, agent_responsibility_weights);
-
-% CLF parameters for nominal control
-l2 = 20;
-l3 = 20;
-lambda = 50;
-
-save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'p0', 'barrierFunctionRadiusMultiplier', 'barrierFunctionMaxDistance', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
+save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'p0', 'K_att', 'K_rep', 'rho_0');
 
 % Time vector
-t_end = 1;
+t_end = 2;
 t_step = 0.01;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
 
 [p] = reshape(Functions.ode4(@Functions.odefcn, t_span, reshape(p0, [], 1)).', height(p0), N_a, num_steps);   % p is of size 4 by N_a by t
 
-u_nom_save = reshape(u_nom_save, dimensions, N_a, length(u_nom_save));
-u_save = reshape(u_save, dimensions, N_a, length(u_save));
+u_att_save = reshape(u_att_save, dimensions, N_a, length(u_att_save));
+u_rep_save = reshape(u_rep_save, dimensions, N_a, length(u_rep_save));
 
 p_nom = zeros(states,N_a,num_steps);
-u_nom = zeros(dimensions,N_a,num_steps);
-u = zeros(dimensions,N_a,num_steps);
+u_att = zeros(dimensions,N_a,num_steps);
+u_rep = zeros(dimensions,N_a,num_steps);
 for t_index = 1:num_steps
     t = (t_index-1)*t_step;
     p_nom(:,:,t_index) = Functions.calculate_nominal_trajectories(t);
-    u_nom(:,:,t_index) = u_nom_save(:,:,1+(t_index-1)*4);
-    u(:,:,t_index) = u_save(:,:,1+(t_index-1)*4);
+    u_att(:,:,t_index) = u_att_save(:,:,1+(t_index-1)*4);
+    u_rep(:,:,t_index) = u_rep_save(:,:,1+(t_index-1)*4);
 end
 
 %% Plot results
@@ -94,5 +80,5 @@ linewidth = 2;
 t_stop = t_span(end);    % Determines when to freeze the updating plot
 pauseplotting = false;   % Pauses the plot to set up recording software
 
-Functions.plot_real_time_trajectories(p(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, r_a, linewidth, p_nom(1:2,:,:), u_nom, u, num_steps, t_span, t_stop, pauseplotting); 
+Functions.plot_real_time_trajectories(p(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, r_a, rho_0, linewidth, p_nom(1:2,:,:), u_att, u_rep, num_steps, t_span, t_stop, pauseplotting); 
 

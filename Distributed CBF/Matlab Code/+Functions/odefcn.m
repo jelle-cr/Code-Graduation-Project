@@ -49,7 +49,6 @@ function dpdt = odefcn(t,p)
         for j = 1:N_a
             if i ~= j
                 xi_ij = p(1 : dimensions, i) - p(1 : dimensions, j);
-                % norm(xi_ij)
                 % if norm(xi_ij) < barrierFunctionMaxDistance
                     v_ij = p(dimensions+1 : 2*dimensions, i) - p(dimensions+1 : 2*dimensions, j);
                     h = xi_ij.'*xi_ij - (2*barrierFunctionRadiusMultiplier*r_a)^2;
@@ -60,10 +59,6 @@ function dpdt = odefcn(t,p)
                     b = [b; mu(i,j)*a_ij];
 
                     hi = 1
-                % else
-                %     % xi_ij
-                %     % warning('###################################################################stop')
-                % end
                 if norm(xi_ij) < 2*r_a
                     warning('crash')
                 end
