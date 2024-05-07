@@ -1,4 +1,5 @@
 Creator: Jelle Cruijsen
+Email: j.p.c.cruijsen@student.tue.nl
 
 I have created this code to support the research of my graduation project, where I investigate Artificial Potential Fields (APFs), Control Barrier Functions (CBFs), and possible crossovers between the two techniques.
 
