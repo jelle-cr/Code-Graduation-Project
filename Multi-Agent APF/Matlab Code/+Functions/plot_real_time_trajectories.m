@@ -11,14 +11,15 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     left = 100;
     bottom = 150;
     width = 1400;
-    height = 600;
-    figure('Position', [left bottom width height]);
+    height = 700;
+    figure('Position', [left bottom width height]);  
     
     if pauseplotting
         pause(10)
     end
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 1 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    subplot(2,2,[1 3])
+    subplot(3,2,[1 3 5])
     grid on; hold on;
     axis equal;
     xlim(xlim_values); ylim(ylim_values);
@@ -41,11 +42,18 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     trail_interval = 0.02;  % Seconds between each new dot
     
     % Collision detection
-    overlap_marker = zeros(N_a, N_a);                % Initialize
-    collision_occurred = false;         % Flag to add collision to legens
+    overlap_marker = zeros(N_a, N_a);   % Initialize
+    collision_occurred = false;         % Flag to add collision to legend
+
+    % Add main title
+    % textX = 0.5;  % Centered horizontally
+    % textY = 0.56;  % Slightly above the plot (adjust as needed)
+    % textStr = 'Artificial Potential Fields for Multi-Agent Path-Planning';
+    % % Add text with customization
+    % text(textX, textY, textStr, 'FontSize', fontsize+5, 'Interpreter', 'latex', 'HorizontalAlignment', 'center');
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 2 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    subplot(2,2,2)
+    subplot(3,2,2)
     grid on; hold on;
     for agent_id = 1:N_a
         for t = 1:num_steps
@@ -58,11 +66,11 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     set(ax, 'FontSize', fontsize-5);
     % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
     title('Norm of attractive forces over time', 'Interpreter', 'latex', 'FontSize', fontsize);
-    xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
+    % xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
     ylabel('$||u_{att}||$ [N]', 'Interpreter', 'latex', 'FontSize', fontsize);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 3 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    subplot(2,2,4)
+    subplot(3,2,4)
     grid on; hold on;
     for agent_id = 1:N_a
         for t = 1:num_steps
@@ -75,17 +83,36 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     set(ax, 'FontSize', fontsize-5);
     % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
     title('Norm of repulsive forces over time', 'Interpreter', 'latex', 'FontSize', fontsize);
+    % xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
+    ylabel('$||u_{rep}||$ [N]', 'Interpreter', 'latex', 'FontSize', fontsize);
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 4 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    subplot(3,2,6)
+    grid on; hold on;
+    for agent_id = 1:N_a
+        err = squeeze(p_nom(:,agent_id,:))-squeeze(p(1:2,agent_id,:)); 
+        for t = 1:num_steps
+            pos_err(agent_id, t) = norm(err(:, t)); % Calculate norm at each time step
+        end
+        plot(t_span, pos_err(agent_id, :),'LineWidth',1,'DisplayName', sprintf('Agent %d', agent_id));
+    end
+    xlim([0 t_span(end)]);
+    ax = gca;
+    set(ax, 'FontSize', fontsize-5);
+    % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
+    title('Absolute Position Error', 'Interpreter', 'latex', 'FontSize', fontsize);
     xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
-    ylabel('$||u_{rep}|| [N]$', 'Interpreter', 'latex', 'FontSize', fontsize);
+    ylabel(['$||p_{x,y}-p_{d|x,y}||$ [m]'], 'Interpreter', 'latex', 'FontSize', fontsize);
 
 
     % Storage for plot handles (markers)
     time_marker_u_att = zeros(N_a,1);
     time_marker_u_rep = zeros(N_a,1);
-
+    time_marker_error = zeros(N_a,1);
+       
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Main loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for t = 1:update_interval:(t_stop+t_step + 0.00001)/t_step
-        subplot(2,2,[1 3])     % Update subplot 1
+        subplot(3,2,[1 3 5])     % Update subplot 1
         for agent_id = 1:N_a
             x_current = p(1, agent_id, t);
             y_current = p(2, agent_id, t);
@@ -207,10 +234,10 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
             end
         end
         % Update time in title
-        title(['Real-Time Trajectories (t = ', sprintf('%.2f', t*t_step-t_step), '[s])'], ...
+        title(['Real-Time Trajectories ($t$ = ', sprintf('%.2f', t*t_step-t_step), ' [s])'], ...
           'Interpreter', 'latex', 'FontSize', fontsize);
     
-        subplot(2,2,2)     % Update subplot 2
+        subplot(3,2,2)     % Update subplot 2
         for agent_id = 1:N_a
             if time_marker_u_att(agent_id) == 0
                 time_marker_u_att(agent_id) = plot(t*t_step, norm_u_att(agent_id,t), 'o', ...
@@ -223,7 +250,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
             end
         end
 
-        subplot(2,2,4)     % Update subplot 3
+        subplot(3,2,4)     % Update subplot 3
         for agent_id = 1:N_a
             if time_marker_u_rep(agent_id) == 0
                 time_marker_u_rep(agent_id) = plot(t*t_step, norm_u_rep(agent_id,t), 'o', ...
@@ -235,8 +262,21 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
                 set(time_marker_u_rep(agent_id), 'XData', t*t_step, 'YData', norm_u_rep(agent_id,t));
             end
         end
-    
+        subplot(3,2,6)     % Update subplot 4
+        for agent_id = 1:N_a
+            if time_marker_error(agent_id) == 0
+                time_marker_error(agent_id) = plot(t*t_step, pos_err(agent_id,t), 'o', ...
+                                                'Color', colors(agent_id,:), ...
+                                                'MarkerSize', 10, ...
+                                                'LineWidth', 2, ...
+                                                'HandleVisibility', 'off');  % Initial placement
+            else
+                set(time_marker_error(agent_id), 'XData', t*t_step, 'YData', pos_err(agent_id,t));
+            end
+        end
         drawnow %limitrate; % Force plot update
         % pause(update_interval);
     end
+    sgtitle('Artificial Potential Fields for Multi-Agent Path-Planning', 'FontSize', fontsize+5, Interpreter='latex');
+    
 end

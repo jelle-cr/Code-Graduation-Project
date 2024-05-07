@@ -8,7 +8,7 @@ global u_save u_nom_save
 % Quadcopter parameters
 dimensions = 2;          % Number of axis (x,y,z)
 states = 2*dimensions;   % Number of states
-N_a = 6;                 % Number of agents
+N_a = 2;                 % Number of agents
 m = 0.01;                % Mass
 d = 0.1;                 % Damping coefficient
 r_a = 0.05;              % Radius of agent
@@ -44,7 +44,7 @@ save('Data/TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_ra
 
 % CBF parameters for safety filter
 barrierFunctionRadiusMultiplier = 1.025;  % Virtually multiplies agent radius in barrier function
-barrierFunctionMaxDistance = 8*r_a;      % Every agent outside of this distance is not taken into account with CBF
+barrierFunctionMaxDistance = 2*r_a;       % Every agent outside of this distance is not taken into account with CBF
 l0 = 600;           
 l1 = 50;
 D = l1^2-4*l0   
@@ -84,6 +84,16 @@ for t_index = 1:num_steps
     u(:,:,t_index) = u_save(:,:,1+(t_index-1)*4);
 end
 
+%% Average position error
+err = 0;
+for t = 1:num_steps
+    for i = 1:N_a
+        diff = squeeze(p_nom(1:2,i,t))-squeeze(p(1:2,i,t)); 
+        err = err + norm(diff);
+    end
+end
+avg_pos_err = err/(num_steps*N_a)
+
 %% Plot results
 close all;
 update_interval = 1;     % How many time steps to skip before updating the plot
@@ -96,5 +106,5 @@ linewidth = 2;
 t_stop = t_span(end);    % Determines when to freeze the updating plot
 pauseplotting = false;   % Pauses the plot to set up recording software
 
-Functions.plot_real_time_trajectories(p, t_step, N_a, update_interval, xlimits, ylimits, fontsize, r_a, linewidth, p_nom(1:2,:,:), u_nom, u, num_steps, t_span, t_stop, pauseplotting); 
+Functions.plot_real_time_trajectories(p, t_step, N_a, update_interval, xlimits, ylimits, fontsize, r_a, barrierFunctionMaxDistance, linewidth, p_nom(1:2,:,:), u_nom, u, num_steps, t_span, t_stop, pauseplotting); 
 

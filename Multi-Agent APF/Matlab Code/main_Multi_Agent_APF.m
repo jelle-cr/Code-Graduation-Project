@@ -7,11 +7,11 @@ global u_att_save u_rep_save
 % Quadcopter parameters
 dimensions = 2;          % Number of axis (x,y,z)
 states = 2*dimensions;   % Number of states
-N_a = 6;                 % Number of agents
+N_a = 3;                 % Number of agents
 m = 0.01;                % Mass
 d = 0.1;                 % Damping coefficient
 r_a = 0.05;              % Radius of agent
-u_max = 1;              % Maximum control force
+u_max = 1;               % Maximum control force
 
 % Initial positions
 agent_spacing = 0.5;     % Spacing of formation circle agents (0.3 or 0.5 works well)
@@ -22,10 +22,10 @@ end
 
 % Nominal trajectories
 use_V_ref = false;       % Determines whether or not to use reference velocity in CLF nominal control calculation
-origin_max = 0.3;
+origin_max = 0.2;
 origin_min = -origin_max;
 A_min = 0.2;
-A_max = 0.5;
+A_max = 0.4;
 f_min = 1;
 f_max = 2;
 phi_max = pi;
@@ -41,14 +41,14 @@ save('Data/TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_ra
 % % save('Data/FixedTrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
 
 % APF parameters
-K_att = 0.2;
+K_att = 0.25;
 K_rep = 0.00001;
-rho_0 = r_a;
+rho_0 = 2*r_a;
 
 save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'p0', 'K_att', 'K_rep', 'rho_0');
 
 % Time vector
-t_end = 5;
+t_end = 1;
 t_step = 0.01;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
@@ -70,8 +70,19 @@ for t_index = 1:num_steps
     u_rep(:,:,t_index) = u_rep_save(:,:,1+(t_index-1)*4);
 end
 
+%% Average position error
+err = 0;
+for t = 1:num_steps
+    for i = 1:N_a
+        diff = squeeze(p_nom(1:2,i,t))-squeeze(p(1:2,i,t)); 
+        err = err + norm(diff);
+    end
+end
+avg_pos_err = err/(num_steps*N_a)
+
 %% Plot results
 close all;
+
 update_interval = 1;     % How many time steps to skip before updating the plot
 axlimit = max(abs(min(min(min(p(1:2,:,:))))), max(max(max(p(1:2,:,:)))))+r_a;  % Find abs max position value, add r_a to always be within frame        
 xlimits = 1.2*[-axlimit axlimit];
@@ -83,4 +94,3 @@ t_stop = t_span(end);    % Determines when to freeze the updating plot
 pauseplotting = false;   % Pauses the plot to set up recording software
 
 Functions.plot_real_time_trajectories(p(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, r_a, rho_0, linewidth, p_nom(1:2,:,:), u_att, u_rep, num_steps, t_span, t_stop, pauseplotting); 
-

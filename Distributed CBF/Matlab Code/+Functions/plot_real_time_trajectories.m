@@ -1,4 +1,4 @@
-function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_values, ylim_values, fontsize, r_a, linewidth, p_nom, u_nom, u, num_steps, t_span, t_stop, pauseplotting)
+function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_values, ylim_values, fontsize, r_a, barrierFunctionMaxDistance, linewidth, p_nom, u_nom, u, num_steps, t_span, t_stop, pauseplotting)
     % PLOT_REAL_TIME_TRAJECTORIES Plots multiple trajectories in real time
     %   p: 3D matrix containing trajectories (x, y, time)
     %   N_a: Number of agents
@@ -10,7 +10,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     left = 100;
     bottom = 150;
     width = 1400;
-    height = 600;
+    height = 700;
     figure('Position', [left bottom width height]);
     
     if pauseplotting
@@ -31,6 +31,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     % Storage for plot handles (markers and trails)
     circle_handles_nom = zeros(N_a, 1);
     circle_handles = zeros(N_a, 1);
+    circle_handles_rep = zeros(N_a, 1);
     % Storage for trail dots (per agent)
     trail_dots = cell(N_a, 1);
 
@@ -39,8 +40,17 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     trail_interval = 0.02;  % Seconds between each new dot
     
     % Collision detection
-    overlap_marker = zeros(N_a, N_a);                % Initialize
-    collision_occurred = false;         % Flag to add collision to legens
+    overlap_marker = zeros(N_a, N_a);   % Initialize
+    collision_occurred = false;         % Flag to add collision to legend
+
+    % % Add main title
+    % textX = 0.5;   % Centered horizontally
+    % textY = 0.56;  % Slightly above the plot (adjust as needed)
+    % textStr = 'Distributed Control Barrier Functions for Multi-Agent Path-Planning';
+    % % Add text with customization
+    % text(textX, textY, textStr, 'FontSize', fontsize+5, 'Interpreter', 'latex', 'HorizontalAlignment', 'center');
+
+    % sgtitle('Distributed Control Barrier Functions for Multi-Agent Path-Planning')
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 2 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     subplot(2,2,2)
@@ -57,10 +67,10 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     set(ax, 'FontSize', fontsize-5);
     % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
     title('Difference Norm of Actual and Nominal Control Input', 'Interpreter', 'latex', 'FontSize', fontsize);
-    xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
+    % xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
     ylabel('$||u_i-u_{0i}||$ [N]', 'Interpreter', 'latex', 'FontSize', fontsize);
     
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 2 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 3 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     subplot(2,2,4)
     grid on; hold on;
     for agent_id = 1:N_a
@@ -115,6 +125,24 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
                 set(trail_dots{agent_id}, 'XData', x_data, 'YData', y_data);
             end 
             uistack(trail_dots{agent_id}, 'bottom')
+        end
+        for agent_id = 1:N_a    % This for loop is required to always plot the repulsion regions under the agents
+            x_current = p(1, agent_id, t);
+            y_current = p(2, agent_id, t);
+            % Update or create the actual agent circle
+            if circle_handles_rep(agent_id) == 0
+                th = 0:pi/50:2*pi; % Angles for creating the circle shape
+                xunit = (r_a+barrierFunctionMaxDistance) * cos(th) + x_current;
+                yunit = (r_a+barrierFunctionMaxDistance) * sin(th) + y_current;
+                circle_handles_rep(agent_id) = patch(xunit, yunit, colors(agent_id,:), ...
+                                              'FaceColor', colors(agent_id,:), ...
+                                              'FaceAlpha', 0.2, ...
+                                              'EdgeColor', 'none', ...
+                                              'HandleVisibility', 'off');
+            else
+                set(circle_handles_rep(agent_id), 'XData', (r_a+barrierFunctionMaxDistance) * cos(th) + x_current, ...
+                                              'YData', (r_a+barrierFunctionMaxDistance) * sin(th) + y_current);
+            end
         end
         for agent_id = 1:N_a    % This for loop is required to always plot the agents on top of the trajectory
             x_current = p(1, agent_id, t);
@@ -188,7 +216,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
             end
         end
         % Update time in title
-        title(['Real-Time Trajectories (t = ', sprintf('%.2f', t*t_step-t_step), '[s])'], ...
+        title(['Real-Time Trajectories ($t$ = ', sprintf('%.2f', t*t_step-t_step), ' [s])'], ...
           'Interpreter', 'latex', 'FontSize', fontsize);
     
         subplot(2,2,2);     % Update subplot 2
