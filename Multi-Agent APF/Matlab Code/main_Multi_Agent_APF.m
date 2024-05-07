@@ -7,11 +7,11 @@ global u_att_save u_rep_save
 % Quadcopter parameters
 dimensions = 2;          % Number of axis (x,y,z)
 states = 2*dimensions;   % Number of states
-N_a = 6;                 % Number of agents
+N_a = 7;                 % Number of agents
 m = 0.01;                % Mass
 d = 0.1;                 % Damping coefficient
 r_a = 0.05;              % Radius of agent
-u_max = 10;              % Maximum control force
+u_max = 1;              % Maximum control force
 
 % Initial positions
 agent_spacing = 0.5;     % Spacing of formation circle agents (0.3 or 0.5 works well)
@@ -24,10 +24,10 @@ end
 use_V_ref = false;       % Determines whether or not to use reference velocity in CLF nominal control calculation
 origin_max = 0.3;
 origin_min = -origin_max;
-A_min = 0.1;
-A_max = 0.3;
-f_min = 2;
-f_max = 3;
+A_min = 0.2;
+A_max = 0.5;
+f_min = 1;
+f_max = 2;
 phi_max = pi;
 phi_min = -pi;
 origin_rand = (origin_max-origin_min)*rand(2,N_a)+origin_min;
@@ -41,19 +41,21 @@ save('Data/TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_ra
 % % save('Data/FixedTrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
 
 % APF parameters
-K_att = 1;
-K_rep = 0.0001;
+K_att = 0.2;
+K_rep = 0.00001;
 rho_0 = r_a;
 
 save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'p0', 'K_att', 'K_rep', 'rho_0');
 
 % Time vector
-t_end = 2;
+t_end = 5;
 t_step = 0.01;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
 
 [p] = reshape(Functions.ode4(@Functions.odefcn, t_span, reshape(p0, [], 1)).', height(p0), N_a, num_steps);   % p is of size 4 by N_a by t
+
+maxVelocity = max(max(max(p(3:4,:,:))))
 
 u_att_save = reshape(u_att_save, dimensions, N_a, length(u_att_save));
 u_rep_save = reshape(u_rep_save, dimensions, N_a, length(u_rep_save));
@@ -70,7 +72,7 @@ end
 
 %% Plot results
 close all;
-update_interval = 0;
+update_interval = 1;     % How many time steps to skip before updating the plot
 axlimit = max(abs(min(min(min(p(1:2,:,:))))), max(max(max(p(1:2,:,:)))))+r_a;  % Find abs max position value, add r_a to always be within frame        
 xlimits = 1.2*[-axlimit axlimit];
 ylimits = xlimits; 

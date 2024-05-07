@@ -8,7 +8,11 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     colors = lines(N_a);  
     
     % Initialize subplots
-    figure('Position', [100 150 1400 600]);
+    left = 100;
+    bottom = 150;
+    width = 1400;
+    height = 600;
+    figure('Position', [left bottom width height]);
     
     if pauseplotting
         pause(10)
@@ -18,7 +22,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     grid on; hold on;
     axis equal;
     xlim(xlim_values); ylim(ylim_values);
-    legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
+    legend('Location', 'northeast', 'BackgroundAlpha', 0.3, 'Interpreter', 'latex', 'FontSize', fontsize);
     title('Real-Time Trajectories', 'Interpreter', 'latex', 'FontSize', fontsize);
     xlabel('$x$ [m]', 'Interpreter', 'latex', 'FontSize', fontsize);
     ylabel('$y$ [m]', 'Interpreter', 'latex', 'FontSize', fontsize);
@@ -32,7 +36,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
 
     % Dotted trail parameters
     trail_points = 40;      % Number of dots on the trail
-    trail_interval = 0.01;  % Seconds between each new dot
+    trail_interval = 0.02;  % Seconds between each new dot
     
     % Collision detection
     overlap_marker = zeros(N_a, N_a);                % Initialize
@@ -45,10 +49,10 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
         for t = 1:num_steps
             norm_u_att(agent_id, t) = norm(squeeze(u_att(:,agent_id,t))); % Calculate norm at each time step
         end
-        plot(t_span, norm_u_att(agent_id, :),'LineWidth',1,'DisplayName', sprintf('Agent %d', agent_id));
+        plot(t_span, norm_u_att(agent_id, :),'LineWidth',1,'HandleVisibility', 'off');
     end
     xlim([0 t_span(end)]);
-    legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
+    % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
     title('Norm of attractive forces over time', 'Interpreter', 'latex', 'FontSize', fontsize);
     xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
     ylabel('$||u_{att}|| [N]$', 'Interpreter', 'latex', 'FontSize', fontsize);
@@ -57,16 +61,13 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     subplot(2,2,4)
     grid on; hold on;
     for agent_id = 1:N_a
-        % hi = squeeze(u_rep(:,agent_id,t));
-        % size(hi)
-        % size(norm(hi))
         for t = 1:num_steps
             norm_u_rep(agent_id, t) = norm(squeeze(u_rep(:,agent_id,t))); % Calculate norm at each time step
         end
-        plot(t_span, norm_u_rep(agent_id, :),'LineWidth',1,'DisplayName', sprintf('Agent %d', agent_id));
+        plot(t_span, norm_u_rep(agent_id, :),'LineWidth',1,'HandleVisibility', 'off');
     end
     xlim([0 t_span(end)]);
-    legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
+    % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
     title('Norm of repulsive forces over time', 'Interpreter', 'latex', 'FontSize', fontsize);
     xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
     ylabel('$||u_{rep}|| [N]$', 'Interpreter', 'latex', 'FontSize', fontsize);
@@ -77,7 +78,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     time_marker_u_rep = zeros(N_a,1);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Main loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    for t = 1:(t_stop+t_step + 0.00001)/t_step
+    for t = 1:update_interval:(t_stop+t_step + 0.00001)/t_step
         subplot(2,2,[1 3])     % Update subplot 1
         for agent_id = 1:N_a
             x_current = p(1, agent_id, t);
@@ -120,7 +121,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
                 yunit = (r_a+rho_0) * sin(th) + y_current;
                 circle_handles_rep(agent_id) = patch(xunit, yunit, colors(agent_id,:), ...
                                               'FaceColor', colors(agent_id,:), ...
-                                              'FaceAlpha', 0.1, ...
+                                              'FaceAlpha', 0.2, ...
                                               'EdgeColor', 'none', ...
                                               'HandleVisibility', 'off');
             else
@@ -144,7 +145,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
                 plot(NaN, NaN, 'o', 'MarkerEdgeColor', colors(agent_id,:), ...
                                               'MarkerFaceColor', colors(agent_id,:), ...
                                               'MarkerSize', 15, ...
-                                              'DisplayName', sprintf('Agent %d', agent_id));
+                                              'DisplayName', [sprintf('Agent %d', agent_id), '\hspace{1.2mm}']);
             else
                 set(circle_handles(agent_id), 'XData', r_a * cos(th) + x_current, ...
                                               'YData', r_a * sin(th) + y_current);
@@ -163,11 +164,6 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
                                               'FaceColor', 'none', ...
                                               'EdgeColor', colors(agent_id,:), ...
                                               'HandleVisibility', 'off');
-                % Create circle in legend
-                % plot(NaN, NaN, 'o', 'MarkerEdgeColor', colors(agent_id,:), ...
-                %                               'MarkerFaceColor', 'none', ...
-                %                               'MarkerSize', 15, ...
-                %                               'DisplayName', sprintf('Goal Agent %d', agent_id));
             else
                 set(circle_handles_nom(agent_id), 'XData', r_a * cos(th) + x_current, ...
                                               'YData', r_a * sin(th) + y_current);
@@ -235,6 +231,6 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
         end
     
         drawnow %limitrate; % Force plot update
-        pause(update_interval);
+        % pause(update_interval);
     end
 end

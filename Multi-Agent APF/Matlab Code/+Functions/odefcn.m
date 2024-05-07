@@ -23,7 +23,7 @@ function dpdt = odefcn(t,p)
     u_rep = zeros(dimensions,N_a);
 
     for i = 1:N_a    
-        U_att = 1/2*K_att*norm(p(1:2,i)-p_nom(1:2,i))^2;
+        % U_att = 1/2*K_att*norm(p(1:2,i)-p_nom(1:2,i))^2;
         F_att = K_att*(p(1:2,i)-p_nom(1:2,i));
         U_rep = 0;
         F_rep = 0;
@@ -31,13 +31,19 @@ function dpdt = odefcn(t,p)
             if i ~= j
                 rho = norm(p(1:2,i)-p(1:2,j)) - 2*r_a;
                 if rho < rho_0
-                    U_rep = U_rep + 1/2*K_rep*(1/rho-1/rho_0)^2;
+                    % U_rep = U_rep + 1/2*K_rep*(1/rho-1/rho_0)^2;
                     F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(p(1:2,i)-p(1:2,j))/norm(p(1:2,i)-p(1:2,j));
+                end
+                if rho < 0
+                    warning('Collision between drone i and j at time');
+                    i = i
+                    j = j
+                    t = t
                 end
             end
         end
-        u_att(:,i) = -F_att;
-        u_rep(:,i) = -F_rep;
+        u_att(:,i) = -min(max(F_att, -u_max), u_max);   % Limit attractive and repulsive forces
+        u_rep(:,i) = -min(max(F_rep, -u_max), u_max);   % Note that u can still be > u_max due to the sum
         u(:,i) = u_att(:,i) + u_rep(:,i);
     end    
 
