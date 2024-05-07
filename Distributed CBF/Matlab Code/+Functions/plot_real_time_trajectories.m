@@ -247,4 +247,5 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
         drawnow %limitrate; % Force plot update
         % pause(update_interval);
     end
+    sgtitle('Distributed Control Barrier Functions for Multi-Agent Path-Planning', 'FontSize', fontsize+5, Interpreter='latex');
 end
