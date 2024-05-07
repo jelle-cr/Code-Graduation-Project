@@ -45,13 +45,6 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     overlap_marker = zeros(N_a, N_a);   % Initialize
     collision_occurred = false;         % Flag to add collision to legend
 
-    % Add main title
-    % textX = 0.5;  % Centered horizontally
-    % textY = 0.56;  % Slightly above the plot (adjust as needed)
-    % textStr = 'Artificial Potential Fields for Multi-Agent Path-Planning';
-    % % Add text with customization
-    % text(textX, textY, textStr, 'FontSize', fontsize+5, 'Interpreter', 'latex', 'HorizontalAlignment', 'center');
-    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 2 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     subplot(3,2,2)
     grid on; hold on;

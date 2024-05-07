@@ -35,6 +35,8 @@ index_Y = find(v_ij == 0)
 Z_desired = a_ij(index_X, index_Y)
 
 surf(xi_ij, v_ij, a_ij');
+ax = gca;
+set(ax, 'FontSize', 12);
 xlabel('$\xi_{ij}$', 'Interpreter','latex', 'FontSize', 16);
 ylabel('$v_{ij}$', 'Interpreter','latex', 'FontSize', 16);
 zlabel('$a_{ij}$', 'Interpreter','latex', 'FontSize', 16);
