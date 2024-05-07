@@ -22,6 +22,8 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     grid on; hold on;
     axis equal;
     xlim(xlim_values); ylim(ylim_values);
+    ax = gca;
+    set(ax, 'FontSize', fontsize-5);
     legend('Location', 'northeast', 'BackgroundAlpha', 0.3, 'Interpreter', 'latex', 'FontSize', fontsize);
     title('Real-Time Trajectories', 'Interpreter', 'latex', 'FontSize', fontsize);
     xlabel('$x$ [m]', 'Interpreter', 'latex', 'FontSize', fontsize);
@@ -52,10 +54,12 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
         plot(t_span, norm_u_att(agent_id, :),'LineWidth',1,'HandleVisibility', 'off');
     end
     xlim([0 t_span(end)]);
+    ax = gca;
+    set(ax, 'FontSize', fontsize-5);
     % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
     title('Norm of attractive forces over time', 'Interpreter', 'latex', 'FontSize', fontsize);
     xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
-    ylabel('$||u_{att}|| [N]$', 'Interpreter', 'latex', 'FontSize', fontsize);
+    ylabel('$||u_{att}||$ [N]', 'Interpreter', 'latex', 'FontSize', fontsize);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 3 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     subplot(2,2,4)
@@ -67,6 +71,8 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
         plot(t_span, norm_u_rep(agent_id, :),'LineWidth',1,'HandleVisibility', 'off');
     end
     xlim([0 t_span(end)]);
+    ax = gca;
+    set(ax, 'FontSize', fontsize-5);
     % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
     title('Norm of repulsive forces over time', 'Interpreter', 'latex', 'FontSize', fontsize);
     xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);

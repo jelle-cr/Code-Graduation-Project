@@ -2,8 +2,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     % PLOT_REAL_TIME_TRAJECTORIES Plots multiple trajectories in real time
     %   p: 3D matrix containing trajectories (x, y, time)
     %   N_a: Number of agents
-    %   update_interval: Interval between updates in seconds (optional, default 0.1), inaccurate due to calculation time between each step
-    
+
     % Colors for different trajectories
     colors = lines(N_a);  
     
@@ -18,10 +17,12 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
         pause(10)
     end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 1 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    subplot(1,2,1);
+    subplot(2,2,[1 3]);
     grid on; hold on;
     axis equal;
     xlim(xlim_values); ylim(ylim_values);
+    ax = gca;
+    set(ax, 'FontSize', fontsize-5);
     legend('Location', 'northeast', 'BackgroundAlpha', 0.3, 'Interpreter', 'latex', 'FontSize', fontsize);
     title('Real-Time Trajectories', 'Interpreter', 'latex', 'FontSize', fontsize);
     xlabel('$x$ [m]', 'Interpreter', 'latex', 'FontSize', fontsize);
@@ -42,7 +43,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     collision_occurred = false;         % Flag to add collision to legens
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 2 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    subplot(1,2,2);
+    subplot(2,2,2)
     grid on; hold on;
     for agent_id = 1:N_a
         diff = squeeze(u_nom(:,agent_id,:))-squeeze(u(:,agent_id,:)); 
@@ -52,17 +53,38 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
         plot(t_span, norms(agent_id, :),'LineWidth',1,'DisplayName', sprintf('Agent %d', agent_id));
     end
     xlim([0 t_span(end)]);
+    ax = gca;
+    set(ax, 'FontSize', fontsize-5);
     % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
-    title('Norm $u_i - u_{0i}$ over time', 'Interpreter', 'latex', 'FontSize', fontsize);
+    title('Difference Norm of Actual and Nominal Control Input', 'Interpreter', 'latex', 'FontSize', fontsize);
     xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
-    ylabel('$||u_i-u_{0i}||$', 'Interpreter', 'latex', 'FontSize', fontsize);
+    ylabel('$||u_i-u_{0i}||$ [N]', 'Interpreter', 'latex', 'FontSize', fontsize);
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 2 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    subplot(2,2,4)
+    grid on; hold on;
+    for agent_id = 1:N_a
+        err = squeeze(p_nom(:,agent_id,:))-squeeze(p(1:2,agent_id,:)); 
+        for t = 1:num_steps
+            pos_err(agent_id, t) = norm(err(:, t)); % Calculate norm at each time step
+        end
+        plot(t_span, pos_err(agent_id, :),'LineWidth',1,'DisplayName', sprintf('Agent %d', agent_id));
+    end
+    xlim([0 t_span(end)]);
+    ax = gca;
+    set(ax, 'FontSize', fontsize-5);
+    % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
+    title('Absolute Position Error', 'Interpreter', 'latex', 'FontSize', fontsize);
+    xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
+    ylabel(['$||p_{x,y}-p_{d|x,y}||$ [m]'], 'Interpreter', 'latex', 'FontSize', fontsize);
+
     % Storage for plot handles (markers)
     time_marker_norms = zeros(N_a,1);
+    time_marker_error = zeros(N_a,1);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Main loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for t = 1:update_interval:(t_stop+t_step + 0.00001)/t_step
-        subplot(1,2,1);     % Update subplot 1
+        subplot(2,2,[1 3]);     % Update subplot 1
         for agent_id = 1:N_a
             x_current = p(1, agent_id, t);
             y_current = p(2, agent_id, t);
@@ -169,7 +191,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
         title(['Real-Time Trajectories (t = ', sprintf('%.2f', t*t_step-t_step), '[s])'], ...
           'Interpreter', 'latex', 'FontSize', fontsize);
     
-        subplot(1,2,2);     % Update subplot 2
+        subplot(2,2,2);     % Update subplot 2
         for agent_id = 1:N_a
             if time_marker_norms(agent_id) == 0
                 time_marker_norms(agent_id) = plot(t*t_step, norms(agent_id,t), 'o', ...
@@ -179,6 +201,18 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
                                                 'HandleVisibility', 'off');  % Initial placement
             else
                 set(time_marker_norms(agent_id), 'XData', t*t_step, 'YData', norms(agent_id,t));
+            end
+        end
+        subplot(2,2,4);     % Update subplot 3
+        for agent_id = 1:N_a
+            if time_marker_error(agent_id) == 0
+                time_marker_error(agent_id) = plot(t*t_step, pos_err(agent_id,t), 'o', ...
+                                                'Color', colors(agent_id,:), ...
+                                                'MarkerSize', 10, ...
+                                                'LineWidth', 2, ...
+                                                'HandleVisibility', 'off');  % Initial placement
+            else
+                set(time_marker_error(agent_id), 'XData', t*t_step, 'YData', pos_err(agent_id,t));
             end
         end
     

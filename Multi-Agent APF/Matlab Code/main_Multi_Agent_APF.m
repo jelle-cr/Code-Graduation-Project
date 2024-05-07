@@ -7,7 +7,7 @@ global u_att_save u_rep_save
 % Quadcopter parameters
 dimensions = 2;          % Number of axis (x,y,z)
 states = 2*dimensions;   % Number of states
-N_a = 7;                 % Number of agents
+N_a = 6;                 % Number of agents
 m = 0.01;                % Mass
 d = 0.1;                 % Damping coefficient
 r_a = 0.05;              % Radius of agent
@@ -76,7 +76,7 @@ update_interval = 1;     % How many time steps to skip before updating the plot
 axlimit = max(abs(min(min(min(p(1:2,:,:))))), max(max(max(p(1:2,:,:)))))+r_a;  % Find abs max position value, add r_a to always be within frame        
 xlimits = 1.2*[-axlimit axlimit];
 ylimits = xlimits; 
-fontsize = 14;
+fontsize = 18;
 markersize = 10;
 linewidth = 2;
 t_stop = t_span(end);    % Determines when to freeze the updating plot

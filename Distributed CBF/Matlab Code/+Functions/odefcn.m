@@ -57,10 +57,11 @@ function dpdt = odefcn(t,p)
 
                     A = [A; -b_ij];
                     b = [b; mu(i,j)*a_ij];
-
-                    hi = 1
                 if norm(xi_ij) < 2*r_a
-                    warning('crash')
+                    warning('Collision between drone i and j at time');
+                    i = i
+                    j = j
+                    t = t
                 end
             end
         end
