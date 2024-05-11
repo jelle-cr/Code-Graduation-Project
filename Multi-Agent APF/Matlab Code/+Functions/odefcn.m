@@ -1,39 +1,60 @@
 %% Second order (added nominal trajectory)
-function dpdt = odefcn(t,p)      
+function dXdt = odefcn(t,X)      
     global u_att_save u_rep_save
 
     load('./Data/Parameters.mat');
 
-    p = reshape(p, states, N_a);
-    dpdt = zeros(states, N_a);
-    % Note that [p(1) p(2) p(3) p(4)]==[x y x' y']
+    X = reshape(X, states, N_a);
+    dXdt = zeros(states, N_a);
+    % Note that [X(1) X(2) X(3) X(4)]==[x y x' y']
     % time
     t
 
-    %% Dynamics
-    f = [p(3); p(4); -d/m*p(3); -d/m*p(4)];
-    g = [0 0; 0 0; 1/m 0; 0 1/m];
+    % x = X(1);
+    % y = X(2);
+    % v_x = X(3);
+    % v_y = X(4);
+    % 
+    % %% Dynamics
+    % f = [v_x; v_y; -d/m*v_x; -d/m*v_y];
+    % g = [0 0; 0 0; 1/m 0; 0 1/m];
 
     %% CLF nominal controller
     % Nominal trajectories
-    p_nom = Functions.calculate_nominal_trajectories(t);
+    X_nom = Functions.calculate_nominal_trajectories(t);
     u = zeros(dimensions, N_a);
     
     u_att = zeros(dimensions,N_a);
     u_rep = zeros(dimensions,N_a);
 
     for i = 1:N_a    
-        % U_att = 1/2*K_att*norm(p(1:2,i)-p_nom(1:2,i))^2;
-        F_att = K_att*(p(1:2,i)-p_nom(1:2,i));
-        U_rep = 0;
-        F_rep = 0;
+        % U_att = 1/2*K_att_p*norm(X(1:2,i)-X_nom(1:2,i))^2 + 1/2*K_att_v*norm(X(3:4,i)-X_nom(3:4,i))^2;;
+        F_att = K_att_p*(X(1:dimensions,i)-X_nom(1:dimensions,i)) + K_att_v*(X(dimensions+1:2*dimensions,i)-X_nom(dimensions+1:2*dimensions,i));
+
+        U_rep = zeros(dimensions, 1);
+        F_rep = zeros(dimensions, 1);
         for j = 1:N_a
             if i ~= j
-                rho = norm(p(1:2,i)-p(1:2,j)) - 2*r_a;
-                if rho < rho_0
-                    % U_rep = U_rep + 1/2*K_rep*(1/rho-1/rho_0)^2;
-                    F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(p(1:2,i)-p(1:2,j))/norm(p(1:2,i)-p(1:2,j));
+                xi_ij = X(1:dimensions,i)-X(1:dimensions,j);
+                v_ij = X(dimensions+1:2*dimensions,i) - X(dimensions+1:2*dimensions,j);
+                n_ij = -xi_ij/norm(xi_ij);
+                v_r_ij = -v_ij.'*n_ij;
+                rho = norm(xi_ij) - 2*r_a;
+                rho_m = v_r_ij^2/(2*a_max);
+                % if (rho-rho_m >= rho_0 || v_r_ij <= 0)
+                %     F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(X(1:2,i)-X(1:2,j))/norm(X(1:2,i)-X(1:2,j));
+                % end
+                if (rho-rho_m < rho_0 && v_r_ij > 0)
+                    % F_rep1 = -K_rep*(1/rho-1/rho_0)*(n_ij + 1/2*rho_m*(1/xi_ij-n_ij/norm(xi_ij)))/(rho-rho_m)^2;
+                    % F_rep2 = -K_rep*(1/rho-1/rho_0)*(1/a_max*v_r_ij*n_ij)/(rho-rho_m)^2;
+                    % size1 = size(F_rep1)
+                    % size2 = size(F_rep2)
+                    % F_rep = F_rep + F_rep1 + F_rep2;
                 end
+                % if (rho < rho_0
+                %     % U_rep = U_rep + 1/2*K_rep*(1/rho-1/rho_0)^2;
+                %     F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(X(1:2,i)-X(1:2,j))/norm(X(1:2,i)-X(1:2,j));
+                % end
                 if rho < 0
                     warning('Collision between drone i and j at time');
                     i = i
@@ -52,9 +73,9 @@ function dpdt = odefcn(t,p)
 
     %% ODE
     % Actual trajectory
-    dpdt(1,:) = p(3,:);                           
-    dpdt(2,:) = p(4,:);
-    dpdt(3,:) = -d/m*p(3,:) + 1/m * u(1,:);
-    dpdt(4,:) = -d/m*p(4,:) + 1/m * u(2,:);
-    dpdt = reshape(dpdt, [], 1);
+    dXdt(1,:) = X(3,:);                           
+    dXdt(2,:) = X(4,:);
+    dXdt(3,:) = -d/m*X(3,:) + 1/m * u(1,:);
+    dXdt(4,:) = -d/m*X(4,:) + 1/m * u(2,:);
+    dXdt = reshape(dXdt, [], 1);
 end

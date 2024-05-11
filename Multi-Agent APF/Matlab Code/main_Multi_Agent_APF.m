@@ -7,11 +7,12 @@ global u_att_save u_rep_save
 % Quadcopter parameters
 dimensions = 2;          % Number of axis (x,y,z)
 states = 2*dimensions;   % Number of states
-N_a = 3;                 % Number of agents
-m = 0.01;                % Mass
-d = 0.1;                 % Damping coefficient
-r_a = 0.05;              % Radius of agent
-u_max = 1;               % Maximum control force
+N_a = 2;                 % Number of agents
+m = 0.01;                % Mass [kg]
+d = 0.1;                 % Damping coefficient [Ns/m]
+r_a = 0.05;              % Radius of agent [m]
+u_max = 1;               % Maximum control force [N]
+a_max = 1/m*norm([u_max; u_max]);   % Maximum acceleration [m/s^2]
 
 % Initial positions
 agent_spacing = 0.5;     % Spacing of formation circle agents (0.3 or 0.5 works well)
@@ -21,7 +22,7 @@ if states == 2*dimensions   % Add initial velocities to the states
 end
 
 % Nominal trajectories
-use_V_ref = false;       % Determines whether or not to use reference velocity in CLF nominal control calculation
+use_V_ref = true;       % Determines whether or not to use reference velocity in CLF nominal control calculation
 origin_max = 0.1;
 origin_min = -origin_max;
 A_min = 0.1;
@@ -36,19 +37,20 @@ f_rand = (f_max-f_min)*rand(1,N_a)+f_min;
 phi_rand = (phi_max-phi_min)*rand(1,N_a)+phi_min;
 sign_rand = sign(randi([0, 1], dimensions, N_a) - 0.5);
 
-load('Data/FixedTrajectoryParameters.mat');    % Uncomment to use specific saved nominal trajectories
+% load('Data/FixedTrajectoryParameters.mat');    % Uncomment to use specific saved nominal trajectories
 save('Data/TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
 % % save('Data/FixedTrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
 
 % APF parameters
-K_att = 0.25;
+K_att_p = 0.5;
+K_att_v = 0.25;
 K_rep = 0.00001;
 rho_0 = 2*r_a;
 
-save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'p0', 'K_att', 'K_rep', 'rho_0');
+save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'a_max', 'p0', 'K_att_p', 'K_att_v', 'K_rep', 'rho_0');
 
 % Time vector
-t_end = 10;
+t_end = 5;
 t_step = 0.01;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
@@ -89,7 +91,7 @@ ylimits = xlimits;
 fontsize = 18;
 markersize = 10;
 linewidth = 2;
-t_stop = 2.1%t_span(end);    % Determines when to freeze the updating plot
+t_stop = t_span(end);    % Determines when to freeze the updating plot
 pauseplotting = false;   % Pauses the plot to set up recording software
 
 Functions.plot_real_time_trajectories(p(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, r_a, rho_0, linewidth, p_nom(1:2,:,:), u_att, u_rep, num_steps, t_span, t_stop, pauseplotting); 
