@@ -8,7 +8,7 @@ global u_save u_nom_save
 % Quadcopter parameters
 dimensions = 2;          % Number of axis (x,y,z)
 states = 2*dimensions;   % Number of states
-N_a = 3;                 % Number of agents
+N_a = 6;                 % Number of agents
 m = 0.01;                % Mass
 d = 0.1;                 % Damping coefficient
 r_a = 0.05;              % Radius of agent
@@ -23,10 +23,10 @@ end
 
 % Nominal trajectories
 use_V_ref = false;       % Determines whether or not to use reference velocity in CLF nominal control calculation
-origin_max = 0.3;
+origin_max = 0.2;
 origin_min = -origin_max;
-A_min = 0.2;
-A_max = 0.5;
+A_min = 0.1;
+A_max = 0.3;
 f_min = 1;
 f_max = 2;
 phi_max = pi;
@@ -37,9 +37,9 @@ f_rand = (f_max-f_min)*rand(1,N_a)+f_min;
 phi_rand = (phi_max-phi_min)*rand(1,N_a)+phi_min;
 sign_rand = sign(randi([0, 1], dimensions, N_a) - 0.5);
 
-load('Data/FixedTrajectoryParameters.mat');    % Uncomment to use specific saved nominal trajectories
+% load('Data/FixedTrajectoryParameters.mat');    % Uncomment to use specific saved nominal trajectories
 save('Data/TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
-% % save('Data/FixedTrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
+% save('Data/FixedTrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
 
 
 % CBF parameters for safety filter
@@ -55,14 +55,14 @@ agent_responsibility_weights = ones(N_a,1); % Value between 0 and 1, the ratio f
 mu = Functions.calculate_agent_mu(N_a, agent_responsibility_weights);
 
 % CLF parameters for nominal control
-l2 = 5;
-l3 = 5;
-lambda = 20;
+l2 = 50;
+l3 = 50;
+lambda = 50;
 
 save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'p0', 'barrierFunctionRadiusMultiplier', 'barrierFunctionMaxDistance', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
 
 % Time vector
-t_end = 10;
+t_end = 0.5;
 t_step = 0.01;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
@@ -103,8 +103,8 @@ ylimits = xlimits;
 fontsize = 18;
 markersize = 10;
 linewidth = 2;
-t_stop = 2.1%t_span(end);    % Determines when to freeze the updating plot
-pauseplotting = false;       % Pauses the plot to set up recording software
+t_stop = t_span(end);    % Determines when to freeze the updating plot
+pauseplotting = false;   % Pauses the plot to set up recording software
 
 Functions.plot_real_time_trajectories(p, t_step, N_a, update_interval, xlimits, ylimits, fontsize, r_a, barrierFunctionMaxDistance, linewidth, p_nom(1:2,:,:), u_nom, u, num_steps, t_span, t_stop, pauseplotting); 
 

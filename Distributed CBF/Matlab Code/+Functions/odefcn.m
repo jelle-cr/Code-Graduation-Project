@@ -63,10 +63,7 @@ function dpdt = odefcn(t,p)
                     % xi_ij = xi_ij
                 end
                 if norm(xi_ij) < 2*r_a
-                    warning('Collision between drone i and j at time');
-                    i = i
-                    j = j
-                    t = t
+                    warning(['Collision between drone ' num2str(i) ' and ' num2str(j) ' at time ' num2str(t)]);
                 end
             end
         end

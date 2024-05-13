@@ -14,7 +14,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     figure('Position', [left bottom width height]);
     
     if pauseplotting
-        pause(10)
+        pause(5)
     end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 1 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     subplot(2,2,[1 3]);

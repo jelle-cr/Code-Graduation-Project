@@ -10,15 +10,6 @@ function dXdt = odefcn(t,X)
     % time
     t
 
-    % x = X(1);
-    % y = X(2);
-    % v_x = X(3);
-    % v_y = X(4);
-    % 
-    % %% Dynamics
-    % f = [v_x; v_y; -d/m*v_x; -d/m*v_y];
-    % g = [0 0; 0 0; 1/m 0; 0 1/m];
-
     %% CLF nominal controller
     % Nominal trajectories
     X_nom = Functions.calculate_nominal_trajectories(t);
@@ -38,9 +29,10 @@ function dXdt = odefcn(t,X)
                 xi_ij = X(1:dimensions,i)-X(1:dimensions,j);
                 v_ij = X(dimensions+1:2*dimensions,i) - X(dimensions+1:2*dimensions,j);
                 n_ij = -xi_ij/norm(xi_ij);
-                v_r_ij = -v_ij.'*n_ij;
+                v_r_ij = v_ij.'*n_ij;
                 rho = norm(xi_ij) - 2*r_a;
                 rho_m = v_r_ij^2/(2*a_max);
+                vn_perp = v_ij - v_r_ij*n_ij;
                 % if (rho-rho_m >= rho_0 || v_r_ij <= 0)
                 %     F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(X(1:2,i)-X(1:2,j))/norm(X(1:2,i)-X(1:2,j));
                 % end
@@ -49,18 +41,22 @@ function dXdt = odefcn(t,X)
                     % F_rep2 = -K_rep*(1/rho-1/rho_0)*(1/a_max*v_r_ij*n_ij)/(rho-rho_m)^2;
                     % size1 = size(F_rep1)
                     % size2 = size(F_rep2)
-                    % F_rep = F_rep + F_rep1 + F_rep2;
+                    F_rep1 = -K_rep/(rho-rho_m)^2*(1+v_r_ij/a_max)*n_ij;
+                    F_rep2 = K_rep*v_r_ij/(rho*a_max*(rho-rho_m)^2)*vn_perp;
+                    F_rep = F_rep - F_rep1 - F_rep2;
                 end
-                % if (rho < rho_0
+                % if rho < rho_0
                 %     % U_rep = U_rep + 1/2*K_rep*(1/rho-1/rho_0)^2;
-                %     F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(X(1:2,i)-X(1:2,j))/norm(X(1:2,i)-X(1:2,j));
+                %     F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(-n_ij);
                 % end
-                if rho < 0
-                    warning('Collision between drone i and j at time');
-                    i = i
-                    j = j
-                    t = t
+                if rho < 0 
+                    warning(['Collision between drone ' num2str(i) ' and ' num2str(j) ' at time ' num2str(t)]);
                 end
+                % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Remove!!!!!!!!!!!!!!!!!!!!!!!
+                % if i>1
+                %     F_att = 0;
+                %     F_rep = 0;
+                % end
             end
         end
         u_att(:,i) = -min(max(F_att, -u_max), u_max);   % Limit attractive and repulsive forces
