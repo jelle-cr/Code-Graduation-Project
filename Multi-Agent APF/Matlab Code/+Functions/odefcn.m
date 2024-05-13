@@ -13,6 +13,7 @@ function dXdt = odefcn(t,X)
     %% CLF nominal controller
     % Nominal trajectories
     X_nom = Functions.calculate_nominal_trajectories(t);
+    % X_nom = [0.4 -0.4; 0 0; 0 0; 0 0];
     u = zeros(dimensions, N_a);
     
     u_att = zeros(dimensions,N_a);
@@ -33,30 +34,28 @@ function dXdt = odefcn(t,X)
                 rho = norm(xi_ij) - 2*r_a;
                 rho_m = v_r_ij^2/(2*a_max);
                 vn_perp = v_ij - v_r_ij*n_ij;
+
+                if rho < 0              % Agents have collided
+                    warning(['Collision between drone ' num2str(i) ' and ' num2str(j) ' at time ' num2str(t)]);
+                    rho = norm(xi_ij);  % Attempt to steer away from the center of the other agent
+                end
+
                 % if (rho-rho_m >= rho_0 || v_r_ij <= 0)
                 %     F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(X(1:2,i)-X(1:2,j))/norm(X(1:2,i)-X(1:2,j));
                 % end
-                if (rho-rho_m < rho_0 && v_r_ij > 0)
-                    % F_rep1 = -K_rep*(1/rho-1/rho_0)*(n_ij + 1/2*rho_m*(1/xi_ij-n_ij/norm(xi_ij)))/(rho-rho_m)^2;
-                    % F_rep2 = -K_rep*(1/rho-1/rho_0)*(1/a_max*v_r_ij*n_ij)/(rho-rho_m)^2;
-                    % size1 = size(F_rep1)
-                    % size2 = size(F_rep2)
-                    F_rep1 = -K_rep/(rho-rho_m)^2*(1+v_r_ij/a_max)*n_ij;
-                    F_rep2 = K_rep*v_r_ij/(rho*a_max*(rho-rho_m)^2)*vn_perp;
-                    F_rep = F_rep - F_rep1 - F_rep2;
-                end
-                % if rho < rho_0
-                %     % U_rep = U_rep + 1/2*K_rep*(1/rho-1/rho_0)^2;
-                %     F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(-n_ij);
+                % if (rho-rho_m < rho_0 && v_r_ij > 0)
+                %     % F_rep1 = -K_rep*(1/rho-1/rho_0)*(n_ij + 1/2*rho_m*(1/xi_ij-n_ij/norm(xi_ij)))/(rho-rho_m)^2;
+                %     % F_rep2 = -K_rep*(1/rho-1/rho_0)*(1/a_max*v_r_ij*n_ij)/(rho-rho_m)^2;
+                %     % size1 = size(F_rep1)
+                %     % size2 = size(F_rep2)
+                %     F_rep1 = -K_rep/(rho-rho_m)^2*(1+v_r_ij/a_max)*n_ij;
+                %     F_rep2 = K_rep*v_r_ij/(rho*a_max*(rho-rho_m)^2)*vn_perp;
+                %     F_rep = F_rep - F_rep1 - F_rep2;
                 % end
-                if rho < 0 
-                    warning(['Collision between drone ' num2str(i) ' and ' num2str(j) ' at time ' num2str(t)]);
+                if rho < rho_0
+                    % U_rep = U_rep + 1/2*K_rep*(1/rho-1/rho_0)^2;
+                    F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(-n_ij);
                 end
-                % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Remove!!!!!!!!!!!!!!!!!!!!!!!
-                % if i>1
-                %     F_att = 0;
-                %     F_rep = 0;
-                % end
             end
         end
         u_att(:,i) = -min(max(F_att, -u_max), u_max);   % Limit attractive and repulsive forces

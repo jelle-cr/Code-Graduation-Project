@@ -1,4 +1,4 @@
-function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_values, ylim_values, fontsize, r_a, barrierFunctionMaxDistance, linewidth, p_nom, u_nom, u, num_steps, t_span, t_stop, pauseplotting)
+function plot_real_time_trajectories(X, t_step, N_a, update_interval, xlim_values, ylim_values, fontsize, r_a, barrierFunctionMaxDistance, linewidth, X_nom, u_nom, u, num_steps, t_span, t_stop, pauseplotting)
     % PLOT_REAL_TIME_TRAJECTORIES Plots multiple trajectories in real time
     %   p: 3D matrix containing trajectories (x, y, time)
     %   N_a: Number of agents
@@ -8,7 +8,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     
     % Initialize subplots
     left = 100;
-    bottom = 150;
+    bottom = 50;
     width = 1400;
     height = 700;
     figure('Position', [left bottom width height]);
@@ -59,13 +59,13 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
     title('Difference Norm of Actual and Nominal Control Input', 'Interpreter', 'latex', 'FontSize', fontsize);
     % xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
-    ylabel('$||u_i-u_{0i}||$ [N]', 'Interpreter', 'latex', 'FontSize', fontsize);
+    ylabel('$||u^i-u_0^i||$ [N]', 'Interpreter', 'latex', 'FontSize', fontsize);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 3 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     subplot(2,2,4)
     grid on; hold on;
     for agent_id = 1:N_a
-        err = squeeze(p_nom(:,agent_id,:))-squeeze(p(1:2,agent_id,:)); 
+        err = squeeze(X_nom(:,agent_id,:))-squeeze(X(1:2,agent_id,:)); 
         for t = 1:num_steps
             pos_err(agent_id, t) = norm(err(:, t)); % Calculate norm at each time step
         end
@@ -77,7 +77,7 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
     title('Absolute Position Error', 'Interpreter', 'latex', 'FontSize', fontsize);
     xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
-    ylabel(['$||p_{x,y}-p_{d|x,y}||$ [m]'], 'Interpreter', 'latex', 'FontSize', fontsize);
+    ylabel(['$||p-p_d||$ [m]'], 'Interpreter', 'latex', 'FontSize', fontsize);
 
     % Storage for plot handles (markers)
     time_marker_norms = zeros(N_a,1);
@@ -87,8 +87,8 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
     for t = 1:update_interval:(t_stop+t_step + 0.00001)/t_step
         subplot(2,2,[1 3]);     % Update subplot 1
         for agent_id = 1:N_a
-            x_current = p(1, agent_id, t);
-            y_current = p(2, agent_id, t);
+            x_current = X(1, agent_id, t);
+            y_current = X(2, agent_id, t);
             % Determine if it's time to add a new dot
             if mod(t, trail_interval/t_step) == 0
                 % Create initial trail dots (if needed)
@@ -118,8 +118,8 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
             uistack(trail_dots{agent_id}, 'bottom')
         end
         for agent_id = 1:N_a    % This for loop is required to always plot the repulsion regions under the agents
-            x_current = p(1, agent_id, t);
-            y_current = p(2, agent_id, t);
+            x_current = X(1, agent_id, t);
+            y_current = X(2, agent_id, t);
             % Update or create the actual agent circle
             if circle_handles_rep(agent_id) == 0
                 th = 0:pi/50:2*pi; % Angles for creating the circle shape
@@ -136,8 +136,8 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
             end
         end
         for agent_id = 1:N_a    % This for loop is required to always plot the agents on top of the trajectory
-            x_current = p(1, agent_id, t);
-            y_current = p(2, agent_id, t);
+            x_current = X(1, agent_id, t);
+            y_current = X(2, agent_id, t);
             % Update or create the actual agent circle
             if circle_handles(agent_id) == 0
                 th = 0:pi/50:2*pi; % Angles for creating the circle shape
@@ -158,8 +158,8 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
             end
         end
         for agent_id = 1:N_a    % This for loop is required to always plot the goal positions on top
-            x_current = p_nom(1, agent_id, t);
-            y_current = p_nom(2, agent_id, t);
+            x_current = X_nom(1, agent_id, t);
+            y_current = X_nom(2, agent_id, t);
 
             % Update or create the nominal agent circle
             if circle_handles_nom(agent_id) == 0
@@ -185,12 +185,12 @@ function plot_real_time_trajectories(p, t_step, N_a, update_interval, xlim_value
                         overlap_marker(i,j) = 0;
                     end
 
-                    dx = p(1, i, t) - p(1, j, t);
-                    dy = p(2, i, t) - p(2, j, t);
+                    dx = X(1, i, t) - X(1, j, t);
+                    dy = X(2, i, t) - X(2, j, t);
                     distance = sqrt(dx^2 + dy^2);
                     if distance < 2*r_a 
-                        overlap_center_x = (p(1, i, t) + p(1, j, t))/2; 
-                        overlap_center_y = (p(2, i, t) + p(2, j, t))/2; 
+                        overlap_center_x = (X(1, i, t) + X(1, j, t))/2; 
+                        overlap_center_y = (X(2, i, t) + X(2, j, t))/2; 
 
                         % Create new overlap marker (to show the collision)
                         overlap_marker(i,j) = plot(overlap_center_x, overlap_center_y, '*', ...

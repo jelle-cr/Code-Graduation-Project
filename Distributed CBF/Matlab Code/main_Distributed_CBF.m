@@ -8,7 +8,7 @@ global u_save u_nom_save
 % Quadcopter parameters
 dimensions = 2;          % Number of axis (x,y,z)
 states = 2*dimensions;   % Number of states
-N_a = 6;                 % Number of agents
+N_a = 2;                 % Number of agents
 m = 0.01;                % Mass
 d = 0.1;                 % Damping coefficient
 r_a = 0.05;              % Radius of agent
@@ -16,10 +16,11 @@ u_max = 1;               % Maximum control force
 
 % Initial positions
 agent_spacing = 0.5;     % Spacing of formation circle agents (0.3 or 0.5 works well)
-p0 = Functions.generate_circular_initial_positions(N_a, r_a, agent_spacing);
+X_0 = Functions.generate_circular_initial_positions(N_a, r_a, agent_spacing);
 if states == 2*dimensions   % Add initial velocities to the states
-    p0 = [p0; zeros(dimensions, N_a)];
+    X_0 = [X_0; zeros(dimensions, N_a)];
 end
+% X_0 = [-0.4, 0.4; 0 0; 0 0; 0 0];
 
 % Nominal trajectories
 use_V_ref = false;       % Determines whether or not to use reference velocity in CLF nominal control calculation
@@ -51,35 +52,37 @@ D = l1^2-4*l0
 roots = -l1 + sqrt(D)   % Check if roots are negative
 pause(0.5)
 % Calculate mu based on the assigned agent weights, higher weight allows agent to stay closer to reference position
-agent_responsibility_weights = ones(N_a,1); % Value between 0 and 1, the ratio for each agent determines the value of mu
+agent_responsibility_weights = [0.5; 0.5].*ones(N_a,1); % Value between 0 and 1, the ratio for each agent determines the value of mu
 mu = Functions.calculate_agent_mu(N_a, agent_responsibility_weights);
 
 % CLF parameters for nominal control
-l2 = 50;
-l3 = 50;
-lambda = 50;
+l2 = 5;
+l3 = 5;
+lambda = 5;
 
-save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'p0', 'barrierFunctionRadiusMultiplier', 'barrierFunctionMaxDistance', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
+save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'X_0', 'barrierFunctionRadiusMultiplier', 'barrierFunctionMaxDistance', 'l0', 'l1', 'mu', 'l2', 'l3', 'lambda');
 
 % Time vector
-t_end = 0.5;
+t_end = 1;
 t_step = 0.01;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
 
-[p] = reshape(Functions.ode4(@Functions.odefcn, t_span, reshape(p0, [], 1)).', height(p0), N_a, num_steps);   % p is of size 4 by N_a by t
+[X] = reshape(Functions.ode4(@Functions.odefcn, t_span, reshape(X_0, [], 1)).', height(X_0), N_a, num_steps);   % p is of size 4 by N_a by t
 
-maxVelocity = max(max(max(p(3:4,:,:))))
+maxVelocity = max(max(max(X(3:4,:,:))))
 
 u_nom_save = reshape(u_nom_save, dimensions, N_a, length(u_nom_save));
 u_save = reshape(u_save, dimensions, N_a, length(u_save));
 
-p_nom = zeros(states,N_a,num_steps);
+X_nom = zeros(states,N_a,num_steps);
 u_nom = zeros(dimensions,N_a,num_steps);
 u = zeros(dimensions,N_a,num_steps);
 for t_index = 1:num_steps
     t = (t_index-1)*t_step;
-    p_nom(:,:,t_index) = Functions.calculate_nominal_trajectories(t);
+    X_nom(:,:,t_index) = Functions.calculate_nominal_trajectories(t);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Remove
+    % X_nom(:,:,t_index) = [0.4 -0.4; 0 0; 0 0; 0 0];
     u_nom(:,:,t_index) = u_nom_save(:,:,1+(t_index-1)*4);
     u(:,:,t_index) = u_save(:,:,1+(t_index-1)*4);
 end
@@ -88,7 +91,7 @@ end
 err = 0;
 for t = 1:num_steps
     for i = 1:N_a
-        diff = squeeze(p_nom(1:2,i,t))-squeeze(p(1:2,i,t)); 
+        diff = squeeze(X_nom(1:2,i,t))-squeeze(X(1:2,i,t)); 
         err = err + norm(diff);
     end
 end
@@ -97,7 +100,7 @@ avg_pos_err = err/(num_steps*N_a)
 %% Plot results
 close all;
 update_interval = 1;     % How many time steps to skip before updating the plot
-axlimit = max(abs(min(min(min(p(1:2,:,:))))), max(max(max(p(1:2,:,:)))))+r_a;  % Find abs max position value, add r_a to always be within frame        
+axlimit = max(abs(min(min(min(X(1:2,:,:))))), max(max(max(X(1:2,:,:)))))+r_a;  % Find abs max position value, add r_a to always be within frame        
 xlimits = 1.2*[-axlimit axlimit];
 ylimits = xlimits; 
 fontsize = 18;
@@ -106,5 +109,5 @@ linewidth = 2;
 t_stop = t_span(end);    % Determines when to freeze the updating plot
 pauseplotting = false;   % Pauses the plot to set up recording software
 
-Functions.plot_real_time_trajectories(p, t_step, N_a, update_interval, xlimits, ylimits, fontsize, r_a, barrierFunctionMaxDistance, linewidth, p_nom(1:2,:,:), u_nom, u, num_steps, t_span, t_stop, pauseplotting); 
+Functions.plot_real_time_trajectories(X, t_step, N_a, update_interval, xlimits, ylimits, fontsize, r_a, barrierFunctionMaxDistance, linewidth, X_nom(1:2,:,:), u_nom, u, num_steps, t_span, t_stop, pauseplotting); 
 
