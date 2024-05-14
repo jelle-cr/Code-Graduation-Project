@@ -27,35 +27,38 @@ function dXdt = odefcn(t,X)
         F_rep = zeros(dimensions, 1);
         for j = 1:N_a
             if i ~= j
-                xi_ij = X(1:dimensions,i)-X(1:dimensions,j);
+                p_ij = X(1:dimensions,i)-X(1:dimensions,j);
                 v_ij = X(dimensions+1:2*dimensions,i) - X(dimensions+1:2*dimensions,j);
-                n_ij = -xi_ij/norm(xi_ij);
+                n_ij = -p_ij/norm(p_ij);
                 v_r_ij = v_ij.'*n_ij;
-                rho = norm(xi_ij) - 2*r_a;
+                rho = norm(p_ij) - 2*r_a;
                 rho_m = v_r_ij^2/(2*a_max);
                 vn_perp = v_ij - v_r_ij*n_ij;
 
                 if rho < 0              % Agents have collided
                     warning(['Collision between drone ' num2str(i) ' and ' num2str(j) ' at time ' num2str(t)]);
-                    rho = norm(xi_ij);  % Attempt to steer away from the center of the other agent
+                    rho = norm(p_ij);  % Attempt to steer away from the center of the other agent
                 end
 
                 % if (rho-rho_m >= rho_0 || v_r_ij <= 0)
                 %     F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(X(1:2,i)-X(1:2,j))/norm(X(1:2,i)-X(1:2,j));
                 % end
-                % if (rho-rho_m < rho_0 && v_r_ij > 0)
-                %     % F_rep1 = -K_rep*(1/rho-1/rho_0)*(n_ij + 1/2*rho_m*(1/xi_ij-n_ij/norm(xi_ij)))/(rho-rho_m)^2;
-                %     % F_rep2 = -K_rep*(1/rho-1/rho_0)*(1/a_max*v_r_ij*n_ij)/(rho-rho_m)^2;
-                %     % size1 = size(F_rep1)
-                %     % size2 = size(F_rep2)
-                %     F_rep1 = -K_rep/(rho-rho_m)^2*(1+v_r_ij/a_max)*n_ij;
-                %     F_rep2 = K_rep*v_r_ij/(rho*a_max*(rho-rho_m)^2)*vn_perp;
-                %     F_rep = F_rep - F_rep1 - F_rep2;
-                % end
-                if rho < rho_0
-                    % U_rep = U_rep + 1/2*K_rep*(1/rho-1/rho_0)^2;
-                    F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(-n_ij);
+                if (rho-rho_m < rho_0 && v_r_ij > 0)
+                    F_rep = -K_rep/(rho-rho_m)^2*(1/(rho-rho_m)-1/rho_0)*((v_r_ij/a_max+2*rho_m/norm(p_ij)-1)*n_ij-v_r_ij/(a_max*norm(p_ij))*v_ij);
+                    % size1 = size(F_rep1)
+                    % size2 = size(F_rep2)
+                    % F_rep1 = -K_rep/(rho-rho_m)^2*(1+v_r_ij/a_max)*n_ij;
+                    % F_rep2 = K_rep*v_r_ij/(rho*a_max*(rho-rho_m)^2)*vn_perp;
+                    % F_rep = F_rep - F_rep1 - F_rep2;
                 end
+                if (rho < rho_m && v_r_ij > 0)
+                    F_rep = 0;
+                    warning('Crash Imminent%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+                end
+                % if rho < rho_0
+                %     % U_rep = U_rep + 1/2*K_rep*(1/rho-1/rho_0)^2;
+                %     F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(-n_ij);
+                % end
             end
         end
         u_att(:,i) = -min(max(F_att, -u_max), u_max);   % Limit attractive and repulsive forces

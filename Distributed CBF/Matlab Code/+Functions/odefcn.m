@@ -53,21 +53,21 @@ function dXdt = odefcn(t,X)
         b = [];
         for j = 1:N_a
             if i ~= j
-                xi_ij = X(1 : dimensions, i) - X(1 : dimensions, j);
-                if (norm(xi_ij)-2*r_a) < barrierFunctionMaxDistance
+                p_ij = X(1 : dimensions, i) - X(1 : dimensions, j);
+                if (norm(p_ij)-2*r_a) < barrierFunctionMaxDistance
                     v_ij = X(dimensions+1 : 2*dimensions, i) - X(dimensions+1 : 2*dimensions, j);
-                    h = xi_ij.'*xi_ij - (2*barrierFunctionRadiusMultiplier*r_a)^2;
-                    a_ij = 2*v_ij.'*v_ij + 2*(l1-d/m)*xi_ij.'*v_ij + l0*h;
-                    b_ij = 2*1/m*xi_ij.';
+                    h = p_ij.'*p_ij - (2*barrierFunctionRadiusMultiplier*r_a)^2;
+                    a_ij = 2*v_ij.'*v_ij + 2*(l1-d/m)*p_ij.'*v_ij + l0*h;
+                    b_ij = 2*1/m*p_ij.';
 
                     A = [A; -b_ij];
                     b = [b; mu(i,j)*a_ij];
 
                     % i = i
                     % j = j
-                    % xi_ij = xi_ij
+                    % p_ij = p_ij
                 end
-                if norm(xi_ij) < 2*r_a
+                if norm(p_ij) < 2*r_a
                     warning(['Collision between drone ' num2str(i) ' and ' num2str(j) ' at time ' num2str(t)]);
                 end
             end
