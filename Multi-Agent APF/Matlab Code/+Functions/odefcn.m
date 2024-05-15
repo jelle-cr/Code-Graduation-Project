@@ -44,7 +44,7 @@ function dXdt = odefcn(t,X)
                 %     F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(X(1:2,i)-X(1:2,j))/norm(X(1:2,i)-X(1:2,j));
                 % end
                 if (rho-rho_m < rho_0 && v_r_ij > 0)
-                    F_rep = -K_rep/(rho-rho_m)^2*(1/(rho-rho_m)-1/rho_0)*((v_r_ij/a_max+2*rho_m/norm(p_ij)-1)*n_ij-v_r_ij/(a_max*norm(p_ij))*v_ij);
+                    F_rep = F_rep-K_rep/(rho-rho_m)^2*(1/(rho-rho_m)-1/rho_0)*((-v_r_ij/a_max-2*rho_m/norm(p_ij)-1)*n_ij+v_r_ij/(a_max*norm(p_ij))*v_ij);
                     % size1 = size(F_rep1)
                     % size2 = size(F_rep2)
                     % F_rep1 = -K_rep/(rho-rho_m)^2*(1+v_r_ij/a_max)*n_ij;
@@ -52,7 +52,7 @@ function dXdt = odefcn(t,X)
                     % F_rep = F_rep - F_rep1 - F_rep2;
                 end
                 if (rho < rho_m && v_r_ij > 0)
-                    F_rep = 0;
+                    F_rep = F_rep;
                     warning('Crash Imminent%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
                 end
                 % if rho < rho_0

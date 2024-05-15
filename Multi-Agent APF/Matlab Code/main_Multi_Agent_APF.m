@@ -7,11 +7,11 @@ global u_att_save u_rep_save
 % Quadcopter parameters
 dimensions = 2;          % Number of axis (x,y,z)
 states = 2*dimensions;   % Number of states
-N_a = 5;                 % Number of agents
+N_a = 6;                 % Number of agents
 m = 0.01;                % Mass [kg]
 d = 0.1;                 % Damping coefficient [Ns/m]
 r_a = 0.05;              % Radius of agent [m]
-u_max = 100;               % Maximum control force [N]
+u_max = 10;               % Maximum control force [N]
 a_max = 1/m*norm([u_max; u_max]);   % Maximum acceleration [m/s^2]
 
 % Initial positions
@@ -28,8 +28,8 @@ origin_max = 0.1;
 origin_min = -origin_max;
 A_min = 0.1;
 A_max = 0.2;
-f_min = 10;
-f_max = 20;
+f_min = 40;
+f_max = 50;
 phi_max = pi;
 phi_min = -pi;
 origin_rand = (origin_max-origin_min)*rand(2,N_a)+origin_min;
@@ -45,7 +45,7 @@ save('Data/TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_ra
 % APF parameters
 K_att_p = 3;
 K_att_v = 0.25;
-K_rep = 0.00001;
+K_rep = 0.0001;
 rho_0 = 2*r_a;
 
 save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'a_max', 'X_0', 'K_att_p', 'K_att_v', 'K_rep', 'rho_0');
