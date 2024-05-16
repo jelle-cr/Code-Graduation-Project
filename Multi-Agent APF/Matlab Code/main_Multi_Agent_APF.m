@@ -4,10 +4,12 @@ clc
 
 global u_att_save u_rep_save
 
+overrideNominalTrajectory = true;
+
 % Quadcopter parameters
 dimensions = 2;          % Number of axis (x,y,z)
 states = 2*dimensions;   % Number of states
-N_a = 6;                 % Number of agents
+N_a = 2;                 % Number of agents
 m = 0.01;                % Mass [kg]
 d = 0.1;                 % Damping coefficient [Ns/m]
 r_a = 0.05;              % Radius of agent [m]
@@ -20,7 +22,9 @@ X_0 = Functions.generate_circular_initial_positions(N_a, r_a, agent_spacing);
 if states == 2*dimensions   % Add initial velocities to the states
     X_0 = [X_0; zeros(dimensions, N_a)];
 end
-% X_0 = [-0.4 0.4; 0 0; 0 0; 0 0];
+if overrideNominalTrajectory
+    X_0 = [-0.4 0.4; 0 0; 0 0; 0 0];
+end
 
 % Nominal trajectories
 use_V_ref = true;       % Determines whether or not to use reference velocity in CLF nominal control calculation
@@ -28,8 +32,8 @@ origin_max = 0.1;
 origin_min = -origin_max;
 A_min = 0.1;
 A_max = 0.2;
-f_min = 40;
-f_max = 50;
+f_min = 10;
+f_max = 20;
 phi_max = pi;
 phi_min = -pi;
 origin_rand = (origin_max-origin_min)*rand(2,N_a)+origin_min;
@@ -43,16 +47,16 @@ save('Data/TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_ra
 % save('Data/FixedTrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
 
 % APF parameters
-K_att_p = 3;
+K_att_p = 4;
 K_att_v = 0.25;
 K_rep = 0.0001;
 rho_0 = 2*r_a;
 
-save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'a_max', 'X_0', 'K_att_p', 'K_att_v', 'K_rep', 'rho_0');
+save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'a_max', 'X_0', 'K_att_p', 'K_att_v', 'K_rep', 'rho_0', 'overrideNominalTrajectory');
 
 % Time vector
-t_end = 0.5;
-t_step = 0.01;
+t_end = 0.25;
+t_step = 0.001;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
 
@@ -68,8 +72,7 @@ u_att = zeros(dimensions,N_a,num_steps);
 u_rep = zeros(dimensions,N_a,num_steps);
 for t_index = 1:num_steps
     t = (t_index-1)*t_step;
-    X_nom(:,:,t_index) = Functions.calculate_nominal_trajectories(t);
-    % X_nom(:,:,t_index) = [0.4 -0.4; 0 0; 0 0; 0 0];
+    X_nom(:,:,t_index) = Functions.calculate_nominal_trajectories(t,overrideNominalTrajectory,X_0);
     u_att(:,:,t_index) = u_att_save(:,:,1+(t_index-1)*4);
     u_rep(:,:,t_index) = u_rep_save(:,:,1+(t_index-1)*4);
 end

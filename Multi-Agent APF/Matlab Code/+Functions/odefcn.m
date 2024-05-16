@@ -12,7 +12,7 @@ function dXdt = odefcn(t,X)
 
     %% CLF nominal controller
     % Nominal trajectories
-    X_nom = Functions.calculate_nominal_trajectories(t);
+    X_nom = Functions.calculate_nominal_trajectories(t,overrideNominalTrajectory,X_0);
     % X_nom = [0.4 -0.4; 0 0; 0 0; 0 0];
     u = zeros(dimensions, N_a);
     
@@ -25,6 +25,8 @@ function dXdt = odefcn(t,X)
 
         U_rep = zeros(dimensions, 1);
         F_rep = zeros(dimensions, 1);
+
+        a_max = 1/m*norm([u_max; u_max]) + d/m*X(1,i);%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         for j = 1:N_a
             if i ~= j
                 p_ij = X(1:dimensions,i)-X(1:dimensions,j);
@@ -32,7 +34,7 @@ function dXdt = odefcn(t,X)
                 n_ij = -p_ij/norm(p_ij);
                 v_r_ij = v_ij.'*n_ij;
                 rho = norm(p_ij) - 2*r_a;
-                rho_m = v_r_ij^2/(2*a_max);
+                rho_m = 0.5*v_r_ij^2/(2*a_max);%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 vn_perp = v_ij - v_r_ij*n_ij;
 
                 if rho < 0              % Agents have collided
@@ -49,12 +51,12 @@ function dXdt = odefcn(t,X)
                     % size2 = size(F_rep2)
                     % F_rep1 = -K_rep/(rho-rho_m)^2*(1+v_r_ij/a_max)*n_ij;
                     % F_rep2 = K_rep*v_r_ij/(rho*a_max*(rho-rho_m)^2)*vn_perp;
-                    % F_rep = F_rep - F_rep1 - F_rep2;
+                    % F_rep = F_rep + F_rep1 + F_rep2;
                 end
-                if (rho < rho_m && v_r_ij > 0)
-                    F_rep = F_rep;
-                    warning('Crash Imminent%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-                end
+                % if (rho < rho_m && v_r_ij > 0)
+                %     F_rep = F_rep;
+                %     warning('Crash Imminent%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+                % end
                 % if rho < rho_0
                 %     % U_rep = U_rep + 1/2*K_rep*(1/rho-1/rho_0)^2;
                 %     F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(-n_ij);

@@ -1,4 +1,4 @@
-function X_nom = calculate_nominal_trajectories(t)
+function X_nom = calculate_nominal_trajectories(t, overrideNominalTrajectory, X_0)
     load('./Data/TrajectoryParameters.mat');
 
     % Reference position
@@ -13,4 +13,8 @@ function X_nom = calculate_nominal_trajectories(t)
 
     % Reference states
     X_nom = [p_ref; v_ref];
+
+    if overrideNominalTrajectory
+        X_nom = -X_0;
+    end
 end
