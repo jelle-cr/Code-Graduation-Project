@@ -1,8 +1,9 @@
 close all
 clear all
 clc
+warning on; 
 
-global u_att_save u_rep_save
+global u_att_save u_rep_save u_save
 
 overrideNominalTrajectory = true;
 
@@ -13,8 +14,8 @@ N_a = 2;                 % Number of agents
 m = 0.01;                % Mass [kg]
 d = 0.1;                 % Damping coefficient [Ns/m]
 r_a = 0.05;              % Radius of agent [m]
-u_max = 10;               % Maximum control force [N]
-a_max = 1/m*norm([u_max; u_max]);   % Maximum acceleration [m/s^2]
+u_max = 1;               % Maximum control force [N]
+a_max = 2/m*u_max;%1/m*norm([u_max; u_max]);   % Maximum acceleration [m/s^2]
 
 % Initial positions
 agent_spacing = 0.5;     % Spacing of formation circle agents (0.3 or 0.5 works well)
@@ -47,15 +48,15 @@ save('Data/TrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_ra
 % save('Data/FixedTrajectoryParameters.mat', 'origin_rand', 'A_rand', 'f_rand', 'phi_rand', 'sign_rand', 'use_V_ref', 'N_a');
 
 % APF parameters
-K_att_p = 4;
+K_att_p = 5;
 K_att_v = 0.25;
-K_rep = 0.0001;
+K_rep = 0.00001;
 rho_0 = 2*r_a;
 
 save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'a_max', 'X_0', 'K_att_p', 'K_att_v', 'K_rep', 'rho_0', 'overrideNominalTrajectory');
 
 % Time vector
-t_end = 0.25;
+t_end = 0.2;
 t_step = 0.001;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
@@ -66,15 +67,18 @@ maxVelocity = max(max(max(X(3:4,:,:))))
 
 u_att_save = reshape(u_att_save, dimensions, N_a, length(u_att_save));
 u_rep_save = reshape(u_rep_save, dimensions, N_a, length(u_rep_save));
+u_save = reshape(u_save, dimensions, N_a, length(u_save));
 
 X_nom = zeros(states,N_a,num_steps);
 u_att = zeros(dimensions,N_a,num_steps);
 u_rep = zeros(dimensions,N_a,num_steps);
+u = zeros(dimensions,N_a,num_steps);
 for t_index = 1:num_steps
     t = (t_index-1)*t_step;
     X_nom(:,:,t_index) = Functions.calculate_nominal_trajectories(t,overrideNominalTrajectory,X_0);
     u_att(:,:,t_index) = u_att_save(:,:,1+(t_index-1)*4);
     u_rep(:,:,t_index) = u_rep_save(:,:,1+(t_index-1)*4);
+    u(:,:,t_index) = u_save(:,:,1+(t_index-1)*4);
 end
 
 %% Average position error
@@ -86,6 +90,8 @@ for t = 1:num_steps
     end
 end
 avg_pos_err = err/(num_steps*N_a)
+dist = abs(X(1,1,:) - X(1,2,:))-2*r_a;
+minDist = min(min(min(dist)))
 
 %% Plot results
 close all;
@@ -99,4 +105,4 @@ linewidth = 2;
 t_stop = t_span(end);    % Determines when to freeze the updating plot
 pauseplotting = false;   % Pauses the plot to set up recording software
 
-Functions.plot_real_time_trajectories(X(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, r_a, rho_0, linewidth, X_nom(1:2,:,:), u_att, u_rep, num_steps, t_span, t_stop, pauseplotting); 
+Functions.plot_real_time_trajectories(X(1:states,:,:), t_step, N_a, update_interval, xlimits, ylimits, fontsize, r_a, rho_0, linewidth, X_nom(1:2,:,:), u_att, u_rep, u, num_steps, t_span, t_stop, pauseplotting); 

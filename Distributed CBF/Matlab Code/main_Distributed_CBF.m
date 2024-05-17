@@ -1,6 +1,7 @@
 close all
 clear all
 clc
+warning on;
 
 % Objective: Trajectory tracking and Collision Avoidance with CLF+CBF
 global u_save u_nom_save

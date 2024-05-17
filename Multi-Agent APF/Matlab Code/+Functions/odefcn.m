@@ -1,6 +1,6 @@
 %% Second order (added nominal trajectory)
 function dXdt = odefcn(t,X)      
-    global u_att_save u_rep_save
+    global u_att_save u_rep_save u_save
 
     load('./Data/Parameters.mat');
 
@@ -25,8 +25,8 @@ function dXdt = odefcn(t,X)
 
         U_rep = zeros(dimensions, 1);
         F_rep = zeros(dimensions, 1);
-
-        a_max = 1/m*norm([u_max; u_max]) + d/m*X(1,i);%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % a_max = 1/m*norm([u_max; u_max]) + d/m*abs(X(3,i));%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        a_max = 2/m*u_max + d/m*abs(X(3,1)) + d/m*abs(X(3,2));%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         for j = 1:N_a
             if i ~= j
                 p_ij = X(1:dimensions,i)-X(1:dimensions,j);
@@ -34,42 +34,38 @@ function dXdt = odefcn(t,X)
                 n_ij = -p_ij/norm(p_ij);
                 v_r_ij = v_ij.'*n_ij;
                 rho = norm(p_ij) - 2*r_a;
-                rho_m = 0.5*v_r_ij^2/(2*a_max);%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                rho_m = 1*v_r_ij^2/(2*a_max)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 vn_perp = v_ij - v_r_ij*n_ij;
 
-                if rho < 0              % Agents have collided
-                    warning(['Collision between drone ' num2str(i) ' and ' num2str(j) ' at time ' num2str(t)]);
-                    rho = norm(p_ij);  % Attempt to steer away from the center of the other agent
+                if rho < 0             % Agents have collided
+                    warning(['Collision between drone ' num2str(i) ' and ' num2str(j) ' at time ' num2str(t)])
+                    % rho = norm(p_ij);  % Attempt to steer away from the center of the other agent
                 end
 
-                % if (rho-rho_m >= rho_0 || v_r_ij <= 0)
-                %     F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(X(1:2,i)-X(1:2,j))/norm(X(1:2,i)-X(1:2,j));
-                % end
                 if (rho-rho_m < rho_0 && v_r_ij > 0)
                     F_rep = F_rep-K_rep/(rho-rho_m)^2*(1/(rho-rho_m)-1/rho_0)*((-v_r_ij/a_max-2*rho_m/norm(p_ij)-1)*n_ij+v_r_ij/(a_max*norm(p_ij))*v_ij);
-                    % size1 = size(F_rep1)
-                    % size2 = size(F_rep2)
-                    % F_rep1 = -K_rep/(rho-rho_m)^2*(1+v_r_ij/a_max)*n_ij;
-                    % F_rep2 = K_rep*v_r_ij/(rho*a_max*(rho-rho_m)^2)*vn_perp;
-                    % F_rep = F_rep + F_rep1 + F_rep2;
                 end
-                % if (rho < rho_m && v_r_ij > 0)
-                %     F_rep = F_rep;
-                %     warning('Crash Imminent%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-                % end
+                if (rho < rho_m && v_r_ij > 0)
+                    % F_rep = F_rep;
+                    F_rep = F_rep + K_rep/rho^2*(1/rho-1/rho_0)*(-n_ij);
+                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                    warning('Crash Imminent%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+                end
                 % if rho < rho_0
                 %     % U_rep = U_rep + 1/2*K_rep*(1/rho-1/rho_0)^2;
                 %     F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*(-n_ij);
                 % end
             end
         end
-        u_att(:,i) = -min(max(F_att, -u_max), u_max);   % Limit attractive and repulsive forces
-        u_rep(:,i) = -min(max(F_rep, -u_max), u_max);   % Note that u can still be > u_max due to the sum
-        u(:,i) = u_att(:,i) + u_rep(:,i);
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        u_att(:,i) = -F_att; %-min(max(F_att, -u_max), u_max);   % Limit attractive and repulsive forces
+        u_rep(:,i) = min(max(F_rep, -u_max), u_max);   % Note that u can still be > u_max due to the sum
+        u(:,i) = -min(max(F_att + F_rep, -u_max), u_max);
     end    
 
     u_att_save=[u_att_save, reshape(u_att, dimensions*N_a, 1)];
     u_rep_save=[u_rep_save, reshape(u_rep, dimensions*N_a, 1)];
+    u_save=[u_save, reshape(u, dimensions*N_a, 1)];
 
     %% ODE
     % Actual trajectory

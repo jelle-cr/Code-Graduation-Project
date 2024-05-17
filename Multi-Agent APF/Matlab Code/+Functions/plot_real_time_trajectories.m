@@ -1,4 +1,4 @@
-function plot_real_time_trajectories(X, t_step, N_a, update_interval, xlim_values, ylim_values, fontsize, r_a, rho_0, linewidth, X_nom, u_att, u_rep, num_steps, t_span, t_stop, pauseplotting)
+function plot_real_time_trajectories(X, t_step, N_a, update_interval, xlim_values, ylim_values, fontsize, r_a, rho_0, linewidth, X_nom, u_att, u_rep, u, num_steps, t_span, t_stop, pauseplotting)
     % PLOT_REAL_TIME_TRAJECTORIES Plots multiple trajectories in real time
     %   X: 3D matrix containing trajectories (x, y, time)
     %   N_a: Number of agents
@@ -50,9 +50,12 @@ function plot_real_time_trajectories(X, t_step, N_a, update_interval, xlim_value
     grid on; hold on;
     for agent_id = 1:N_a
         for t = 1:num_steps
-            norm_u_att(agent_id, t) = norm(squeeze(u_att(:,agent_id,t))); % Calculate norm at each time step
-        end
-        plot(t_span, norm_u_att(agent_id, :),'LineWidth',1,'HandleVisibility', 'off');
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % norm_u_att(agent_id, t) = norm(squeeze(u_att(:,agent_id,t))); % Calculate norm at each time step
+            norm_u_att(agent_id, t) = squeeze(u_att(1,agent_id,t)); % Calculate norm at each time step
+       end
+        % plot(t_span, norm_u_att(agent_id, :),'LineWidth',1,'HandleVisibility', 'off');
+        plot(t_span,squeeze(X(3,:,:)));%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     end
     xlim([0 t_span(end)]);
     ax = gca;
@@ -69,7 +72,9 @@ function plot_real_time_trajectories(X, t_step, N_a, update_interval, xlim_value
         for t = 1:num_steps
             norm_u_rep(agent_id, t) = norm(squeeze(u_rep(:,agent_id,t))); % Calculate norm at each time step
         end
-        plot(t_span, norm_u_rep(agent_id, :),'LineWidth',1,'HandleVisibility', 'off');
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % plot(t_span, norm_u_rep(agent_id, :),'LineWidth',1,'HandleVisibility', 'off');
+        plot(t_span, squeeze(u_rep(1,agent_id,:)),'LineWidth',1,'HandleVisibility', 'off');
     end
     xlim([0 t_span(end)]);
     ax = gca;
@@ -87,7 +92,10 @@ function plot_real_time_trajectories(X, t_step, N_a, update_interval, xlim_value
         for t = 1:num_steps
             pos_err(agent_id, t) = norm(err(:, t)); % Calculate norm at each time step
         end
-        plot(t_span, pos_err(agent_id, :),'LineWidth',1,'DisplayName', sprintf('Agent %d', agent_id));
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % plot(t_span, pos_err(agent_id, :),'LineWidth',1,'DisplayName', sprintf('Agent %d', agent_id));
+        plot(t_span, squeeze(u(1,agent_id,:)),'LineWidth',1,'DisplayName', sprintf('Agent %d', agent_id));
+        % plot(t_span, squeeze(u(1,2,:)),'LineWidth',1,'DisplayName', sprintf('Agent %d', agent_id));
     end
     xlim([0 t_span(end)]);
     ax = gca;
