@@ -50,12 +50,13 @@ function plot_real_time_trajectories(X, t_step, N_a, update_interval, xlim_value
     grid on; hold on;
     for agent_id = 1:N_a
         for t = 1:num_steps
-            norm_u_att(agent_id, t) = norm(squeeze(u_att(:,agent_id,t))); % Calculate norm at each time step
-       end
+            % norm_u_att(agent_id, t) = norm(squeeze(u_att(:,agent_id,t))); % Calculate norm at each time step
+            norm_u_att(agent_id, t) = squeeze(u_att(1,agent_id,t)); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        end
         plot(t_span, norm_u_att(agent_id, :),'LineWidth',1,'HandleVisibility', 'off');
     end
     xlim([0 t_span(end)]);
-    ylim([-1, 1])%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    ylim([-1.1, 1.1])%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     ax = gca;
     set(ax, 'FontSize', fontsize-5);
     % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
@@ -68,7 +69,8 @@ function plot_real_time_trajectories(X, t_step, N_a, update_interval, xlim_value
     grid on; hold on;
     for agent_id = 1:N_a
         for t = 1:num_steps
-            norm_u_rep(agent_id, t) = norm(squeeze(u_rep(:,agent_id,t))); % Calculate norm at each time step
+            % norm_u_rep(agent_id, t) = norm(squeeze(u_rep(:,agent_id,t))); % Calculate norm at each time step
+            norm_u_rep(agent_id, t) = squeeze(u_rep(1,agent_id,t));%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         end
         plot(t_span, norm_u_rep(agent_id, :),'LineWidth',1,'HandleVisibility', 'off');
     end

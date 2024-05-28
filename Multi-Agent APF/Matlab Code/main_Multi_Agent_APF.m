@@ -63,7 +63,7 @@ rho_0 = 2*r_a;
 save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'a_max', 'X_0', 'K_att_p', 'K_att_v', 'K_rep', 'rho_0', 'overrideNominalTrajectory');
 
 % Time vector
-t_end = 0.2;
+t_end = 0.8;
 t_step = 0.001;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
@@ -75,6 +75,21 @@ maxVelocity = max(max(max(X(3:4,:,:))))
 u_att_save = reshape(u_att_save, dimensions, N_a, length(u_att_save));
 u_rep_save = reshape(u_rep_save, dimensions, N_a, length(u_rep_save));
 u_save = reshape(u_save, dimensions, N_a, length(u_save));
+
+figure
+subplot(3,1,1)
+plot(squeeze(u_att_save(1,1,:)))
+ylim([-1.1, 1.1])
+% xlim([700 780])
+subplot(3,1,2)
+plot(squeeze(u_rep_save(1,1,:)))
+ylim([-1.1, 1.1])
+% xlim([700 780])
+subplot(3,1,3)
+plot(squeeze(u_save(1,1,:)))
+ylim([-1.1, 1.1])
+% xlim([700 780])
+pause(100)
 
 X_nom = zeros(states,N_a,num_steps);
 u_att = zeros(dimensions,N_a,num_steps);
@@ -108,6 +123,24 @@ for t_index = 2:num_steps
     u_att(:,:,t_index) = 0.25*temp2;
     u_rep(:,:,t_index) = 0.25*temp3;
 end
+
+% figure
+% subplot(3,1,1)
+% plot(t_span, squeeze(u_att(1,1,:)))
+% % ylim([-1.1, 1.1])
+% % xlim([750 780])
+% xlim([0 t_span(end)])
+% subplot(3,1,2)
+% plot(t_span, squeeze(u_rep(1,1,:)))
+% % ylim([-1.1, 1.1])
+% % xlim([750 780])
+% xlim([0 t_span(end)])
+% subplot(3,1,3)
+% plot(t_span, squeeze(u(1,1,:)))
+% % ylim([-1.1, 1.1])
+% % xlim([750 780])
+% xlim([0 t_span(end)])
+% pause(100)
 
 %% Average position error
 err = 0;

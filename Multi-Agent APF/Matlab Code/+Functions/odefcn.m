@@ -59,9 +59,10 @@ function dXdt = odefcn(t,X)
             end
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        u_att(:,i) = -F_att-F_rep;%min(max(F_att, -u_max), u_max);   % Limit attractive and repulsive forces
-        u_rep(:,i) = -F_rep;%min(max(F_rep, -u_max), u_max);   % Note that u can still be > u_max due to the sum
-        u(:,i) = -min(max(F_att + F_rep, -u_max), u_max);
+        F_tot = F_att+F_rep;
+        u_att(:,i) = -F_att;%min(max(F_tot, -u_max), u_max);%min(max(F_att, -u_max), u_max);   % Limit attractive and repulsive forces
+        u_rep(:,i) = -min(max(F_rep, -u_max), u_max);   % Note that u can still be > u_max due to the sum
+        u(:,i) = min(max(-F_tot, -u_max), u_max);
     end    
 
     u_att_save=[u_att_save, reshape(u_att, dimensions*N_a, 1)];
