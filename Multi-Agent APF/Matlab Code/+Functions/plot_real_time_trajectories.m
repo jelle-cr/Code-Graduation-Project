@@ -56,7 +56,6 @@ function plot_real_time_trajectories(X, t_step, N_a, update_interval, xlim_value
         plot(t_span, norm_u_att(agent_id, :),'LineWidth',1,'HandleVisibility', 'off');
     end
     xlim([0 t_span(end)]);
-    ylim([-1.1, 1.1])%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     ax = gca;
     set(ax, 'FontSize', fontsize-5);
     % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
