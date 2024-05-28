@@ -13,7 +13,6 @@ function dXdt = odefcn(t,X)
     %% CLF nominal controller
     % Nominal trajectories
     X_nom = Functions.calculate_nominal_trajectories(t,overrideNominalTrajectory,X_0);
-    % X_nom = [0.4 -0.4; 0 0; 0 0; 0 0];
     u = zeros(dimensions, N_a);
     
     u_att = zeros(dimensions,N_a);
@@ -35,7 +34,7 @@ function dXdt = odefcn(t,X)
                 n_ij = -p_ij/norm(p_ij);
                 v_r_ij = v_ij.'*n_ij;
                 rho = norm(p_ij) - 2*r_a;
-                rho_m = 1*v_r_ij^2/(2*a_max);%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                rho_m = 1*v_r_ij^2/(2*a_max);%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 vn_perp = v_ij - v_r_ij*n_ij;
 
                 if rho < 0             % Agents have collided
@@ -43,7 +42,7 @@ function dXdt = odefcn(t,X)
                     % rho = norm(p_ij);  % Attempt to steer away from the center of the other agent
                 end
 
-                if (rho-rho_m < rho_0 && v_r_ij > 0)
+                if (rho - rho_m < rho_0 && v_r_ij > 0)
                     F_rep = F_rep-K_rep/(rho-rho_m)^2*(1/(rho-rho_m)-1/rho_0)*((-v_r_ij/a_max-2*rho_m/norm(p_ij)-1)*n_ij+v_r_ij/(a_max*norm(p_ij))*v_ij);
                 end
                 if (rho < rho_m && v_r_ij > 0)
@@ -58,8 +57,12 @@ function dXdt = odefcn(t,X)
                 % end
             end
         end
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % i = i
+        % rho_rho_m = rho-rho_m
         F_tot = F_att+F_rep;
+        % u_tot = -F_tot
+        % u_att = -F_att
+        % u_rep = -F_rep
         u_att(:,i) = -F_att;%min(max(F_tot, -u_max), u_max);%min(max(F_att, -u_max), u_max);   % Limit attractive and repulsive forces
         u_rep(:,i) = -min(max(F_rep, -u_max), u_max);   % Note that u can still be > u_max due to the sum
         u(:,i) = min(max(-F_tot, -u_max), u_max);

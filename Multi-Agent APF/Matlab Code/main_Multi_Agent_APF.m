@@ -53,7 +53,6 @@ K_att_p = 5;
 K_att_v = 0.25;
 K_rep = 0.00001;
 rho_0 = 2*r_a;
-% rho_0 = 2;
 % if rho_0 < v_max^2/a_max
 %     rho_0 = v_max^2/a_max;
 %     warning('Automatically increased region of repulsion')
@@ -123,7 +122,7 @@ minDist = min(min(min(dist)))
 
 %% Plot results
 close all;
-update_interval = 1;     % How many time steps to skip before updating the plot
+update_interval = 10;     % How many time steps to skip before updating the plot
 axlimit = max(abs(min(min(min(X(1:2,:,:))))), max(max(max(X(1:2,:,:)))))+r_a;  % Find abs max position value, add r_a to always be within frame        
 xlimits = 1.2*[-axlimit axlimit];
 ylimits = xlimits; 
