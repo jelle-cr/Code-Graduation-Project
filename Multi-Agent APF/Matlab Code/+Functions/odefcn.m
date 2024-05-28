@@ -26,7 +26,8 @@ function dXdt = odefcn(t,X)
         U_rep = zeros(dimensions, 1);
         F_rep = zeros(dimensions, 1);
         % a_max = 1/m*norm([u_max; u_max]) + d/m*abs(X(3,i));%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        a_max = 2/m*u_max + d/m*abs(X(3,1)) + d/m*abs(X(3,2));%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % a_max = 1/m*u_max + d/m*abs(X(3,1)) + d/m*abs(X(3,2))%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
         for j = 1:N_a
             if i ~= j
                 p_ij = X(1:dimensions,i)-X(1:dimensions,j);
@@ -34,7 +35,7 @@ function dXdt = odefcn(t,X)
                 n_ij = -p_ij/norm(p_ij);
                 v_r_ij = v_ij.'*n_ij;
                 rho = norm(p_ij) - 2*r_a;
-                rho_m = 1*v_r_ij^2/(2*a_max)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                rho_m = 1*v_r_ij^2/(2*a_max);%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 vn_perp = v_ij - v_r_ij*n_ij;
 
                 if rho < 0             % Agents have collided
@@ -58,8 +59,8 @@ function dXdt = odefcn(t,X)
             end
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        u_att(:,i) = -F_att; %-min(max(F_att, -u_max), u_max);   % Limit attractive and repulsive forces
-        u_rep(:,i) = min(max(F_rep, -u_max), u_max);   % Note that u can still be > u_max due to the sum
+        u_att(:,i) = -F_att-F_rep;%min(max(F_att, -u_max), u_max);   % Limit attractive and repulsive forces
+        u_rep(:,i) = -F_rep;%min(max(F_rep, -u_max), u_max);   % Note that u can still be > u_max due to the sum
         u(:,i) = -min(max(F_att + F_rep, -u_max), u_max);
     end    
 

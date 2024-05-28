@@ -15,7 +15,8 @@ m = 0.01;                % Mass [kg]
 d = 0.1;                 % Damping coefficient [Ns/m]
 r_a = 0.05;              % Radius of agent [m]
 u_max = 1;               % Maximum control force [N]
-a_max = 2/m*u_max;%1/m*norm([u_max; u_max]);   % Maximum acceleration [m/s^2]
+v_max = sqrt(2)/d*u_max; % Maximum velocity [m/s] (Absolute max in any direction)
+a_max = 1/m*u_max;       % Maximum acceleration [m/s^2] (Single axial direction max)
 
 % Initial positions
 agent_spacing = 0.5;     % Spacing of formation circle agents (0.3 or 0.5 works well)
@@ -52,6 +53,12 @@ K_att_p = 5;
 K_att_v = 0.25;
 K_rep = 0.00001;
 rho_0 = 2*r_a;
+% rho_0 = 2;
+% if rho_0 < v_max^2/a_max
+%     rho_0 = v_max^2/a_max;
+%     warning('Automatically increased region of repulsion')
+%     pause(1)
+% end
 
 save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'a_max', 'X_0', 'K_att_p', 'K_att_v', 'K_rep', 'rho_0', 'overrideNominalTrajectory');
 
@@ -79,6 +86,27 @@ for t_index = 1:num_steps
     u_att(:,:,t_index) = u_att_save(:,:,1+(t_index-1)*4);
     u_rep(:,:,t_index) = u_rep_save(:,:,1+(t_index-1)*4);
     u(:,:,t_index) = u_save(:,:,1+(t_index-1)*4);
+end
+
+%%
+u = zeros(dimensions,N_a,num_steps);
+u_att = zeros(dimensions,N_a,num_steps);
+u_rep = zeros(dimensions,N_a,num_steps);
+u(:,:,1) = u_save(:,:,1);
+u_att(:,:,1) = u_att_save(:,:,1);
+u_rep(:,:,1) = u_rep_save(:,:,1);
+for t_index = 2:num_steps
+    temp1 = 0;
+    temp2 = 0;
+    temp3 = 0;
+    for i = 1:4
+        temp1 = temp1 + u_save(:,:,1+i+(t_index-2)*4);
+        temp2 = temp2 + u_att_save(:,:,1+i+(t_index-2)*4);
+        temp3 = temp3 + u_rep_save(:,:,1+i+(t_index-2)*4);
+    end
+    u(:,:,t_index) = 0.25*temp1;
+    u_att(:,:,t_index) = 0.25*temp2;
+    u_rep(:,:,t_index) = 0.25*temp3;
 end
 
 %% Average position error
