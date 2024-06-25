@@ -53,7 +53,7 @@ function dXdt = odefcn(t,X)
                 % end
             end
         end
-        % F_tot = F_att+F_rep;
+        F_tot = F_att+F_rep;
         
 
 

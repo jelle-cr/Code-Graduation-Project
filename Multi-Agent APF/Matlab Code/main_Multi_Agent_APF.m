@@ -53,11 +53,6 @@ K_att_p = 5;
 K_att_v = 0.25;
 K_rep = 0.00001;
 rho_0 = 2*r_a;
-% if rho_0 < v_max^2/a_max
-%     rho_0 = v_max^2/a_max;
-%     warning('Automatically increased region of repulsion')
-%     pause(1)
-% end
 
 save('Data/Parameters.mat', 'dimensions', 'states', 'N_a', 'm', 'd', 'r_a', 'u_max', 'a_max', 'X_0', 'K_att_p', 'K_att_v', 'K_rep', 'rho_0', 'overrideNominalTrajectory');
 
