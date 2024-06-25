@@ -50,8 +50,8 @@ function plot_real_time_trajectories(X, t_step, N_a, update_interval, xlim_value
     grid on; hold on;
     for agent_id = 1:N_a
         for t = 1:num_steps
-            % norm_u_att(agent_id, t) = norm(squeeze(u_att(:,agent_id,t))); % Calculate norm at each time step
-            norm_u_att(agent_id, t) = squeeze(u_att(1,agent_id,t)); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            norm_u_att(agent_id, t) = norm(squeeze(u_att(:,agent_id,t))); % Calculate norm at each time step
+            % norm_u_att(agent_id, t) = squeeze(u_att(1,agent_id,t)); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         end
         plot(t_span, norm_u_att(agent_id, :),'LineWidth',1,'HandleVisibility', 'off');
     end
@@ -68,8 +68,8 @@ function plot_real_time_trajectories(X, t_step, N_a, update_interval, xlim_value
     grid on; hold on;
     for agent_id = 1:N_a
         for t = 1:num_steps
-            % norm_u_rep(agent_id, t) = norm(squeeze(u_rep(:,agent_id,t))); % Calculate norm at each time step
-            norm_u_rep(agent_id, t) = squeeze(u_rep(1,agent_id,t));%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            norm_u_rep(agent_id, t) = norm(squeeze(u_rep(:,agent_id,t))); % Calculate norm at each time step
+            % norm_u_rep(agent_id, t) = squeeze(u_rep(1,agent_id,t));%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         end
         plot(t_span, norm_u_rep(agent_id, :),'LineWidth',1,'HandleVisibility', 'off');
     end
@@ -77,44 +77,44 @@ function plot_real_time_trajectories(X, t_step, N_a, update_interval, xlim_value
     ax = gca;
     set(ax, 'FontSize', fontsize-5);
     % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
-    title('Capped Norm of repulsive forces over time', 'Interpreter', 'latex', 'FontSize', fontsize);
+    title('Norm of repulsive forces over time', 'Interpreter', 'latex', 'FontSize', fontsize);
     % xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
     ylabel('$||u_{rep}||$ [N]', 'Interpreter', 'latex', 'FontSize', fontsize);
 
     % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 4 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % subplot(3,2,6)
-    % grid on; hold on;
-    % for agent_id = 1:N_a
-    %     err = squeeze(X_nom(:,agent_id,:))-squeeze(X(1:2,agent_id,:)); 
-    %     for t = 1:num_steps
-    %         pos_err(agent_id, t) = norm(err(:, t)); % Calculate norm at each time step
-    %     end
-    %     plot(t_span, pos_err(agent_id, :),'LineWidth',1,'DisplayName', sprintf('Agent %d', agent_id));
-    % end
-    % xlim([0 t_span(end)]);
-    % ax = gca;
-    % set(ax, 'FontSize', fontsize-5);
-    % % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
-    % title('Absolute Position Error', 'Interpreter', 'latex', 'FontSize', fontsize);
-    % xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
-    % ylabel(['$||p-p_d||$ [m]'], 'Interpreter', 'latex', 'FontSize', fontsize);
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 4 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     subplot(3,2,6)
     grid on; hold on;
     for agent_id = 1:N_a
+        err = squeeze(X_nom(:,agent_id,:))-squeeze(X(1:2,agent_id,:)); 
         for t = 1:num_steps
-            norm_u(agent_id, t) = squeeze(u(1,agent_id,t)); % Calculate norm at each time step
+            pos_err(agent_id, t) = norm(err(:, t)); % Calculate norm at each time step
         end
-        plot(t_span, norm_u(agent_id, :),'LineWidth',1,'DisplayName', sprintf('Agent %d', agent_id));
+        plot(t_span, pos_err(agent_id, :),'LineWidth',1,'DisplayName', sprintf('Agent %d', agent_id));
     end
     xlim([0 t_span(end)]);
     ax = gca;
     set(ax, 'FontSize', fontsize-5);
     % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
-    title('Control input', 'Interpreter', 'latex', 'FontSize', fontsize);
+    title('Absolute Position Error', 'Interpreter', 'latex', 'FontSize', fontsize);
     xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
-    ylabel(['$||u||$ [N]'], 'Interpreter', 'latex', 'FontSize', fontsize);
+    ylabel(['$||p-p_d||$ [m]'], 'Interpreter', 'latex', 'FontSize', fontsize);
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 4 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % subplot(3,2,6)
+    % grid on; hold on;
+    % for agent_id = 1:N_a
+    %     for t = 1:num_steps
+    %         norm_u(agent_id, t) = squeeze(u(1,agent_id,t)); % Calculate norm at each time step
+    %     end
+    %     plot(t_span, norm_u(agent_id, :),'LineWidth',1,'DisplayName', sprintf('Agent %d', agent_id));
+    % end
+    % xlim([0 t_span(end)]);
+    % ax = gca;
+    % set(ax, 'FontSize', fontsize-5);
+    % % legend('Location', 'northeast', 'Interpreter', 'latex', 'FontSize', fontsize);
+    % title('Control input', 'Interpreter', 'latex', 'FontSize', fontsize);
+    % xlabel('$t$ [s]', 'Interpreter', 'latex', 'FontSize', fontsize);
+    % ylabel(['$||u||$ [N]'], 'Interpreter', 'latex', 'FontSize', fontsize);
 
 
     % Storage for plot handles (markers)
@@ -274,30 +274,30 @@ function plot_real_time_trajectories(X, t_step, N_a, update_interval, xlim_value
                 set(time_marker_u_rep(agent_id), 'XData', t*t_step, 'YData', norm_u_rep(agent_id,t));
             end
         end
-        % subplot(3,2,6)     % Update subplot 4
-        % for agent_id = 1:N_a
-        %     if time_marker_error(agent_id) == 0
-        %         time_marker_error(agent_id) = plot(t*t_step, pos_err(agent_id,t), 'o', ...
-        %                                         'Color', colors(agent_id,:), ...
-        %                                         'MarkerSize', 10, ...
-        %                                         'LineWidth', 2, ...
-        %                                         'HandleVisibility', 'off');  % Initial placement
-        %     else
-        %         set(time_marker_error(agent_id), 'XData', t*t_step, 'YData', pos_err(agent_id,t));
-        %     end
-        % end
         subplot(3,2,6)     % Update subplot 4
         for agent_id = 1:N_a
             if time_marker_error(agent_id) == 0
-                time_marker_error(agent_id) = plot(t*t_step, norm_u(agent_id,t), 'o', ...
+                time_marker_error(agent_id) = plot(t*t_step, pos_err(agent_id,t), 'o', ...
                                                 'Color', colors(agent_id,:), ...
                                                 'MarkerSize', 10, ...
                                                 'LineWidth', 2, ...
                                                 'HandleVisibility', 'off');  % Initial placement
             else
-                set(time_marker_error(agent_id), 'XData', t*t_step, 'YData', norm_u(agent_id,t));
+                set(time_marker_error(agent_id), 'XData', t*t_step, 'YData', pos_err(agent_id,t));
             end
         end
+        % subplot(3,2,6)     % Update subplot 4
+        % for agent_id = 1:N_a
+        %     if time_marker_error(agent_id) == 0
+        %         time_marker_error(agent_id) = plot(t*t_step, norm_u(agent_id,t), 'o', ...
+        %                                         'Color', colors(agent_id,:), ...
+        %                                         'MarkerSize', 10, ...
+        %                                         'LineWidth', 2, ...
+        %                                         'HandleVisibility', 'off');  % Initial placement
+        %     else
+        %         set(time_marker_error(agent_id), 'XData', t*t_step, 'YData', norm_u(agent_id,t));
+        %     end
+        % end
         drawnow %limitrate; % Force plot update
         % pause(update_interval);
     end

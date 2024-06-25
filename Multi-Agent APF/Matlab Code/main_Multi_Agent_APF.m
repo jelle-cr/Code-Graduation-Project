@@ -5,12 +5,12 @@ warning on;
 
 global u_att_save u_rep_save u_save
 
-overrideNominalTrajectory = true;
+overrideNominalTrajectory = false;
 
 % Quadcopter parameters
 dimensions = 2;          % Number of axis (x,y,z)
 states = 2*dimensions;   % Number of states
-N_a = 2;                 % Number of agents
+N_a = 4;                 % Number of agents
 m = 0.01;                % Mass [kg]
 d = 0.1;                 % Damping coefficient [Ns/m]
 r_a = 0.05;              % Radius of agent [m]
@@ -88,25 +88,25 @@ for t_index = 1:num_steps
 end
 
 %%
-u = zeros(dimensions,N_a,num_steps);
-u_att = zeros(dimensions,N_a,num_steps);
-u_rep = zeros(dimensions,N_a,num_steps);
-u(:,:,1) = u_save(:,:,1);
-u_att(:,:,1) = u_att_save(:,:,1);
-u_rep(:,:,1) = u_rep_save(:,:,1);
-for t_index = 2:num_steps
-    temp1 = 0;
-    temp2 = 0;
-    temp3 = 0;
-    for i = 1:4
-        temp1 = temp1 + u_save(:,:,1+i+(t_index-2)*4);
-        temp2 = temp2 + u_att_save(:,:,1+i+(t_index-2)*4);
-        temp3 = temp3 + u_rep_save(:,:,1+i+(t_index-2)*4);
-    end
-    u(:,:,t_index) = 0.25*temp1;
-    u_att(:,:,t_index) = 0.25*temp2;
-    u_rep(:,:,t_index) = 0.25*temp3;
-end
+% u = zeros(dimensions,N_a,num_steps);
+% u_att = zeros(dimensions,N_a,num_steps);
+% u_rep = zeros(dimensions,N_a,num_steps);
+% u(:,:,1) = u_save(:,:,1);
+% u_att(:,:,1) = u_att_save(:,:,1);
+% u_rep(:,:,1) = u_rep_save(:,:,1);
+% for t_index = 2:num_steps
+%     temp1 = 0;
+%     temp2 = 0;
+%     temp3 = 0;
+%     for i = 1:4
+%         temp1 = temp1 + u_save(:,:,1+i+(t_index-2)*4);
+%         temp2 = temp2 + u_att_save(:,:,1+i+(t_index-2)*4);
+%         temp3 = temp3 + u_rep_save(:,:,1+i+(t_index-2)*4);
+%     end
+%     u(:,:,t_index) = 0.25*temp1;
+%     u_att(:,:,t_index) = 0.25*temp2;
+%     u_rep(:,:,t_index) = 0.25*temp3;
+% end
 
 %% Average position error
 err = 0;
