@@ -11,7 +11,7 @@ function dXdt = odefcn(t,X)
 
     n = 2;
     m = 2;
-    rho_0 = 0.5;
+    rho_0 = 5.5;
     N_a = 2;
     K_att = 1;
     K_rep = 0.001;
@@ -34,6 +34,7 @@ function dXdt = odefcn(t,X)
     %      0, 1/M];
     %% Kinematic model
     f = [X(2); X(1)];
+    f = [0; 0];
     g = [1, 0;
          0, 1];
 
@@ -96,7 +97,7 @@ function dXdt = odefcn(t,X)
         alpha = 1;
         c = F_rep.'*f - alpha;
         d = F_rep.'*g;
-        gamma = norm(F_rep)^2 + alpha;%%%%%%%%%%%%% - d*u_nom;
+        gamma = norm(F_rep)^2 + alpha   - d*u_nom;
         c_tilde = c + gamma;
         phi = c_tilde + d*u_nom;
 
@@ -104,13 +105,14 @@ function dXdt = odefcn(t,X)
             u = u_nom;
         elseif ((phi >= 0) && (norm(d) ~= 0))
             u = u_nom - phi/norm(d)^2*d.';
+            % u = - phi/norm(d)^2*d.';
         end
 
         % if rho > rho_0
         %     u = u_nom;
         % else 
-        %     % u(:,i) = u_nom - phi/norm(d)^2*d.';
-        %     u =  - phi/(norm(d)^2)*d.';%%%%%%%%%%%%%%%%%%%%%
+        %     u = u_nom - phi/norm(d)^2*d.';
+        %     % u =  - phi/(norm(d)^2)*d.';%%%%%%%%%%%%%%%%%%%%%
         % end
         % u(:,i) = min(max(u(:,i), -u_max), u_max);
     end    
@@ -124,8 +126,10 @@ function dXdt = odefcn(t,X)
     % dXdt(2,:) = X(4,:);
     % dXdt(3,:) = -d/m*X(3,:) + 1/m * u(1,:); %+ r_a*(2*(rand(1,2)-0.5)); %Simulate some noise force
     % dXdt(4,:) = -d/m*X(4,:) + 1/m * u(2,:); %+ r_a*(2*(rand(1,2)-0.5));
-    dXdt(1,:) = X(2) + u(1);
-    dXdt(2,:) = X(1) + u(2);
+    % dXdt(1,:) = X(2) + u(1);
+    % dXdt(2,:) = X(1) + u(2);
+    dXdt(1,:) = u(1);
+    dXdt(2,:) = u(2);
     % dXdt(:,2) = [0;0];  % agent 2 in standstill
     % dXdt = reshape(dXdt, [], 1);
 end

@@ -5,7 +5,7 @@ global Obstacle1_center Obstacle2_center Obstacle3_center
 K_att = 1;
 K_rep = 0.001;
 D_obs = 0.5;
-rho_0 =0.1;
+rho_0 =0.5;
 
 t
 
