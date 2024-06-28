@@ -10,5 +10,5 @@ function p = generate_circular_initial_positions(N_a, r_a, agent_spacing)
     y = formation_radius * sin(theta);
     
     % Form the position matrix (x coordinates in the first row, y in the second)
-    p = reshape([x; y], [], 1);
+    p = [x; y];
 end

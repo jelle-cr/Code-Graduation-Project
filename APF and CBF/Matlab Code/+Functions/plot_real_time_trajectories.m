@@ -16,10 +16,12 @@ function plot_real_time_trajectories(X, X_d, t_end, t_step, num_steps, fontsize)
     height = 700;
     figure('Position', [left bottom width height]);  
 
+    % pause(10);
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 1 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     grid on; hold on;
     axis equal;
-    axlim = 1.5*max(abs(X)) + r_a;
+    axlim = 1.5*max(max(max(abs(X)))) + r_a;
     xlim([-axlim axlim]); ylim([-axlim axlim]);
     ax = gca;
     set(ax, 'FontSize', fontsize-5);
@@ -55,8 +57,8 @@ function plot_real_time_trajectories(X, X_d, t_end, t_step, num_steps, fontsize)
     for t = 1:num_steps
         % plot();     % Update subplot 1
         for agent_id = 1:N_a
-            x_current = X(N_a*n*(t-1) + n*(agent_id-1) + 1);
-            y_current = X(N_a*n*(t-1) + n*(agent_id-1) + 2);
+            x_current = X(1,agent_id,t);
+            y_current = X(2,agent_id,t);
             % Determine if it's time to add a new dot
             if mod(t, trail_interval/t_step) == 0
                 % Create initial trail dots (if needed)
@@ -86,8 +88,8 @@ function plot_real_time_trajectories(X, X_d, t_end, t_step, num_steps, fontsize)
             uistack(trail_dots{agent_id}, 'bottom')
         end
         for agent_id = 1:N_a    % This for loop is required to always plot the repulsion regions under the agents
-            x_current = X(N_a*n*(t-1) + n*(agent_id-1) + 1);
-            y_current = X(N_a*n*(t-1) + n*(agent_id-1) + 2);
+            x_current = X(1,agent_id,t);
+            y_current = X(2,agent_id,t);
             % Update or create the actual agent circle
             if circle_handles_rep(agent_id) == 0
                 th = 0:pi/50:2*pi; % Angles for creating the circle shape
@@ -104,8 +106,8 @@ function plot_real_time_trajectories(X, X_d, t_end, t_step, num_steps, fontsize)
             end
         end
         for agent_id = 1:N_a    % This for loop is required to always plot the agents on top of the trajectory
-            x_current = X(N_a*n*(t-1) + n*(agent_id-1) + 1);
-            y_current = X(N_a*n*(t-1) + n*(agent_id-1) + 2);
+            x_current = X(1,agent_id,t);
+            y_current = X(2,agent_id,t);
             % Update or create the actual agent circle
             if circle_handles(agent_id) == 0
                 th = 0:pi/50:2*pi; % Angles for creating the circle shape
@@ -126,8 +128,8 @@ function plot_real_time_trajectories(X, X_d, t_end, t_step, num_steps, fontsize)
             end
         end
         for agent_id = 1:N_a    % This for loop is required to always plot the goal positions on top
-            x_current = X_d(N_a*n*(t-1) + n*(agent_id-1) + 1);
-            y_current = X_d(N_a*n*(t-1) + n*(agent_id-1) + 2);
+            x_current = X_d(1,agent_id,t);
+            y_current = X_d(2,agent_id,t);
 
             % Update or create the nominal agent circle
             if circle_handles_nom(agent_id) == 0

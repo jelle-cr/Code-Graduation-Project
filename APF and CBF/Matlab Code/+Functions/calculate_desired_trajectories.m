@@ -1,4 +1,4 @@
-function X_d = calculate_desired_trajectories(t, overrideNominalTrajectory, X_0)
+function X_d = calculate_desired_trajectories(t)
     load('./Data/TrajectoryParameters.mat');
 
     % Reference position
@@ -12,9 +12,5 @@ function X_d = calculate_desired_trajectories(t, overrideNominalTrajectory, X_0)
     end
 
     % Reference states
-    X_d = reshape([p_ref; v_ref], [], 1);
-
-    if overrideNominalTrajectory
-        X_d = -X_0;
-    end
+    X_d = [p_ref; v_ref];
 end
