@@ -2,7 +2,7 @@ function dxdt = odefcn_APF(t,x)
 global Goal_position u_APF_save
 global Obstacle1_center Obstacle2_center Obstacle3_center
 % Parameters
-K_att = 10;
+K_att = 1;
 K_rep = 0.001;
 D_obs = 0.5;
 rho_0 =0.1;
@@ -70,6 +70,9 @@ if rho_x>rho_0
 else
     u=-phi_var/(norm(d_x)^2)*d_x.';%       +u_nom;%%%%%%%%%%%%%%  
 end
+
+%%%%%%%%%%%%%%%%%%
+% u = u_nom;
 
 dxdt(1) =x(2)+u(1);
 dxdt(2) =x(1)+u(2);

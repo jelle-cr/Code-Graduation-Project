@@ -3,12 +3,17 @@ function dXdt = odefcn(t,X)
     global u_save
 
     % load('./Data/Parameters.mat');
+        
+    Obstacle1_center=[1,1.5].';
+    Obstacle2_center=[2.5,3].';
+    Obstacle3_center=[4,4.2].';
+
 
     n = 2;
     m = 2;
-    rho_0 = 0.1;
+    rho_0 = 0.5;
     N_a = 2;
-    K_att = 10;
+    K_att = 1;
     K_rep = 0.001;
     r_a = 0.5;
     u_max = 10;
@@ -36,25 +41,13 @@ function dXdt = odefcn(t,X)
     % Nominal trajectories
     % X_d = reshape(Functions.calculate_desired_trajectories(t), n, N_a);
     % X_d = [3, 0; 5, 0];
-    X_d = [0;0];
-    X_o = [1;1.5];
+    X_d = [3;5];
+    % X_o = [1;1.5];
     u = zeros(m, N_a);
     
     for i = 1:1%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%N_a   
         F_att = K_att*(X-X_d);
-        F_rep = zeros(m,1);
-        for j = 1:N_a
-            if i ~= j
-                p_ij = X - X_o;
-                rho = norm(p_ij) - 2*r_a;
-                if rho < rho_0 
-                    F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*p_ij/norm(p_ij);
-                end
-                if rho < 0             % Agents have collided
-                    warning(['Collision between drone ' num2str(i) ' and ' num2str(j) ' at time ' num2str(t)])
-                end
-            end
-        end
+        
         a = F_att.'*f;
         b = F_att.'*g;
         a_tilde = a + norm(b)^2;
@@ -71,6 +64,35 @@ function dXdt = odefcn(t,X)
 
         u = u_nom;
 
+
+        Dist_1=norm(X-Obstacle1_center);
+        Dist_2=norm(X-Obstacle2_center);
+        Dist_3=norm(X-Obstacle3_center);
+        Min_Dist=min([Dist_1,Dist_2,Dist_3]);
+        if Min_Dist==Dist_1
+            X_o=Obstacle1_center;
+        end
+        if Min_Dist==Dist_2
+            X_o=Obstacle2_center;
+        end
+        if Min_Dist==Dist_3
+            X_o=Obstacle3_center;
+        end
+
+        F_rep = zeros(m,1);
+        for j = 1:N_a
+            if i ~= j
+                p_ij = X - X_o;
+                rho = norm(p_ij) - r_a;%%%%%%%%%%%%%%2*r_a;
+                if rho < rho_0 
+                    F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*p_ij/norm(p_ij);
+                end
+                if rho < 0             % Agents have collided
+                    warning(['Collision between drone ' num2str(i) ' and ' num2str(j) ' at time ' num2str(t)])
+                end
+            end
+        end
+
         alpha = 1;
         c = F_rep.'*f - alpha;
         d = F_rep.'*g;
@@ -78,18 +100,18 @@ function dXdt = odefcn(t,X)
         c_tilde = c + gamma;
         phi = c_tilde + d*u_nom;
 
-        % if ((phi < 0) || (phi == 0 && norm(d) == 0))
-        %     u(:,i) = u_nom;
-        % elseif ((phi >= 0) && (norm(d) ~= 0))
-        %     u(:,i) = u_nom - phi/norm(d)^2*d.';
-        % 
-        % end
-        if rho > rho_0
+        if ((phi < 0) || (phi == 0 && norm(d) == 0))
             u = u_nom;
-        else 
-            % u(:,i) = u_nom - phi/norm(d)^2*d.';
-            u =  - phi/(norm(d)^2)*d.';%%%%%%%%%%%%%%%%%%%%%
+        elseif ((phi >= 0) && (norm(d) ~= 0))
+            u = u_nom - phi/norm(d)^2*d.';
         end
+
+        % if rho > rho_0
+        %     u = u_nom;
+        % else 
+        %     % u(:,i) = u_nom - phi/norm(d)^2*d.';
+        %     u =  - phi/(norm(d)^2)*d.';%%%%%%%%%%%%%%%%%%%%%
+        % end
         % u(:,i) = min(max(u(:,i), -u_max), u_max);
     end    
 

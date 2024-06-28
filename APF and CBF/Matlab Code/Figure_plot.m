@@ -2,6 +2,12 @@ function Figure_plot()
 global Initial_position Goal_position Obstacle1_center Obstacle2_center Obstacle3_center
 global x_APF 
 
+Initial_position(:,1)=[0,0].';
+Goal_position(:,1)=[3,5].';
+Obstacle1_center=[1,1.5].';
+Obstacle2_center=[2.5,3].';
+Obstacle3_center=[4,4.2].';
+
 % load('x_CBF.mat')
 
 %% Draw two obstacles
