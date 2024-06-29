@@ -33,7 +33,7 @@ B = [1, 0;
 n = height(A);
 m = width(B);
 
-X_0 = [0;0];
+X_0 = [0, 1;0, 1];
 
 % Time vector
 t_end = 10;
@@ -41,7 +41,7 @@ t_step = 0.01;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
 
-[X(:,:)] = Functions.ode4(@Functions.odefcn, t_span, X_0); % Column vector
+[X] = reshape(Functions.ode4(@Functions.odefcn, t_span, reshape(X_0, [], 1)).', n, N_a, num_steps); % Column vector
 
 % u_save = reshape(u_save, m, N_a, length(u_save));
 
@@ -58,6 +58,7 @@ fontsize = 16;
 % Functions.plot_real_time_trajectories(X, X_d, t_end, t_step, num_steps, fontsize);
 % plot(X(:,1), X(:,2)); hold on;
 global x_APF
-x_APF = X;
+x_APF = squeeze(X(:,1,:)).';
 Figure_plot()
+% Functions.plot_real_time_trajectories(X, num_steps);
 

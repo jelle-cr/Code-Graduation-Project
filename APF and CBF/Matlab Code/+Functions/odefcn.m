@@ -18,8 +18,8 @@ function dXdt = odefcn(t,X)
     r_a = 0.5;
     u_max = 10;
 
-    % X = reshape(X, n, N_a);
-    dXdt = zeros(n, 1);
+    X = reshape(X, n, N_a);
+    dXdt = zeros(n, N_a);
     % time
     t
 
@@ -33,7 +33,7 @@ function dXdt = odefcn(t,X)
     %      1/M, 0;
     %      0, 1/M];
     %% Kinematic model
-    f = [X(2); X(1)];
+    % f = [X(2); X(1)];
     f = [0; 0];
     g = [1, 0;
          0, 1];
@@ -47,16 +47,13 @@ function dXdt = odefcn(t,X)
     u = zeros(m, N_a);
     
     for i = 1:1%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%N_a   
-        F_att = K_att*(X-X_d);
+        F_att = K_att*(X(:,i)-X_d(:,i));
         
         a = F_att.'*f;
         b = F_att.'*g;
         a_tilde = a + norm(b)^2;
 
-        if (a_tilde < 0)
-            u_nom = zeros(m, 1);
-        end
-        if (a_tilde == 0 && norm(b) == 0)
+        if ((a_tilde < 0) || (a_tilde == 0 && norm(b) == 0))
             u_nom = zeros(m, 1);
         end
         if ((a_tilde >= 0) && (norm(b) ~= 0))
@@ -66,9 +63,9 @@ function dXdt = odefcn(t,X)
         u = u_nom;
 
 
-        Dist_1=norm(X-Obstacle1_center);
-        Dist_2=norm(X-Obstacle2_center);
-        Dist_3=norm(X-Obstacle3_center);
+        Dist_1=norm(X(:,i)-Obstacle1_center);
+        Dist_2=norm(X(:,i)-Obstacle2_center);
+        Dist_3=norm(X(:,i)-Obstacle3_center);
         Min_Dist=min([Dist_1,Dist_2,Dist_3]);
         if Min_Dist==Dist_1
             X_o=Obstacle1_center;
@@ -83,8 +80,8 @@ function dXdt = odefcn(t,X)
         F_rep = zeros(m,1);
         for j = 1:N_a
             if i ~= j
-                p_ij = X - X_o;
-                rho = norm(p_ij) - r_a;%%%%%%%%%%%%%%2*r_a;
+                p_ij = X(:,i) - X_o;
+                rho = norm(p_ij) - 2*r_a;
                 if rho < rho_0 
                     F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*p_ij/norm(p_ij);
                 end
@@ -101,19 +98,19 @@ function dXdt = odefcn(t,X)
         c_tilde = c + gamma;
         phi = c_tilde + d*u_nom;
 
-        if ((phi < 0) || (phi == 0 && norm(d) == 0))
-            u = u_nom;
-        elseif ((phi >= 0) && (norm(d) ~= 0))
-            u = u_nom - phi/norm(d)^2*d.';
-            % u = - phi/norm(d)^2*d.';
-        end
-
-        % if rho > rho_0
+        % if ((phi < 0) || (phi == 0 && norm(d) == 0))
         %     u = u_nom;
-        % else 
+        % elseif ((phi >= 0) && (norm(d) ~= 0))
         %     u = u_nom - phi/norm(d)^2*d.';
-        %     % u =  - phi/(norm(d)^2)*d.';%%%%%%%%%%%%%%%%%%%%%
+        %     % u = - phi/norm(d)^2*d.';
         % end
+
+        if rho > rho_0
+            u = u_nom;
+        else 
+            u = u_nom - phi/norm(d)^2*d.';
+            % u =  - phi/(norm(d)^2)*d.';%%%%%%%%%%%%%%%%%%%%%
+        end
         % u(:,i) = min(max(u(:,i), -u_max), u_max);
     end    
 
@@ -128,8 +125,8 @@ function dXdt = odefcn(t,X)
     % dXdt(4,:) = -d/m*X(4,:) + 1/m * u(2,:); %+ r_a*(2*(rand(1,2)-0.5));
     % dXdt(1,:) = X(2) + u(1);
     % dXdt(2,:) = X(1) + u(2);
-    dXdt(1,:) = u(1);
-    dXdt(2,:) = u(2);
-    % dXdt(:,2) = [0;0];  % agent 2 in standstill
-    % dXdt = reshape(dXdt, [], 1);
+    dXdt(1,:) = u(1,:);
+    dXdt(2,:) = u(2,:);
+    dXdt(:,2) = [0;0];  % agent 2 in standstill
+    dXdt = reshape(dXdt, [], 1);
 end
