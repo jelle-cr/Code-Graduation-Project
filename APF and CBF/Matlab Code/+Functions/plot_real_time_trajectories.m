@@ -55,36 +55,18 @@ function plot_real_time_trajectories(X, t, r_a, rho_0)
     
 
     % Storage for plot handles (markers and trails)
-    circle_handles_nom = zeros(N_a, 1);
     circle_handles = zeros(N_a, 1);
     circle_handles_rep = zeros(N_a, 1);
-    % Storage for trail dots (per agent)
-    trail_dots = cell(N_a, 1);
-
-    % Dotted trail parameters
-    trail_points = 40;      % Number of dots on the trail
-    trail_interval = 0.02;  % Seconds between each new dot
-    
+ 
     % Collision detection
     overlap_marker = zeros(N_a, N_a);   % Initialize
     collision_occurred = false;         % Flag to add collision to legend
 
-  
 
-
-    % Storage for plot handles (markers)
-    time_marker_u_att = zeros(N_a,1);
-    time_marker_u_rep = zeros(N_a,1);
-    time_marker_error = zeros(N_a,1);
-       
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Main loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     num_steps = length(t);
     t_step = t(2)-t(1);
-    target_fps = 20;
-    target_frame_time = 1/target_fps;
-    t = 1;
-    while t <= num_steps
-        tic; % Start timer
+    for t = 1:num_steps
         % plot();     % Update subplot 1
         for agent_id = 1:N_a    % This for loop is required to always plot the repulsion regions under the agents
             x_current = X(1,agent_id,t);
@@ -159,19 +141,6 @@ function plot_real_time_trajectories(X, t, r_a, rho_0)
         title(['Real-Time Trajectories ($t$ = ', sprintf('%.2f', t*t_step-t_step), ' [s])'], ...
           'Interpreter', 'latex', 'FontSize', fontsize);
 
-        
-    
         drawnow %limitrate; % Force plot update
-
-        elapsedTime = toc;
-        remaining_time = target_frame_time - elapsedTime;
-        % pauseTime = updateInterval - elapsedTime;
-        if remaining_time > 0
-            pause(remaining_time);
-            t = t + 1;
-        else
-            steps_to_skip = ceil(elapsedTime/target_frame_time) - 1
-            t = t+steps_to_skip
-        end
     end    
 end
