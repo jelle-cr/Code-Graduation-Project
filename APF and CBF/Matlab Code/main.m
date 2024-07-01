@@ -12,8 +12,8 @@ B = [1, 0;
 %% Agent Parameters
 n = height(A);
 m = width(B);
-N_a = 2;
-r_a = 0.5;
+N_a = 3;
+r_a = 0.4;
 u_max = 10;
 
 %% Controller parameters
@@ -30,8 +30,8 @@ X_o = [];
 save('Data/Parameters.mat', 'A', 'B', 'n', 'm', 'N_a', 'r_a', 'u_max', 'rho_0', 'K_att', 'K_rep', 'X_o', 'r_o');
 
 %% Initial positions
-X_0 = [0, 2;
-       0, 2];
+X_0 = [0, -1, 1;
+       0, 2, 1];
 
 %% Simulation
 t_end = 5;

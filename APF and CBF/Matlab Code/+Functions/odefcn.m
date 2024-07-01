@@ -15,8 +15,8 @@ function dXdt = odefcn(t,X)
 
     %% Desired positions
     % X_d = reshape(Functions.calculate_desired_trajectories(t), n, N_a);
-    X_d = [3, 3; 
-           5, 5];
+    X_d = [3, 3, 3; 
+           5, 5, 5];
 
     %% Controller
     u = zeros(m, N_a);
@@ -77,18 +77,18 @@ function dXdt = odefcn(t,X)
         phi = c_tilde + d*u_nom;
 
         % Control Barrier Function
-        % if ((phi < 0) || (phi == 0 && norm(d) == 0))  
-        %     u(:,i) = u_nom;
-        % elseif ((phi >= 0) && (norm(d) ~= 0))
-        %     u(:,i) = u_nom - phi/norm(d)^2*d.';
-        % end
-
-        % Artificial Potential Field
-        if rho > rho_0  
+        if ((phi < 0) || (phi == 0 && norm(d) == 0))  
             u(:,i) = u_nom;
-        else 
+        elseif ((phi >= 0) && (norm(d) ~= 0))
             u(:,i) = u_nom - phi/norm(d)^2*d.';
         end
+
+        % Artificial Potential Field
+        % if rho > rho_0  
+        %     u(:,i) = u_nom;
+        % else 
+        %     u(:,i) = u_nom - phi/norm(d)^2*d.';
+        % end
 
         % Limit control force
         % u(:,i) = min(max(u(:,i), -u_max), u_max);
