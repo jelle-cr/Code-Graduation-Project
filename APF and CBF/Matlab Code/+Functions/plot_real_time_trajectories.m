@@ -3,9 +3,7 @@ function plot_real_time_trajectories(X, t, r_a, rho_0)
     %   X: 3D matrix containing trajectories (x, y, time)
     %   N_a: Number of agents
     %   update_interval: Interval between updates in seconds (optional, default 0.1), inaccurate due to calculation time between each step
-
-    N_a = size(X,2);
-    n = size(X,1);
+    load('./Data/Parameters.mat')
 
     fontsize = 16;
 
@@ -61,6 +59,18 @@ function plot_real_time_trajectories(X, t, r_a, rho_0)
     % Collision detection
     overlap_marker = zeros(N_a, N_a);   % Initialize
     collision_occurred = false;         % Flag to add collision to legend
+    
+    X_o
+    if ~isempty(X_o)
+        for o = 1:size(X_o,2)
+            x_current = X_o(1,o);
+            y_current = X_o(2,o);
+            th = 0:pi/50:2*pi;
+            xunit = r_o * cos(th) + x_current;
+            yunit = r_o * sin(th) + y_current;
+            patch(xunit, yunit, 'black', 'HandleVisibility', 'off');
+        end
+    end
 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Main loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

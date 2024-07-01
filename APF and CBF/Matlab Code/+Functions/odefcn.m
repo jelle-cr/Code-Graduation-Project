@@ -20,7 +20,7 @@ function dXdt = odefcn(t,X)
 
     %% Controller
     u = zeros(m, N_a);
-    
+    u_nom = zeros(m, 1);
     for i = 1:N_a 
         F_att = K_att*(X(:,i)-X_d(:,i));
         
@@ -37,44 +37,37 @@ function dXdt = odefcn(t,X)
 
         u(:,i) = u_nom;
 
-
-        % Dist_1=norm(X(:,i)-Obstacle1_center);
-        % Dist_2=norm(X(:,i)-Obstacle2_center);
-        % Dist_3=norm(X(:,i)-Obstacle3_center);
-        % Min_Dist=min([Dist_1,Dist_2,Dist_3]);
-        % if Min_Dist==Dist_1
-        %     X_o=Obstacle1_center;
-        % end
-        % if Min_Dist==Dist_2
-        %     X_o=Obstacle2_center;
-        % end
-        % if Min_Dist==Dist_3
-        %     X_o=Obstacle3_center;
-        % end
-
+        rho = zeros(2,1);
         F_rep = zeros(m,1);
-        % Steer agent away from closest agent
-        for j = 1:N_a
-            if i ~= j
-                p_ij = X(:,i) - X(:,j);
-                rho = norm(p_ij) - 2*r_a;
-                if rho < rho_0 
-                    F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*p_ij/norm(p_ij);
-                end
-                if rho < 0             % Agents have collided
-                    warning(['Collision between drone ' num2str(i) ' and ' num2str(j) ' at time ' num2str(t)])
-                end
+        % Compute repulsive force for closest agent
+        agentDistances = sum((X - X(:, i)).^2, 1);
+        agentDistances(i) = Inf;    % Set self to infinite 
+        [~, closestAgent] = min(agentDistances);
+        if closestAgent ~= i
+            p_ij = X(:,i) - X(:,closestAgent);
+            rho(1) = norm(p_ij) - 2*r_a;
+
+            if rho(1) < rho_0 
+               F_rep = F_rep - K_rep/rho(1)^2*(1/rho(1)-1/rho_0)*p_ij/norm(p_ij);
+            end
+            if rho(1) < 0             % Agents have collided
+               warning(['Collision between drone ' num2str(i) ' and ' num2str(closestAgent) ' at time ' num2str(t)])
             end
         end
-        % Steer agent away from closest obstacle
-        [~, closestObstacle] = min(sum((X(:,i)-X_o).^2, 1));
-        p_io = X(:,i) - X_o(:,closestObstacle);
-        rho = norm(p_io) - r_a - r_o;
-        if rho < rho_0 
-            F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*p_ij/norm(p_ij);
-        end
-        if rho < 0             % Agents have collided
-            warning(['Collision between drone ' num2str(i) ' and obstacle ' num2str(closestObstacle) ' at time ' num2str(t)])
+
+        % Compute repulsive force for closest obstacle
+        if ~isempty(X_o)
+            [~, closestObstacle] = min(sum((X(:,i)-X_o).^2, 1));
+            p_io = X(:,i) - X_o(:,closestObstacle);
+            rho(2) = norm(p_io) - r_a - r_o;
+            if rho(2) < rho_0 
+                F_rep = F_rep - K_rep/rho(2)^2*(1/rho(2)-1/rho_0)*p_ij/norm(p_ij);
+            end
+            if rho(2) < 0             % Agents have collided
+                warning(['Collision between drone ' num2str(i) ' and obstacle ' num2str(closestObstacle) ' at time ' num2str(t)])
+            end
+        else
+            rho(2) = rho(1);
         end
 
         alpha = 1;
@@ -90,14 +83,21 @@ function dXdt = odefcn(t,X)
         %     u = u_nom - phi/norm(d)^2*d.';
         %     % u = - phi/norm(d)^2*d.';
         % end
-     
+        % rho
+
         if rho > rho_0  % APF
             u(:,i) = u_nom;
         else 
             u(:,i) = u_nom - phi/norm(d)^2*d.';
         end
+        u(:,i) = min(max(u(:,i), -u_max), u_max);
     end 
 
+
+    if max(max(u)) > 10
+        u
+        t
+    end
 
     %% ODE
     % dXdt(1,:) = X(2) + u(1);
