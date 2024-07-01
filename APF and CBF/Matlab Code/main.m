@@ -1,5 +1,5 @@
 close all
-clear all
+% clear all
 clc
 warning on; 
 
@@ -31,7 +31,7 @@ save('Data/Parameters.mat', 'A', 'B', 'n', 'm', 'N_a', 'r_a', 'u_max', 'rho_0', 
 
 %% Initial positions
 X_0 = [0, 2;
-       0, 0];
+       0, 2];
 
 %% Simulation
 t_end = 5;

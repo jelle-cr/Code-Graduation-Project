@@ -1,4 +1,4 @@
-function plot_real_time_trajectories(X, t, r_a, rho_0)
+function plot_real_time_trajectories(X, t)
     % PLOT_REAL_TIME_TRAJECTORIES Plots multiple trajectories in real time
     %   X: 3D matrix containing trajectories (x, y, time)
     %   N_a: Number of agents
@@ -38,19 +38,12 @@ function plot_real_time_trajectories(X, t, r_a, rho_0)
     ymin = ymin - (axrange-yrange)/2 - 2*r_a; ymax = ymax + (axrange-yrange)/2 + 2*r_a;
     xlim([xmin xmax]); ylim([ymin ymax]);
 
-    % Generate the legend entries
-    % legendEntries = cell(1, N_a);
-    % for i = 1:N_a
-    %     legendEntries{i} = ['Agent ' num2str(i)];
-    % end
-
     ax = gca;
     set(ax, 'FontSize', fontsize-5);
     legend('Location', 'northeast', 'BackgroundAlpha', 0.3, 'Interpreter', 'latex', 'FontSize', fontsize);
     % title('Real-Time Trajectories', 'Interpreter', 'latex', 'FontSize', fontsize);
     xlabel('$x$ [m]', 'Interpreter', 'latex', 'FontSize', fontsize);
     ylabel('$y$ [m]', 'Interpreter', 'latex', 'FontSize', fontsize);
-    
 
     % Storage for plot handles (markers and trails)
     circle_handles = zeros(N_a, 1);
@@ -60,7 +53,7 @@ function plot_real_time_trajectories(X, t, r_a, rho_0)
     overlap_marker = zeros(N_a, N_a);   % Initialize
     collision_occurred = false;         % Flag to add collision to legend
     
-    X_o
+    % Plot obstacles
     if ~isempty(X_o)
         for o = 1:size(X_o,2)
             x_current = X_o(1,o);
@@ -68,6 +61,13 @@ function plot_real_time_trajectories(X, t, r_a, rho_0)
             th = 0:pi/50:2*pi;
             xunit = r_o * cos(th) + x_current;
             yunit = r_o * sin(th) + y_current;
+            if o == 1
+                % Create circle in legend
+                plot(NaN, NaN, 'o', 'MarkerEdgeColor', 'black', ...
+                                              'MarkerFaceColor', 'black', ...
+                                              'MarkerSize', 15, ...
+                                              'DisplayName', 'Obstacle');
+            end
             patch(xunit, yunit, 'black', 'HandleVisibility', 'off');
         end
     end
