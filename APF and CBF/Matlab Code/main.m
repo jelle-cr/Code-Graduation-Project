@@ -36,7 +36,7 @@ m = width(B);
 X_0 = [0, 1;0, 1];
 
 % Time vector
-t_end = 10;
+t_end = 5;
 t_step = 0.01;
 t_span = 0:t_step:t_end;  % simulation time
 num_steps = length(t_span);
@@ -53,12 +53,15 @@ for t = 0:t_step:t_end
 end
 
 %% Plot results
+
+    rho_0 = 0.5;
 close all;
-fontsize = 16;
+% fontsize = 16;
 % Functions.plot_real_time_trajectories(X, X_d, t_end, t_step, num_steps, fontsize);
 % plot(X(:,1), X(:,2)); hold on;
 global x_APF
 x_APF = squeeze(X(:,1,:)).';
-Figure_plot()
-% Functions.plot_real_time_trajectories(X, num_steps);
+% Figure_plot()
+t = 0:t_step:t_end;
+Functions.plot_real_time_trajectories(X, t, r_a, rho_0);
 

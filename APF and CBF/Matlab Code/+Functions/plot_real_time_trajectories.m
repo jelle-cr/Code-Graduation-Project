@@ -1,16 +1,19 @@
-function plot_real_time_trajectories(X, X_d, t_end, t_step, num_steps, fontsize)
+function plot_real_time_trajectories(X, t, r_a, rho_0)
     % PLOT_REAL_TIME_TRAJECTORIES Plots multiple trajectories in real time
     %   X: 3D matrix containing trajectories (x, y, time)
     %   N_a: Number of agents
     %   update_interval: Interval between updates in seconds (optional, default 0.1), inaccurate due to calculation time between each step
-    
-    load('./Data/Parameters.mat');
+
+    N_a = size(X,2);
+    n = size(X,1);
+
+    fontsize = 16;
 
     % Colors for different trajectories
     colors = lines(N_a);  
     
     % Initialize subplots
-    left = 100;
+    left = 500;
     bottom = 50;
     width = 800;
     height = 700;
@@ -18,18 +21,39 @@ function plot_real_time_trajectories(X, X_d, t_end, t_step, num_steps, fontsize)
 
     % pause(10);
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subplot 1 Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Trajectory Plot Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     grid on; hold on;
-    axis equal;
-    axlim = 1.5*max(max(max(abs(X)))) + r_a;
-    xlim([-axlim axlim]); ylim([-axlim axlim]);
+    plot(squeeze(X(1,:,:)).',squeeze(X(2,:,:)).', 'LineWidth',2, 'HandleVisibility', 'off'); % Plot the complete trajectories of all agents
+    
+    % The axis limits are calculated such that the resulting plot is
+    % square and centred around the trajectories limits
+    axis equal; % The x and y axis scaling should be equal
+    xmin = min(min(X(1,:,:))); xmax = max(max(X(1,:,:)));
+    ymin = min(min(X(2,:,:))); ymax = max(max(X(2,:,:)));
+    xrange = xmax-xmin; yrange = ymax-ymin;
+    if xrange>yrange
+        axrange = xrange;
+    else
+        axrange = yrange;
+    end
+    xmin = xmin - (axrange-xrange)/2 - 2*r_a; xmax = xmax + (axrange-xrange)/2 + 2*r_a;
+    ymin = ymin - (axrange-yrange)/2 - 2*r_a; ymax = ymax + (axrange-yrange)/2 + 2*r_a;
+    xlim([xmin xmax]); ylim([ymin ymax]);
+
+    % Generate the legend entries
+    % legendEntries = cell(1, N_a);
+    % for i = 1:N_a
+    %     legendEntries{i} = ['Agent ' num2str(i)];
+    % end
+
     ax = gca;
     set(ax, 'FontSize', fontsize-5);
     legend('Location', 'northeast', 'BackgroundAlpha', 0.3, 'Interpreter', 'latex', 'FontSize', fontsize);
-    title('Real-Time Trajectories', 'Interpreter', 'latex', 'FontSize', fontsize);
+    % title('Real-Time Trajectories', 'Interpreter', 'latex', 'FontSize', fontsize);
     xlabel('$x$ [m]', 'Interpreter', 'latex', 'FontSize', fontsize);
     ylabel('$y$ [m]', 'Interpreter', 'latex', 'FontSize', fontsize);
     
+
     % Storage for plot handles (markers and trails)
     circle_handles_nom = zeros(N_a, 1);
     circle_handles = zeros(N_a, 1);
@@ -54,39 +78,14 @@ function plot_real_time_trajectories(X, X_d, t_end, t_step, num_steps, fontsize)
     time_marker_error = zeros(N_a,1);
        
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Main loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    for t = 1:num_steps
+    num_steps = length(t);
+    t_step = t(2)-t(1);
+    target_fps = 20;
+    target_frame_time = 1/target_fps;
+    t = 1;
+    while t <= num_steps
+        tic; % Start timer
         % plot();     % Update subplot 1
-        for agent_id = 1:N_a
-            x_current = X(1,agent_id,t);
-            y_current = X(2,agent_id,t);
-            % Determine if it's time to add a new dot
-            if mod(t, trail_interval/t_step) == 0
-                % Create initial trail dots (if needed)
-                if isempty(trail_dots{agent_id})
-                    trail_dots{agent_id} = plot(x_current, y_current, '.', ...
-                                            'Color', colors(agent_id,:), ...
-                                            'HandleVisibility', 'off'); 
-                end
-
-                % Get the existing dot positions
-                x_data = get(trail_dots{agent_id}, 'XData');
-                y_data = get(trail_dots{agent_id}, 'YData');
-
-                % Add new dot at the front 
-                x_data = [x_current, x_data]; 
-                y_data = [y_current, y_data];
-
-                % Remove the oldest dot (if necessary)
-                if length(x_data) > trail_points
-                    x_data = x_data(1:trail_points); 
-                    y_data = y_data(1:trail_points);
-                end
-
-                % Update the trail plot object
-                set(trail_dots{agent_id}, 'XData', x_data, 'YData', y_data);
-            end 
-            uistack(trail_dots{agent_id}, 'bottom')
-        end
         for agent_id = 1:N_a    % This for loop is required to always plot the repulsion regions under the agents
             x_current = X(1,agent_id,t);
             y_current = X(2,agent_id,t);
@@ -115,6 +114,7 @@ function plot_real_time_trajectories(X, X_d, t_end, t_step, num_steps, fontsize)
                 yunit = r_a * sin(th) + y_current;
                 circle_handles(agent_id) = patch(xunit, yunit, colors(agent_id,:), ...
                                               'FaceColor', colors(agent_id,:), ...
+                                              'FaceAlpha', 0.9, ...
                                               'EdgeColor', 'none', ...
                                               'HandleVisibility', 'off');
                 % Create circle in legend
@@ -127,24 +127,6 @@ function plot_real_time_trajectories(X, X_d, t_end, t_step, num_steps, fontsize)
                                               'YData', r_a * sin(th) + y_current);
             end
         end
-        for agent_id = 1:N_a    % This for loop is required to always plot the goal positions on top
-            x_current = X_d(1,agent_id,t);
-            y_current = X_d(2,agent_id,t);
-
-            % Update or create the nominal agent circle
-            if circle_handles_nom(agent_id) == 0
-                th = 0:pi/50:2*pi; % Angles for creating the circle shape
-                xunit = r_a * cos(th) + x_current;
-                yunit = r_a * sin(th) + y_current;
-                circle_handles_nom(agent_id) = patch(xunit, yunit, colors(agent_id,:), ...
-                                              'FaceColor', 'none', ...
-                                              'EdgeColor', colors(agent_id,:), ...
-                                              'HandleVisibility', 'off');
-            else
-                set(circle_handles_nom(agent_id), 'XData', r_a * cos(th) + x_current, ...
-                                              'YData', r_a * sin(th) + y_current);
-            end
-        end
         % Collision Detection and plotting
         for i = 1:N_a
             for j = 1:N_a
@@ -154,16 +136,13 @@ function plot_real_time_trajectories(X, X_d, t_end, t_step, num_steps, fontsize)
                         delete(overlap_marker(i,j));
                         overlap_marker(i,j) = 0;
                     end
-
-                    dx = X(N_a*n*(t-1) + n*(i-1) + 1) - X(N_a*n*(t-1) + n*(j-1) + 1);
-                    dy = X(N_a*n*(t-1) + n*(i-1) + 1) - X(N_a*n*(t-1) + n*(j-1) + 1);
-                    distance = sqrt(dx^2 + dy^2);
-                    if distance < 2*r_a 
-                        overlap_center_x = (X(N_a*n*(t-1) + n*(i-1) + 1) + X(N_a*n*(t-1) + n*(j-1) + 1))/2; 
-                        overlap_center_y = (X(N_a*n*(t-1) + n*(i-1) + 1) + X(N_a*n*(t-1) + n*(j-1) + 1))/2; 
-
+                    
+                    dist = X(:,i,t) - X(:,j,t);
+                    if dist.'*dist < (2*r_a)^2 
+                        overlap_center = abs(X(:,i,t)+X(:,j,t))/2; 
+                        
                         % Create new overlap marker (to show the collision)
-                        overlap_marker(i,j) = plot(overlap_center_x, overlap_center_y, '*', ...
+                        overlap_marker(i,j) = plot(overlap_center(1), overlap_center(2), '*', ...
                                                   'Color', 'red', 'MarkerSize', 14, ...
                                                   'HandleVisibility', 'off');
                         % On first collision add marker to legend
@@ -179,8 +158,20 @@ function plot_real_time_trajectories(X, X_d, t_end, t_step, num_steps, fontsize)
         % Update time in title
         title(['Real-Time Trajectories ($t$ = ', sprintf('%.2f', t*t_step-t_step), ' [s])'], ...
           'Interpreter', 'latex', 'FontSize', fontsize);
+
+        
     
         drawnow %limitrate; % Force plot update
-        % pause(update_interval);
+
+        elapsedTime = toc;
+        remaining_time = target_frame_time - elapsedTime;
+        % pauseTime = updateInterval - elapsedTime;
+        if remaining_time > 0
+            pause(remaining_time);
+            t = t + 1;
+        else
+            steps_to_skip = ceil(elapsedTime/target_frame_time) - 1
+            t = t+steps_to_skip
+        end
     end    
 end

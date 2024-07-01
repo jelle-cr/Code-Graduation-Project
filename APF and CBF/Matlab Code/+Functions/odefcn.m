@@ -60,7 +60,7 @@ function dXdt = odefcn(t,X)
             u_nom = -a_tilde/(norm(b)^2)*b.';
         end
 
-        u = u_nom;
+        u(:,i) = u_nom;
 
 
         Dist_1=norm(X(:,i)-Obstacle1_center);
@@ -106,13 +106,13 @@ function dXdt = odefcn(t,X)
         % end
 
         if rho > rho_0
-            u = u_nom;
+            u(:,i) = u_nom;
         else 
-            u = u_nom - phi/norm(d)^2*d.';
+            u(:,i) = u_nom - phi/norm(d)^2*d.';
             % u =  - phi/(norm(d)^2)*d.';%%%%%%%%%%%%%%%%%%%%%
         end
         % u(:,i) = min(max(u(:,i), -u_max), u_max);
-    end    
+    end 
 
     u_save=[u_save, u];
 
@@ -127,6 +127,6 @@ function dXdt = odefcn(t,X)
     % dXdt(2,:) = X(1) + u(2);
     dXdt(1,:) = u(1,:);
     dXdt(2,:) = u(2,:);
-    dXdt(:,2) = [0;0];  % agent 2 in standstill
+    % dXdt(:,2) = [0;0];  % agent 2 in standstill
     dXdt = reshape(dXdt, [], 1);
 end
