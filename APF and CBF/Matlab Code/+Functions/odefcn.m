@@ -37,16 +37,16 @@ function dXdt = odefcn(t,X)
 
         u(:,i) = u_nom;
 
-        rho = zeros(2,1);
+        rho = inf(N_a + width(X_o),1);   % Initialize all agent and obstacle distances to inf
         F_rep = zeros(m,1);
         % Compute repulsive force for the agents
         for j = 1:N_a
             if j ~= i
                 p_ij = X(:,i) - X(:,j);
-                rho(1) = norm(p_ij) - 2*r_a;
-                if rho(1) < rho_0 
-                    F_rep = F_rep - K_rep/rho(1)^2*(1/rho(1)-1/rho_0)*p_ij/norm(p_ij);
-                    if rho(1) < 0             % Agents have collided
+                rho(j) = norm(p_ij) - 2*r_a;
+                if rho(j) < rho_0 
+                    F_rep = F_rep - K_rep/rho(j)^2*(1/rho(j)-1/rho_0)*p_ij/norm(p_ij);
+                    if rho(j) < 0             % Agents have collided
                         warning(['Collision between drone ' num2str(i) ' and ' num2str(j) ' at time ' num2str(t)])
                     end
                 end
@@ -57,16 +57,14 @@ function dXdt = odefcn(t,X)
         if ~isempty(X_o)
             for o = 1:width(X_o)
                 p_io = X(:,i) - X_o(:,o);
-                rho(2) = norm(p_io) - r_a - r_o;
-                if rho(2) < rho_0 
-                    F_rep = F_rep - K_rep/rho(2)^2*(1/rho(2)-1/rho_0)*p_ij/norm(p_ij);
+                rho(N_a+o) = norm(p_io) - r_a - r_o;
+                if rho(N_a+o) < rho_0 
+                    F_rep = F_rep - K_rep/rho(N_a+o)^2*(1/rho(N_a+o)-1/rho_0)*p_ij/norm(p_ij);
                 end
-                if rho(2) < 0             % Agents have collided
+                if rho(N_a+o) < 0             % Agents have collided
                     warning(['Collision between drone ' num2str(i) ' and obstacle ' num2str(o) ' at time ' num2str(t)])
                 end
             end
-        else    % No static obstacles present
-            rho = rho(1);
         end
 
         alpha = 1;  % Placeholder, since alpha gets canceled anyways
@@ -77,18 +75,22 @@ function dXdt = odefcn(t,X)
         phi = c_tilde + d*u_nom;
 
         % Control Barrier Function
-        if ((phi < 0) || (phi == 0 && norm(d) == 0))  
-            u(:,i) = u_nom;
-        elseif ((phi >= 0) && (norm(d) ~= 0))
-            u(:,i) = u_nom - phi/norm(d)^2*d.';
+        if ~APF
+            if ((phi < 0) || (phi == 0 && norm(d) == 0))  
+                u(:,i) = u_nom;
+            elseif ((phi >= 0) && (norm(d) ~= 0))
+                u(:,i) = u_nom - phi/norm(d)^2*d.';
+            end
         end
 
         % Artificial Potential Field
-        % if rho > rho_0  
-        %     u(:,i) = u_nom;
-        % else 
-        %     u(:,i) = u_nom - phi/norm(d)^2*d.';
-        % end
+        if APF
+            if rho >= rho_0
+                u(:,i) = u_nom;
+            else 
+                u(:,i) = u_nom - phi/norm(d)^2*d.';
+            end
+        end
 
         % Limit control force
         % u(:,i) = min(max(u(:,i), -u_max), u_max);

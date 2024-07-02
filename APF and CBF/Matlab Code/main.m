@@ -17,6 +17,8 @@ r_a = 0.4;
 u_max = 10;
 
 %% Controller parameters
+APF = true;
+APF = false;
 rho_0 = 0.5;
 K_att = 1;
 K_rep = 0.001;
@@ -27,7 +29,7 @@ X_o = [1, 2.5, 4;
 r_o = 0.4;             % Radius of obstacle    
 X_o = [];
 
-save('Data/Parameters.mat', 'A', 'B', 'n', 'm', 'N_a', 'r_a', 'u_max', 'rho_0', 'K_att', 'K_rep', 'X_o', 'r_o');
+save('Data/Parameters.mat', 'A', 'B', 'n', 'm', 'N_a', 'r_a', 'u_max', 'APF', 'rho_0', 'K_att', 'K_rep', 'X_o', 'r_o');
 
 %% Initial positions
 X_0 = [0, -1, 1;
