@@ -13,11 +13,6 @@ function dXdt = odefcn(t,X)
     f = A*X;
     g = B;
 
-    %% Desired positions
-    % X_d = reshape(Functions.calculate_desired_trajectories(t), n, N_a);
-    X_d = [3, 3, 3; 
-           5, 5, 5];
-
     %% Controller
     u = zeros(m, N_a);
     u_nom = zeros(m, 1);
@@ -46,8 +41,8 @@ function dXdt = odefcn(t,X)
                 rho(j) = norm(p_ij) - 2*r_a;
                 if rho(j) < rho_0 
                     F_rep = F_rep - K_rep/rho(j)^2*(1/rho(j)-1/rho_0)*p_ij/norm(p_ij);
-                    if rho(j) < 0             % Agents have collided
-                        warning(['Collision between drone ' num2str(i) ' and ' num2str(j) ' at time ' num2str(t)])
+                    if rho(j) < 0.001        % Agents have collided
+                        % warning(['Collision between drone ' num2str(i) ' and ' num2str(j) ' at time ' num2str(t)])
                     end
                 end
             end
@@ -61,8 +56,8 @@ function dXdt = odefcn(t,X)
                 if rho(N_a+o) < rho_0 
                     F_rep = F_rep - K_rep/rho(N_a+o)^2*(1/rho(N_a+o)-1/rho_0)*p_ij/norm(p_ij);
                 end
-                if rho(N_a+o) < 0             % Agents have collided
-                    warning(['Collision between drone ' num2str(i) ' and obstacle ' num2str(o) ' at time ' num2str(t)])
+                if rho(N_a+o) < 0.001        % Agents and obstacle have collided
+                    % warning(['Collision between drone ' num2str(i) ' and obstacle ' num2str(o) ' at time ' num2str(t)])
                 end
             end
         end
@@ -93,7 +88,7 @@ function dXdt = odefcn(t,X)
         end
 
         % Limit control force
-        % u(:,i) = min(max(u(:,i), -u_max), u_max);
+        u(:,i) = min(max(u(:,i), -u_max), u_max);
     end 
 
     %% ODE

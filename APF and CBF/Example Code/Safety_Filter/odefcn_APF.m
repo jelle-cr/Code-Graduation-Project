@@ -5,7 +5,7 @@ global Obstacle1_center Obstacle2_center Obstacle3_center
 K_att = 1;
 K_rep = 0.001;
 D_obs = 0.5;
-rho_0 =0.5;
+rho_0 =0.1;
 
 t
 
@@ -53,23 +53,23 @@ else
 end
 c_x=F_rep.'*f_x;
 d_x=F_rep.'*g_x;
-cx_tilde=c_x+norm(F_rep)^2;%   -d_x*u_nom;%%%%%%%%%%%%%%%%%%%%%%%%%%%
+cx_tilde=c_x+norm(F_rep)^2   -d_x*u_nom;%%%%%%%%%%%%%%%%%%%%%%%%%%%
 phi_var=cx_tilde+d_x*u_nom;
-% if phi_var<0
-%     u=u_nom;
-% end
-% if phi_var==0 && norm(d_x)==0
-%    u=u_nom;  
-% end
-% if phi_var>=0 && norm(d_x)~=0
-%  u=-phi_var/(norm(d_x)^2)*d_x.';%       +u_nom;%%%%%%%%%%%%%%  
-% end
-
-if rho_x>rho_0
+if phi_var<0
     u=u_nom;
-else
-    u=-phi_var/(norm(d_x)^2)*d_x.';%       +u_nom;%%%%%%%%%%%%%%  
 end
+if phi_var==0 && norm(d_x)==0
+   u=u_nom;  
+end
+if phi_var>=0 && norm(d_x)~=0
+ u=-phi_var/(norm(d_x)^2)*d_x.'       +u_nom;%%%%%%%%%%%%%%  
+end
+
+% if rho_x>=rho_0
+%     u=u_nom;
+% else
+%     u=-phi_var/(norm(d_x)^2)*d_x.'       +u_nom;%%%%%%%%%%%%%%  
+% end
 
 %%%%%%%%%%%%%%%%%%
 % u = u_nom;
