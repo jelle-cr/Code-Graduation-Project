@@ -1,23 +1,23 @@
 %% Second order (added nominal trajectory)
-function dXdt = odefcn(t,X)      
+function dpdt = odefcn(t,p)      
 
     load('./Data/Parameters.mat');
 
-    X = reshape(X, n, N_a);
-    dXdt = zeros(n, N_a);
+    p = reshape(p, n, N_a);
+    dpdt = zeros(n, N_a);
     
     % Current time
     t
 
     %% Dynamical model
-    f = A*X;
+    f = A*p;
     g = B;
 
     %% Controller
     u = zeros(m, N_a);
     u_nom = zeros(m, 1);
     for i = 1:N_a 
-        F_att = K_att*(X(:,i)-X_d(:,i));
+        F_att = K_att*(p(:,i)-p_d(:,i,floor(t/t_step)+1));
         
         a = F_att.'*f(:,i);
         b = F_att.'*g;
@@ -32,12 +32,12 @@ function dXdt = odefcn(t,X)
 
         u(:,i) = u_nom;
 
-        rho = inf(N_a + width(X_o),1);   % Initialize all agent and obstacle distances to inf
+        rho = inf(N_a + N_o,1);   % Initialize all agent and obstacle distances to inf
         F_rep = zeros(m,1);
         % Compute repulsive force for the agents
         for j = 1:N_a
             if j ~= i
-                p_ij = X(:,i) - X(:,j);
+                p_ij = p(:,i) - p(:,j);
                 rho(j) = norm(p_ij) - 2*r_a;
                 if rho(j) < rho_0 
                     F_rep = F_rep - K_rep/rho(j)^2*(1/rho(j)-1/rho_0)*p_ij/norm(p_ij);
@@ -49,12 +49,12 @@ function dXdt = odefcn(t,X)
         end
 
         % Compute repulsive force for obstacles
-        if ~isempty(X_o)
-            for o = 1:width(X_o)
-                p_io = X(:,i) - X_o(:,o);
+        if N_o > 0
+            for o = 1:N_o
+                p_io = p(:,i) - p_o(:,o);
                 rho(N_a+o) = norm(p_io) - r_a - r_o;
                 if rho(N_a+o) < rho_0 
-                    F_rep = F_rep - K_rep/rho(N_a+o)^2*(1/rho(N_a+o)-1/rho_0)*p_ij/norm(p_ij);
+                    F_rep = F_rep - K_rep/rho(N_a+o)^2*(1/rho(N_a+o)-1/rho_0)*p_io/norm(p_io);
                 end
                 if rho(N_a+o) < 0.001        % Agents and obstacle have collided
                     % warning(['Collision between drone ' num2str(i) ' and obstacle ' num2str(o) ' at time ' num2str(t)])
@@ -93,7 +93,7 @@ function dXdt = odefcn(t,X)
 
     %% ODE
     for i = 1:N_a
-        dXdt(:,i) = A*X(:,i) + B*u(:,i);
+        dpdt(:,i) = A*p(:,i) + B*u(:,i);
     end
-    dXdt = reshape(dXdt, [], 1);
+    dpdt = reshape(dpdt, [], 1);
 end
