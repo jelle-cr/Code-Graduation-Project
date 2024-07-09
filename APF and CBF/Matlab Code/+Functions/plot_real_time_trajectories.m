@@ -16,7 +16,7 @@ function plot_real_time_trajectories(p, t, t_stop)
     height = 700;
     figure('Position', [left bottom width height]);  
 
-    % pause(10);
+    % pause(5);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Trajectory Plot Init %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     grid on; hold on;
@@ -66,14 +66,14 @@ function plot_real_time_trajectories(p, t, t_stop)
 
     % Collision detection 
     overlap_marker_agents = zeros(N_a, N_a);   % Initialize agents
-    if ~isempty(p_o)
-        overlap_marker_obstacles = zeros(N_a, size(p_o,2));   % Initialize obstacles
+    if N_o > 0
+        overlap_marker_obstacles = zeros(N_a, N_o);   % Initialize obstacles
     end
     collision_occurred = false;         % Flag to add collision to legend
     
     % Plot obstacles
-    if ~isempty(p_o)
-        for o = 1:size(p_o,2)
+    if N_o > 0
+        for o = 1:N_o
             if o == 1
                 % Create circle in legend
                 plot(NaN, NaN, 'o', 'MarkerEdgeColor', 'black', ...
@@ -87,15 +87,12 @@ function plot_real_time_trajectories(p, t, t_stop)
             patch(x_circle, y_circle, 'black', 'HandleVisibility', 'off');
         end
     end
-
-
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Main loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     num_steps = length(t);
     t_step = t(2)-t(1);
-    for t = 1:(t_stop/t_step + 1)
+    for t = 1:1:(t_stop/t_step + 1)
         tic
         for i = 1:N_a    % This for loop is required to always plot the repulsion regions under the agents
-            % Update or create the actual agent circle
             th = 0:pi/50:2*pi; % Angles for creating the circle shape
             x_circle = (r_a+rho_0) * cos(th) + p(1,i,t);
             y_circle = (r_a+rho_0) * sin(th) + p(2,i,t);
@@ -155,7 +152,7 @@ function plot_real_time_trajectories(p, t, t_stop)
 
                     dist = p(:,i,t) - p(:,j,t);
                     if dist.'*dist < (2*r_a)^2 
-                        overlap_center = abs(p(:,i,t)+p(:,j,t))/2; 
+                        overlap_center = (p(:,i,t)+p(:,j,t))/2; 
 
                         % Create new overlap marker (to show the collision)
                         overlap_marker_agents(i,j) = plot(overlap_center(1), overlap_center(2), '*', ...
@@ -172,9 +169,9 @@ function plot_real_time_trajectories(p, t, t_stop)
             end
         end
         % Collision Detection for obstacles
-        if ~isempty(p_o)
+        if N_o > 0
             for i = 1:N_a
-                for o = 1:size(p_o,2)
+                for o = 1:N_o
                     % Remove previous overlap marker (if any)
                     if ~isequal(overlap_marker_obstacles(i,o),0)  % No clue why, but this works :)
                         delete(overlap_marker_obstacles(i,o));
@@ -183,7 +180,7 @@ function plot_real_time_trajectories(p, t, t_stop)
 
                     dist = p(:,i,t) - p_o(:,o);
                     if dist.'*dist < (r_a + r_o)^2 
-                        overlap_center = abs(p(:,i,t)+p_o(:,o))/2; 
+                        overlap_center = (p(:,i,t)+p_o(:,o))/2; 
 
                         % Create new overlap marker (to show the collision)
                         overlap_marker_obstacles(i,o) = plot(overlap_center(1), overlap_center(2), '*', ...

@@ -40,8 +40,10 @@ function dpdt = odefcn(t,p)
                 p_ij = p(:,i) - p(:,j);
                 rho(j) = norm(p_ij) - 2*r_a;
                 if rho(j) < rho_0 
-                    F_rep = F_rep - K_rep/rho(j)^2*(1/rho(j)-1/rho_0)*p_ij/norm(p_ij);
-                    if rho(j) < 0.001        % Agents have collided
+                    if rho(j) >= 0
+                        F_rep = F_rep - K_rep/rho(j)^2*(1/rho(j)-1/rho_0)*p_ij/norm(p_ij);
+                    else        % Agents have collided (Also flip sign of repulsive force)
+                        F_rep = F_rep + K_rep/rho(j)^2*(1/rho(j)-1/rho_0)*p_ij/norm(p_ij);
                         % warning(['Collision between drone ' num2str(i) ' and ' num2str(j) ' at time ' num2str(t)])
                     end
                 end
@@ -54,10 +56,12 @@ function dpdt = odefcn(t,p)
                 p_io = p(:,i) - p_o(:,o);
                 rho(N_a+o) = norm(p_io) - r_a - r_o;
                 if rho(N_a+o) < rho_0 
-                    F_rep = F_rep - K_rep/rho(N_a+o)^2*(1/rho(N_a+o)-1/rho_0)*p_io/norm(p_io);
-                end
-                if rho(N_a+o) < 0.001        % Agents and obstacle have collided
-                    % warning(['Collision between drone ' num2str(i) ' and obstacle ' num2str(o) ' at time ' num2str(t)])
+                    if rho(N_a+o) >= 0 
+                        F_rep = F_rep - K_rep/rho(N_a+o)^2*(1/rho(N_a+o)-1/rho_0)*p_io/norm(p_io);
+                    else       % Agent and obstacle have collided
+                        F_rep = F_rep + K_rep/rho(N_a+o)^2*(1/rho(N_a+o)-1/rho_0)*p_io/norm(p_io);
+                        % warning(['Collision between drone ' num2str(i) ' and obstacle ' num2str(o) ' at time ' num2str(t)])
+                    end
                 end
             end
         end

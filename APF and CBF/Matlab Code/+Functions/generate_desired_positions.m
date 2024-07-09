@@ -9,9 +9,14 @@ function p_d = generate_desired_positions(n, N_a, t, numWaypoints, range)
         tWaypoints = linspace(0, 1, numWaypoints);
         tSteps = linspace(0, 1, length(t));
         
-        % Spline interpolation to create smooth trajectories
-        xTrajectory = spline(tWaypoints, waypoints(1, :), tSteps);
-        yTrajectory = spline(tWaypoints, waypoints(2, :), tSteps);
+        if numWaypoints > 1
+            % Spline interpolation to create smooth trajectories
+            xTrajectory = spline(tWaypoints, waypoints(1, :), tSteps);
+            yTrajectory = spline(tWaypoints, waypoints(2, :), tSteps);
+        else
+            xTrajectory = waypoints(1);
+            yTrajectory = waypoints(2);
+        end
         
         % Store the trajectories in the 3D matrix
         p_d(1, i, :) = xTrajectory;
