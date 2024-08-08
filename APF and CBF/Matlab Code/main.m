@@ -13,26 +13,26 @@ M = 0.1;
 %% State space
 % This input method only allows linear systems, change later
 if strcmp(model, 'singleIntegrator')
-    A = [0, 0;
-         0, 0];
+    A = [0, 1;
+         1, 0];
     B = [1, 0;
          0, 1];
 end
 if strcmp(model, 'doubleIntegrator')
     A = [0, 0, 1, 0;
          0, 0, 0, 1;
-         0, 0, -d/M, 0;
-         0, 0, 0, -d/M];
+         0, 0, 0, 0;
+         0, 0, 0, 0];
     B = [0, 0;
          0, 0;
-         1/M, 0;
-         0, 1/M];
+         1, 0;
+         0, 1];
 end
 
 %% Agent Parameters
 n = height(A);
 m = width(B);
-N_a = 1;
+N_a = 4;
 r_a = 0.5;
 u_max = 10;
 
@@ -57,10 +57,10 @@ r_o = 0.4;             % Radius of obstacle
 
 %% Initial states
 formationDistance = 3*r_a;
-p_0 = Functions.generate_initial_positions(N_a, r_a, formationDistance, p_o, r_o);
+p_0 = Functions.generate_initial_positions(model, N_a, r_a, formationDistance, p_o, r_o);
 
 %% Desired states
-numWaypoints = 3;    % =1 results in static goal position   
+numWaypoints = 1;    % =1 results in static goal position   
 p_d = Functions.generate_desired_positions(n, N_a, t, numWaypoints, distanceRange);
 
 %% Save necessary parameters

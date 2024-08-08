@@ -17,9 +17,9 @@ function dpdt = odefcn(t,p)
     u = zeros(m, N_a);
     u_nom = zeros(m, 1);
     for i = 1:N_a 
-        F_att = K_att*(p(:,i)-p_d(:,i,floor(t/t_step)+1));
+        F_att = K_att*(p(1:2,i)-p_d(1:2,i,floor(t/t_step)+1));
         
-        a = F_att.'*f(:,i);
+        a = F_att.'*f(1:2,i);
         b = F_att.'*g;
         a_tilde = a + norm(b)^2;
 
@@ -31,13 +31,13 @@ function dpdt = odefcn(t,p)
         end
 
         u(:,i) = u_nom;
-
+        
         rho = inf(N_a + N_o,1);   % Initialize all agent and obstacle distances to inf
         F_rep = zeros(m,1);
         % Compute repulsive force for the agents
         for j = 1:N_a
             if j ~= i
-                p_ij = p(:,i) - p(:,j);
+                p_ij = p(1:2,i) - p(1:2,j);
                 rho(j) = norm(p_ij) - 2*r_a;
                 if rho(j) < rho_0 
                     if rho(j) >= 0
@@ -53,7 +53,7 @@ function dpdt = odefcn(t,p)
         % Compute repulsive force for obstacles
         if N_o > 0
             for o = 1:N_o
-                p_io = p(:,i) - p_o(:,o);
+                p_io = p(1:2,i) - p_o(1:2,o);
                 rho(N_a+o) = norm(p_io) - r_a - r_o;
                 if rho(N_a+o) < rho_0 
                     if rho(N_a+o) >= 0 
@@ -67,7 +67,7 @@ function dpdt = odefcn(t,p)
         end
 
         alpha = 1;  % Placeholder, since alpha gets canceled anyways
-        c = F_rep.'*f(:,i) - alpha;
+        c = F_rep.'*f(1:2,i) - alpha;
         d = F_rep.'*g;
         gamma = norm(F_rep)^2 + alpha   - d*u_nom;
         c_tilde = c + gamma;

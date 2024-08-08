@@ -1,4 +1,4 @@
-function p_0 = generate_initial_positions(N_a, r_a, formationDistance, p_o, r_o)
+function p_0 = generate_initial_positions(model, N_a, r_a, formationDistance, p_o, r_o)
     % Calculate the initial number of agents along one side of the grid
     side_length = ceil(sqrt(N_a));
     
@@ -53,5 +53,8 @@ function p_0 = generate_initial_positions(N_a, r_a, formationDistance, p_o, r_o)
         if agent_index <= N_a
             side_length = side_length + 1;
         end
+    end
+    if strcmp(model, 'doubleIntegrator')
+        p_0 = [p_0; zeros(2,N_a)];
     end
 end
