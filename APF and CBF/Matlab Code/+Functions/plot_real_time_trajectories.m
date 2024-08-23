@@ -150,9 +150,9 @@ function plot_real_time_trajectories(p, t, t_stop)
                         overlap_marker_agents(i,j) = 0;
                     end
 
-                    dist = p(:,i,t) - p(:,j,t);
+                    dist = p(1:2,i,t) - p(1:2,j,t);
                     if dist.'*dist < (2*r_a)^2 
-                        overlap_center = (p(:,i,t)+p(:,j,t))/2; 
+                        overlap_center = (p(1:2,i,t)+p(1:2,j,t))/2; 
 
                         % Create new overlap marker (to show the collision)
                         overlap_marker_agents(i,j) = plot(overlap_center(1), overlap_center(2), '*', ...
@@ -178,9 +178,9 @@ function plot_real_time_trajectories(p, t, t_stop)
                         overlap_marker_obstacles(i,o) = 0;
                     end
 
-                    dist = p(:,i,t) - p_o(:,o);
+                    dist = p(1:2,i,t) - p_o(:,o);
                     if dist.'*dist < (r_a + r_o)^2 
-                        overlap_center = (p(:,i,t)+p_o(:,o))/2; 
+                        overlap_center = (p(1:2,i,t)+p_o(:,o))/2; 
 
                         % Create new overlap marker (to show the collision)
                         overlap_marker_obstacles(i,o) = plot(overlap_center(1), overlap_center(2), '*', ...

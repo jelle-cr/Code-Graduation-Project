@@ -4,7 +4,7 @@ clc
 warning on; 
 
 model = 'singleIntegrator';
-% model = 'doubleIntegrator';
+model = 'doubleIntegrator';
 
 %% Quadcopter parameters
 d = 0.01;
@@ -13,8 +13,10 @@ M = 0.1;
 %% State space
 % This input method only allows linear systems, change later
 if strcmp(model, 'singleIntegrator')
-    A = [0, 1;
-         1, 0];
+    A = [0, 0;
+         0, 0];
+    % A = [0, 1;
+    %      1, 0];
     B = [1, 0;
          0, 1];
 end
@@ -38,7 +40,7 @@ u_max = 10;
 
 %% Controller parameters
 APF = true;     % Use APF regions
-APF = false;    % Use CBF regions
+% APF = false;    % Use CBF regions
 rho_0 = 0.5;
 K_att = 1;
 K_rep = 0.001;
@@ -63,6 +65,7 @@ p_0 = Functions.generate_initial_positions(model, N_a, r_a, formationDistance, p
 numWaypoints = 1;    % =1 results in static goal position   
 p_d = Functions.generate_desired_positions(n, N_a, t, numWaypoints, distanceRange);
 
+% p_d = 2*ones(size(p_d))
 %% Save necessary parameters
 % load('Data/Parameters.mat');
 save('Data/Parameters.mat', 'model', 'A', 'B', 'n', 'm', 'N_a', 'r_a', 'u_max', 't_step', 'p_0', 'p_d', 'APF', 'rho_0', 'K_att', 'K_rep', 'N_o', 'p_o', 'r_o');
