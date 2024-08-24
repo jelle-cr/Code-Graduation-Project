@@ -1,26 +1,50 @@
 close all
 clear all
 
-n = 500;
-x = linspace(-3,3,n);
-y = linspace(-3,3,n);
+range = 3;
+num_steps = 500;
+x = linspace(-range, range,num_steps);
+y = linspace(-range, range,num_steps);
 
-r_a = 0.5;
-r_o = 0.4;
+%% Simulation parameters
+N_a = 10;                    % Number of trajectories to simulate
+N_o = 15;                    % Number of obstacles
+A = [0, 0;
+     0, 0];
+B = [1, 0;
+     0, 1];
+n = height(A);
+m = width(B);
+u_max = 10;
 
+% Potential field parameters
 K_att = 1;
-N_a = 1;
-p_d = rand(2,N_a)*(3+3)-3;
-U_att = zeros(length(x), length(y));
-F_att = zeros(length(x), length(y), height(p_d));
-
 K_rep = 0.001;
 rho_0 = 0.5;
-N_o = 15;
-p_o = rand(2,N_o)*(3+3)-3;
+p_o = rand(2,N_o)*((range-1)+(range-1))-(range-1);
+
+r_a = 0.5;                  % Radius of agent
+r_o = 0.4;                  % Radius of obstacle
+p_d = rand(2, 1)*((range-1)+(range-1))-(range-1);	% Desired position
+
+% Initial positions
+formationDistance = 3*r_a;
+p_0 = Functions.generate_initial_positions(N_a, r_a, formationDistance, p_o, r_o);
+
+% Simulation time
+t_end = 5;
+t_step = 0.01;
+t = 0:t_step:t_end;  % simulation time
+
+% Save necessary parameters
+% load('Data/Parameters.mat');
+save('Data/Parameters.mat', 'A', 'B', 'n', 'm', 'N_a', 'r_a', 'u_max', 't_step', 'p_0', 'p_d', 'rho_0', 'K_att', 'K_rep', 'N_o', 'p_o', 'r_o');
+
+%% Calculate Potential Field
+U_att = zeros(length(x), length(y));
+F_att = zeros(length(x), length(y), height(p_d));
 U_rep = zeros(length(x), length(y));
 F_rep = zeros(length(x), length(y), height(p_d));
-
 for i = 1:length(x)
     for j = 1:length(y)
         p = [x(i); y(j)];
@@ -46,6 +70,7 @@ Potential = U_att + U_rep;
 Potential = min(Potential, 1*max(max(U_att)));
 Force = -F_att - F_rep;
 
+% Find global minimum
 minPotential = min(min(Potential));
 [globalMinX_idx, globalMinY_idx] = find(Potential == minPotential);
 globalMinX = x(globalMinX_idx);
@@ -53,79 +78,17 @@ globalMinY = y(globalMinY_idx);
 
 % Find local minima using imregionalmin
 localMinima = imregionalmin(Potential);     % Way faster than looping through matrix manually
-
-% Get the indices of the local minima
 [localMinX_idx, localMinY_idx] = find(localMinima);
-
-% Convert indices to coordinates in the x and y arrays
 localMinX = x(localMinX_idx);
 localMinY = y(localMinY_idx);
 
-%% Plotting
-% Surface plot
-figure('Position', [100 50 800 700]);  %Left Bottom Width Height
-surf(x,y,Potential','FaceAlpha',1, 'EdgeColor','none')
-ax = gca;
-set(ax, 'FontSize', 12);
-xlabel('$x$ [m]', 'Interpreter','latex', 'FontSize', 16);
-ylabel('$y$ [m]', 'Interpreter','latex', 'FontSize', 16);
-zlabel('Potential', 'Interpreter','latex', 'FontSize', 16);
+fprintf('Potential Field Generated\n');
 
+%% Simulate
+[p] = reshape(Functions.ode4(@Functions.odefcn, t, reshape(p_0, [], 1)).', n, N_a, length(t)); % Column vector
+fprintf('Simulation Done\n');
 
-% Contour/quiver plot
-figure('Position', [1000 50 800 700]);  %Left Bottom Width Height
-hold on
-% step = floor(n/30);                % Subsample the amount of quiver vectors
-% quiver(x(1:step:end, 1:step:end), y(1:step:end, 1:step:end), Force(1:step:end, 1:step:end, 1)', Force(1:step:end, 1:step:end, 2)', 0.8, 'HandleVisibility', 'off');
-
-% Plot contour lines
-contour(x,y,Potential', 20, 'HandleVisibility', 'off');
-colorbar
-
-% Plot obstacles
-plot(NaN, NaN, 'o', 'MarkerEdgeColor', 'black', ...
-                    'MarkerFaceColor', 'black', ...
-                    'MarkerSize', 15, ...
-                    'DisplayName', 'Obstacle');
-for o = 1:N_o
-    th = 0:pi/50:2*pi;
-    x_circle = r_o * cos(th) + p_o(1,o);
-    y_circle = r_o * sin(th) + p_o(2,o);
-    patch(x_circle, y_circle, 'black', 'HandleVisibility', 'off');
-end
-
-% Plot Local Minima
-for i = 1:length(localMinX)
-    if abs(localMinX(i) - globalMinX) > 1e-6 || abs(localMinY(i) - globalMinY) > 1e-6      % Exclude the Global Minimum
-        plot(localMinX(i), localMinY(i), 'o', 'MarkerSize', 8, ...
-                                 'MarkerEdgeColor', 'green', ...
-                                 'MarkerFaceColor', 'green', ...
-                                 'HandleVisibility', 'off');
-    else
-        plot(NaN, NaN, 'o', 'MarkerEdgeColor', 'green', ...
-                            'MarkerFaceColor', 'green', ...
-                        	'MarkerSize', 8, ...
-                            'DisplayName', 'Local Minimum');
-    end
-end
-
-% Plot Global minimum
-plot(globalMinX, globalMinY, 'o', 'MarkerSize', 8, ...
-                                        'MarkerEdgeColor', 'blue', ...
-                                        'MarkerFaceColor', 'blue', ...
-                                        'DisplayName', 'Global Minimum');
-
-% Plot Goal
-plot(p_d(1), p_d(2), 'x','MarkerSize', 12, ...
-                         'MarkerEdgeColor', 'red', ...
-                         'LineWidth', 2,...
-                         'DisplayName', 'Desired Position');
-
-ax = gca;
-set(ax, 'FontSize', 12);
-xlabel('$x$ [m]', 'Interpreter','latex', 'FontSize', 16);
-ylabel('$y$ [m]', 'Interpreter','latex', 'FontSize', 16);
-legend('Location', 'northwest', 'BackgroundAlpha', 0.3, 'Interpreter', 'latex', 'FontSize', 14);
-axis equal
-xlim([-3, 3]);
-ylim([-3, 3]);
+%% Plot results
+close all
+t_stop = t_end;
+Functions.plot_real_time_trajectories(x, y, Potential, Force, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop);

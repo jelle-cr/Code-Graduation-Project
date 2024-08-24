@@ -124,7 +124,7 @@ function dpdt = odefcn(t,p)
     dpdt = zeros(n, N_a);
 
     % Current time
-    t
+    % t
 
     %% Dynamical model
     f = A*p;
