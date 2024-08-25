@@ -7,8 +7,8 @@ x = linspace(-range, range,num_steps);
 y = linspace(-range, range,num_steps);
 
 %% Simulation parameters
-N_a = 10;                    % Number of trajectories to simulate
-N_o = 15;                    % Number of obstacles
+N_a = 50;                    % Number of trajectories to simulate
+N_o = 8;                    % Number of obstacles
 A = [0, 0;
      0, 0];
 B = [1, 0;
@@ -28,8 +28,7 @@ r_o = 0.4;                  % Radius of obstacle
 p_d = rand(2, 1)*((range-1)+(range-1))-(range-1);	% Desired position
 
 % Initial positions
-formationDistance = 3*r_a;
-p_0 = Functions.generate_initial_positions(N_a, r_a, formationDistance, p_o, r_o);
+p_0 = Functions.generate_initial_positions(N_a, r_a, range, p_o, r_o);
 
 % Simulation time
 t_end = 5;
@@ -39,6 +38,8 @@ t = 0:t_step:t_end;  % simulation time
 % Save necessary parameters
 % load('Data/Parameters.mat');
 save('Data/Parameters.mat', 'A', 'B', 'n', 'm', 'N_a', 'r_a', 'u_max', 't_step', 'p_0', 'p_d', 'rho_0', 'K_att', 'K_rep', 'N_o', 'p_o', 'r_o');
+
+fprintf('Saved System Parameters\n');
 
 %% Calculate Potential Field
 U_att = zeros(length(x), length(y));
