@@ -3,11 +3,11 @@ clear all
 
 range = 3;
 num_steps = 500;
-x = linspace(-range, range,num_steps);
-y = linspace(-range, range,num_steps);
+x = linspace(-range, range, num_steps);
+y = linspace(-range, range, num_steps);
 
 %% Simulation parameters
-N_a = 50;                    % Number of trajectories to simulate
+N_a = 10;                    % Number of trajectories to simulate
 N_o = 8;                    % Number of obstacles
 A = [0, 0;
      0, 0];
@@ -19,7 +19,7 @@ u_max = 10;
 
 % Potential field parameters
 K_att = 1;
-K_rep = 0.001;
+K_rep = 0.1;
 rho_0 = 0.5;
 p_o = rand(2,N_o)*((range-1)+(range-1))-(range-1);
 
@@ -31,7 +31,7 @@ p_d = rand(2, 1)*((range-1)+(range-1))-(range-1);	% Desired position
 p_0 = Functions.generate_initial_positions(N_a, r_a, range, p_o, r_o);
 
 % Simulation time
-t_end = 5;
+t_end = 2.5;
 t_step = 0.01;
 t = 0:t_step:t_end;  % simulation time
 
