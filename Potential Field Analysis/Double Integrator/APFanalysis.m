@@ -8,9 +8,9 @@ x = linspace(-range, range, num_steps);
 y = linspace(-range, range, num_steps);
 
 %% Simulation parameters
-N_a = 10;                    % Number of trajectories to simulate
-N_o = 8;                     % Number of obstacles
-A = [0, 0, 1, 0;
+N_a = 10;           % Number of trajectories to simulate
+N_o = 8;            % Number of obstacles
+A = [0, 0, 1, 0;    % State space
      0, 0, 0, 1;
      0, 0, 0, 0;
      0, 0, 0, 0];
@@ -18,32 +18,32 @@ B = [0, 0;
      0, 0;
      1, 0;
      0, 1];
-n = height(A);
-m = width(B);
-u_max = 10;
+n = height(A);      % Number of states
+m = width(B);       % Number of inputs
+u_max = 10;         % Maximum control input in 1 direction
+r_a = 0.5;          % Radius of agent 
 
 % Potential field parameters
-K_att_p = 1;
-K_att_v = 1;
-K_rep = 0.001;
-rho_0 = 0.5;
-p_o = rand(2, N_o)*((range-1)+(range-1))-(range-1); % Obstacle position
-v_o = zeros(2, N_o);                                % Obstacle velocity
-q_o = [p_o; v_o];                                   % Obstacle state
+K_att_p = 1;        % Attractive position gain
+K_att_v = 1;        % Attractive velocity gain
+K_rep = 0.001;      % Repulsive gain
+rho_0 = 0.5;        % Repulsive potential range
+r_o = 0.4;          % Radius of obstacle
 
-r_a = 0.5;                                          % Radius of agent
-r_o = 0.4;                                          % Radius of obstacle
-p_d = rand(2, 1)*((range-1)+(range-1))-(range-1);	% Desired position
-v_d = zeros(2, 1);	                                % Desired velocity
-q_d = [p_d; v_d];                                   % Desired state
-       
+% Obstacle states
+q_o = [rand(2, N_o)*((range-1)+(range-1))-(range-1);
+       zeros(2, N_o)];
+
+% Desired state(s)
+q_d = [rand(2, 1)*((range-1)+(range-1))-(range-1);	 
+       zeros(2, 1)];
 
 % Initial states
-q_0 = [Functions.generate_initial_positions(N_a, r_a, range, p_o, r_o);
+q_0 = [Functions.generate_initial_positions(N_a, r_a, range, q_o(1:2,:), r_o);
        zeros(2, N_a)];
 
 % Simulation time
-t_end = 50;
+t_end = 5;
 t_step = 0.01;
 t = 0:t_step:t_end;  % simulation time
 
@@ -54,6 +54,9 @@ save('Data/Parameters.mat', 'A', 'B', 'n', 'm', 'N_a', 'r_a', 'u_max', 't_step',
 fprintf('Saved System Parameters\n');
 
 %% Calculate Potential Field
+p_o = q_o(1:2,:);
+p_d = q_d(1:2);
+
 U_att = zeros(length(x), length(y));
 F_att = zeros(length(x), length(y), height(p_d));
 U_rep = zeros(length(x), length(y));
