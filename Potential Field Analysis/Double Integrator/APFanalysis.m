@@ -25,7 +25,7 @@ u_max = 10;
 % Potential field parameters
 K_att_p = 1;
 K_att_v = 1;
-K_rep = 0.1;
+K_rep = 0.001;
 rho_0 = 0.5;
 p_o = rand(2, N_o)*((range-1)+(range-1))-(range-1); % Obstacle position
 v_o = zeros(2, N_o);                                % Obstacle velocity
@@ -43,7 +43,7 @@ q_0 = [Functions.generate_initial_positions(N_a, r_a, range, p_o, r_o);
        zeros(2, N_a)];
 
 % Simulation time
-t_end = 2.5;
+t_end = 50;
 t_step = 0.01;
 t = 0:t_step:t_end;  % simulation time
 
@@ -105,4 +105,4 @@ fprintf('Simulation Done\n');
 %% Plot results
 close all
 t_stop = t_end;
-Functions.plot_real_time_trajectories(x, y, Potential, Force, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop);
+Functions.plot_real_time_trajectories(x, y, Potential, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop);

@@ -2,8 +2,11 @@ function dqdt = odefcn(t,q)
 
     load('./Data/Parameters.mat');
 
-    q = reshape(q, n, N_a);
+    q = reshape(q, n, N_a);         % Full state matrix
     dqdt = zeros(n, N_a);
+
+    p = q(1:2,:);                   % Position state matrix
+    v = q(3:4,:);                   % Velocity state matrix
 
     % Current time
     % t     % Printing this each time step approximately doubles required simulation time
@@ -21,14 +24,15 @@ function dqdt = odefcn(t,q)
         for o = 1:N_o
             p_io = q(1:2,i) - q_o(1:2,o);
             v_io = q(3:4,i) - q_o(3:4,o);
-            p_hat = -p_io/norm(p_io);
+            p_io_norm = norm(p_io);             % To avoid unnecessary recalculation
+            p_hat = -p_io/p_io_norm;
             v_r = v_io.'*p_hat;
-            rho = norm(p_io) - r_a - r_o;   
+            rho = p_io_norm - r_a - r_o;   
             rho_m = v_r^2/(2*u_max);
             if rho - rho_m < rho_0
                 if v_r > 0
                     F_rep_base = K_rep/(rho-rho_m)^2*(1/(rho-rho_m)-1/rho_0);
-                    F_rep_p = F_rep_base*(v_r/u_max*((p_io*p_io.'*v_io)/norm(p_io)^3 - v_io/norm(p_io)) - p_hat);
+                    F_rep_p = F_rep_base*(v_r/u_max*((p_io*p_io.'*v_io)/p_io_norm^3 - v_io/p_io_norm) - p_hat);
                     F_rep_v = F_rep_base*(v_r/u_max*p_hat);
                     if rho - rho_m >= 0
                         F_rep = F_rep + F_rep_p + F_rep_v;
@@ -36,6 +40,13 @@ function dqdt = odefcn(t,q)
                         warning('undefined')
                         F_rep = F_rep - F_rep_p - F_rep_v;    % Collision guaranteed (Also flip sign of repulsive force)
                     end
+                    % if rho < rho_0
+                    %     if rho >= 0
+                    %         F_rep = F_rep + K_rep/rho^2*(1/rho-1/rho_0)*p_io/norm(p_io);
+                    %     else            
+                    %         F_rep = F_rep - K_rep/rho^2*(1/rho-1/rho_0)*p_io/norm(p_io);    % Collision (Also flip sign of repulsive force)
+                    %     end
+                    % end
                 end
             end
         end

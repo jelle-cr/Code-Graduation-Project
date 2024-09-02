@@ -1,4 +1,4 @@
-function plot_real_time_trajectories(x, y, Potential, Force, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop)
+function plot_real_time_trajectories(x, y, Potential, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop)
     load('./Data/Parameters.mat')
     p_0 = q_0(1:2,:);
     p_d = q_d(1:2,1);
@@ -57,21 +57,6 @@ function plot_real_time_trajectories(x, y, Potential, Force, range, localMinX, l
     handles_trajectories = zeros(N_a, 1);   % Handles for trajectories
 
     for t = 1:1:(t_stop/t_step + 1)
-        % for i = 1:N_a    % This for loop is required to always plot the repulsion regions under the agents
-        %     th = 0:pi/50:2*pi; % Angles for creating the circle shape
-        %     x_circle = (r_a+rho_0) * cos(th) + p(1,i,t);
-        %     y_circle = (r_a+rho_0) * sin(th) + p(2,i,t);
-        %     if handles_repulsive(i) == 0
-        %         handles_repulsive(i) = patch(x_circle, y_circle, colors(i,:), ...
-        %                                       'FaceColor', colors(i,:), ...
-        %                                       'FaceAlpha', 0.2, ...
-        %                                       'EdgeColor', 'none', ...
-        %                                       'HandleVisibility', 'off');
-        %     else
-        %         set(handles_repulsive(i), 'XData', x_circle, ...
-        %                                'YData', y_circle);
-        %     end
-        % end
         for i = 1:N_a    % This for loop plots the trajectories
             % Update or create the trajectory
             if handles_trajectories(i) == 0
