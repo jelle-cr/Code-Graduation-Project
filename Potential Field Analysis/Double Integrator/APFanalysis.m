@@ -7,6 +7,9 @@ num_steps = 500;
 x = linspace(-range, range, num_steps);
 y = linspace(-range, range, num_steps);
 
+controller = 'APF';
+controller = 'CLF-CBF';
+
 %% Simulation parameters
 N_a = 10;           % Number of trajectories to simulate
 N_o = 8;            % Number of obstacles
@@ -40,7 +43,7 @@ q_d = [rand(2, 1)*((range-1)+(range-1))-(range-1);
 
 % Initial states
 q_0 = [Functions.generate_initial_positions(N_a, r_a, range, q_o(1:2,:), r_o);
-       zeros(2, N_a)];
+       -0.1*ones(2, N_a)];
 
 % Simulation time
 t_end = 5;
@@ -49,11 +52,11 @@ t = 0:t_step:t_end;  % simulation time
 
 % Save necessary parameters
 % load('Data/Parameters.mat');
-save('Data/Parameters.mat', 'A', 'B', 'n', 'm', 'N_a', 'r_a', 'u_max', 't_step', 'q_0', 'q_d', 'rho_0', 'K_att_p', 'K_att_v', 'K_rep', 'N_o', 'q_o', 'r_o');
+save('Data/Parameters.mat', 'controller', 'A', 'B', 'n', 'm', 'N_a', 'r_a', 'u_max', 't_step', 'q_0', 'q_d', 'rho_0', 'K_att_p', 'K_att_v', 'K_rep', 'N_o', 'q_o', 'r_o');
 
 fprintf('Saved System Parameters\n');
 
-%% Calculate Potential Field
+%% Calculate Positional Potential Field
 p_o = q_o(1:2,:);
 p_d = q_d(1:2);
 

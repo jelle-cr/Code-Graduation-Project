@@ -26,10 +26,38 @@ function dqdt = odefcn(t,q)
             F_rep_p = F_rep_p - grad_U_rep(1:2);
             F_rep_v = F_rep_v - grad_U_rep(3:4);
         end
-        F_att = F_att_p + F_att_v;
-        F_rep = F_rep_p + F_rep_v;
 
-        u(:,i) = F_att + F_rep;
+        if strcmp(controller, 'APF')
+            F_att = F_att_p + F_att_v;
+            F_rep = F_rep_p + F_rep_v;
+            u(:,i) = F_att + F_rep;
+        else
+            u_CLF = zeros(m, 1);
+            F_att = [F_att_p;
+                     F_att_v];
+            F_rep = [F_rep_p;
+                     F_rep_v];
+
+            % Control Lyapunov Function
+            a = -F_att.'*f(:,i);
+            b = -F_att.'*g;
+            sigma = norm(b)^2;
+            a_tilde = a + sigma;
+            if ((a_tilde >= 0) && (sigma ~= 0))
+                u_CLF = a_tilde/sigma*b.';
+            end
+            % Control Barrier Function
+            c = -F_rep.'*f(:,i);
+            d = -F_rep.'*g;
+            gamma = norm(d)^2;
+            c_tilde = c + gamma;
+            phi = c_tilde;
+            if ((phi < 0) || (phi == 0 && gamma == 0))  
+                u(:,i) = u_CLF;
+            elseif ((phi >= 0) && (gamma ~= 0))
+                u(:,i) = u_CLF + phi/gamma*d.';
+            end
+        end
 
         % Limit control force
         u(:,i) = min(max(u(:,i), -u_max), u_max);
