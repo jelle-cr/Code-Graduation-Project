@@ -1,5 +1,5 @@
 % Double integrator system
-close all
+% close all
 clear all
 
 range = 3;
@@ -8,11 +8,11 @@ x = linspace(-range, range, num_steps);
 y = linspace(-range, range, num_steps);
 
 controller = 'APF';
-controller = 'CLF-CBF';
+% controller = 'CLF-CBF';
 
 %% Simulation parameters
-N_a = 10;           % Number of trajectories to simulate
-N_o = 8;            % Number of obstacles
+N_a = 7;            % Number of trajectories to simulate
+N_o = 7;            % Number of obstacles
 A = [0, 0, 1, 0;    % State space
      0, 0, 0, 1;
      0, 0, 0, 0;
@@ -36,14 +36,17 @@ r_o = 0.4;          % Radius of obstacle
 % Obstacle states
 q_o = [rand(2, N_o)*((range-1)+(range-1))-(range-1);
        zeros(2, N_o)];
+% q_o = [1;1.5;0;0];
 
 % Desired state(s)
 q_d = [rand(2, 1)*((range-1)+(range-1))-(range-1);	 
-       zeros(2, 1)];
+       0*ones(2, 1)];
+% q_d = [2;2;0;0];
 
 % Initial states
 q_0 = [Functions.generate_initial_positions(N_a, r_a, range, q_o(1:2,:), r_o);
-       -0.1*ones(2, N_a)];
+       0*ones(2, N_a)];
+% q_0 = [0;0;0;0];
 
 % Simulation time
 t_end = 5;
@@ -109,6 +112,8 @@ p = q(1:2,:,:);
 fprintf('Simulation Done\n');
 
 %% Plot results
+delay = 5;
+
 close all
 t_stop = t_end;
-Functions.plot_real_time_trajectories(x, y, Potential, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop);
+Functions.plot_real_time_trajectories(x, y, Potential, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop, delay);

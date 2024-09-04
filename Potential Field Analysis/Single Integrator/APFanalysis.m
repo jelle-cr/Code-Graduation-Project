@@ -19,7 +19,7 @@ u_max = 10;
 
 % Potential field parameters
 K_att = 1;
-K_rep = 0.1;
+K_rep = 0.001;
 rho_0 = 0.5;
 p_o = rand(2,N_o)*((range-1)+(range-1))-(range-1);
 

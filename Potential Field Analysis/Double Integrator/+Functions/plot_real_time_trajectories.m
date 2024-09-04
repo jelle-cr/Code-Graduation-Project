@@ -1,11 +1,9 @@
-function plot_real_time_trajectories(x, y, Potential, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop)
+function plot_real_time_trajectories(x, y, Potential, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop, delay)
     load('./Data/Parameters.mat')
     p_0 = q_0(1:2,:);
     p_d = q_d(1:2,1);
     p_o = q_o(1:2,:);
     colors = lines(N_a);  
-
-    pause(5);
 
     % Surface plot
     figure('Position', [100 50 800 700]);  %Left Bottom Width Height
@@ -23,6 +21,8 @@ function plot_real_time_trajectories(x, y, Potential, range, localMinX, localMin
     % step = floor(n/30);                % Subsample the amount of quiver vectors
     % quiver(x(1:step:end, 1:step:end), y(1:step:end, 1:step:end), Force(1:step:end, 1:step:end, 1)', Force(1:step:end, 1:step:end, 2)', 0.8, 'HandleVisibility', 'off');
     
+    pause(delay);
+
     % Plot contour lines
     contour(x,y,Potential', 20, 'HandleVisibility', 'off');
     c = colorbar;
