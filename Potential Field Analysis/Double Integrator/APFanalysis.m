@@ -8,6 +8,7 @@ x = linspace(-range, range, num_steps);
 y = linspace(-range, range, num_steps);
 
 controller = 'APF';
+controller = 'semi-APF';
 controller = 'CLF-CBF';
 
 %% Simulation parameters
@@ -30,7 +31,7 @@ r_a = 0.5;          % Radius of agent
 K_att_p = 5;        % Attractive position gain
 K_att_v = 1;        % Attractive velocity gain
 K_rep = 0.001;      % Repulsive gain
-rho_0 = 0.5;        % Repulsive potential range
+rho_0 = 0.1;        % Repulsive potential range
 r_o = 0.4;          % Radius of obstacle
 
 % Obstacle states

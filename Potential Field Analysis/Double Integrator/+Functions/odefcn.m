@@ -19,11 +19,9 @@ function dqdt = odefcn(t,q)
     for i = 1:N_a    
         p = q(1:2,i);                  
         v = q(3:4,i);     
-        % V = 1/2*K_att_p*norm(p-p_d))^2 + 1/2*K_att_v*norm(v-v_d)^2;
+        V = 1/2*K_att_p*norm(p-p_d)^2 + 1/2*K_att_v*norm(v-v_d+mu*(p-p_d))^2;
         F_att_p = K_att_p*(p - p_d) + K_att_v*mu*(v - v_d + mu*(p - p_d));
         F_att_v = K_att_v*(v - v_d + mu*(p - p_d));
-        % F_att_p = K_att_p*(p - p_d);
-        % F_att_v = K_att_v*(v - v_d);
         F_rep_p = zeros(m,1);
         F_rep_v = zeros(m,1);
         % for j = 1:N_a       % Add the repulsive force of all agents
@@ -45,6 +43,7 @@ function dqdt = odefcn(t,q)
             u(:,i) = -F_att - F_rep;
         else
             u_CLF = zeros(m, 1);
+            u_CBF = zeros(m, 1);
             F_att = [F_att_p;
                      F_att_v];
             F_rep = [F_rep_p;
@@ -56,25 +55,34 @@ function dqdt = odefcn(t,q)
             sigma = norm(b)^2;
             a_tilde = a + sigma;
 
-
-            % H = eye(2);
-            % f2 = zeros(2,1);
-            % u(:,i) = quadprog(H,f2,b,-a_tilde);
             if ((a_tilde >= 0) && (norm(b) ~= 0))
-                u_CLF = -a_tilde/(norm(b)^2)*b.';
+                u_CLF = -a_tilde/norm(b)^2*b.';
             end
-            u(:,i) = u_CLF;
-            % u_CLF = -(p(:,i)-q_d(1:2));
+            u(:,i) = u_CLF;     % Initialization
+    
             % Control Barrier Function
             c = F_rep.'*f(:,i);
             d = F_rep.'*g;
             gamma = norm(d)^2;
             c_tilde = c + gamma;
             phi = c_tilde;
-            if ((phi < 0) || (phi == 0 && gamma == 0))  
+            u_CBF = u_CLF - phi/norm(d)^2*d.';
+            if ((phi < 0) || (phi == 0 && norm(d) == 0))  
                 u(:,i) = u_CLF;
-            elseif ((phi >= 0) && (gamma ~= 0))
-                u(:,i) = u_CLF - phi/gamma*d.';
+            elseif ((phi >= 0) && (norm(d) ~= 0))
+                u(:,i) = u_CBF;
+            end
+
+            if phi < 0  % if true S_AC-1 is nonempty
+                t
+            end
+
+            if strcmp(controller, 'semi-APF')
+                if norm(F_rep) == 0 % only true if rho-rho_m > rho_0
+                    u(:,i) = u_CLF;
+                else
+                    u(:,i) = u_CBF;
+                end        
             end
         end
 
