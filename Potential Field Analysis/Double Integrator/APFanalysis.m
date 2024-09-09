@@ -8,11 +8,11 @@ x = linspace(-range, range, num_steps);
 y = linspace(-range, range, num_steps);
 
 controller = 'APF';
-% controller = 'CLF-CBF';
+controller = 'CLF-CBF';
 
 %% Simulation parameters
-N_a = 7;            % Number of trajectories to simulate
-N_o = 7;            % Number of obstacles
+N_a = 1;            % Number of trajectories to simulate
+N_o = 3;            % Number of obstacles
 A = [0, 0, 1, 0;    % State space
      0, 0, 0, 1;
      0, 0, 0, 0;
@@ -27,7 +27,7 @@ u_max = 10;         % Maximum control input in 1 direction
 r_a = 0.5;          % Radius of agent 
 
 % Potential field parameters
-K_att_p = 1;        % Attractive position gain
+K_att_p = 5;        % Attractive position gain
 K_att_v = 1;        % Attractive velocity gain
 K_rep = 0.001;      % Repulsive gain
 rho_0 = 0.5;        % Repulsive potential range
@@ -36,20 +36,23 @@ r_o = 0.4;          % Radius of obstacle
 % Obstacle states
 q_o = [rand(2, N_o)*((range-1)+(range-1))-(range-1);
        zeros(2, N_o)];
-% q_o = [1;1.5;0;0];
+q_o = [1.25, -1, -1;
+       1, 1, -1.25;
+       0, 0, 0;
+       0, 0, 0];
 
 % Desired state(s)
 q_d = [rand(2, 1)*((range-1)+(range-1))-(range-1);	 
        0*ones(2, 1)];
-% q_d = [2;2;0;0];
+q_d = [2;2;0;0];
 
 % Initial states
 q_0 = [Functions.generate_initial_positions(N_a, r_a, range, q_o(1:2,:), r_o);
        0*ones(2, N_a)];
-% q_0 = [0;0;0;0];
+q_0 = [-2.5;-2.5;0;0];
 
 % Simulation time
-t_end = 5;
+t_end = 10;
 t_step = 0.01;
 t = 0:t_step:t_end;  % simulation time
 
@@ -112,7 +115,7 @@ p = q(1:2,:,:);
 fprintf('Simulation Done\n');
 
 %% Plot results
-delay = 5;
+delay = 0;
 
 close all
 t_stop = t_end;

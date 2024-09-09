@@ -4,9 +4,6 @@ function dqdt = odefcn(t,q)
     q = reshape(q, n, N_a);         % Full state matrix
     dqdt = zeros(n, N_a);
 
-    p = q(1:2,:);                   % Position state matrix
-    v = q(3:4,:);                   % Velocity state matrix
-
     % Current time
     % t     % Printing this each time step approximately doubles required simulation time
 
@@ -15,12 +12,27 @@ function dqdt = odefcn(t,q)
     g = B;
 
     %% Controller APF
+    mu = 3;             
+    p_d = q_d(1:2);
+    v_d = q_d(3:4);
     u = zeros(m, N_a);
-    for i = 1:N_a
-        F_att_p = K_att_p*(p(:,i)-q_d(1:2));
-        F_att_v = K_att_v*(v(:,i)-q_d(3:4));
+    for i = 1:N_a    
+        p = q(1:2,i);                  
+        v = q(3:4,i);     
+        % V = 1/2*K_att_p*norm(p-p_d))^2 + 1/2*K_att_v*norm(v-v_d)^2;
+        F_att_p = K_att_p*(p - p_d) + K_att_v*mu*(v - v_d + mu*(p - p_d));
+        F_att_v = K_att_v*(v - v_d + mu*(p - p_d));
+        % F_att_p = K_att_p*(p - p_d);
+        % F_att_v = K_att_v*(v - v_d);
         F_rep_p = zeros(m,1);
         F_rep_v = zeros(m,1);
+        % for j = 1:N_a       % Add the repulsive force of all agents
+        %     if i ~= j
+        %         grad_U_rep = Functions.RepulsiveGradient(q(:,i), q(:,j), n, K_rep, rho_0, r_a, r_a, u_max); %q_i, q_j, K_rep, rho_0, r_a, r_o, a_max
+        %         F_rep_p = F_rep_p + grad_U_rep(1:2);
+        %         F_rep_v = F_rep_v + grad_U_rep(3:4);
+        %     end
+        % end
         for o = 1:N_o       % Add the repulsive force of all obstacles
             grad_U_rep = Functions.RepulsiveGradient(q(:,i), q_o(:,o), n, K_rep, rho_0, r_a, r_o, u_max); %q_i, q_j, K_rep, rho_0, r_a, r_o, a_max
             F_rep_p = F_rep_p + grad_U_rep(1:2);
@@ -33,9 +45,9 @@ function dqdt = odefcn(t,q)
             u(:,i) = -F_att - F_rep;
         else
             u_CLF = zeros(m, 1);
-            F_att = -[F_att_p;
+            F_att = [F_att_p;
                      F_att_v];
-            F_rep = -[F_rep_p;
+            F_rep = [F_rep_p;
                      F_rep_v];
 
             % Control Lyapunov Function
@@ -44,12 +56,15 @@ function dqdt = odefcn(t,q)
             sigma = norm(b)^2;
             a_tilde = a + sigma;
 
+
             % H = eye(2);
-            % f = zeros(2,1);
-            % u(:,i) = quadprog(H,f,b,-a_tilde);
-            if ((a_tilde >= 0) && (sigma ~= 0))
-                u_CLF = -a_tilde/sigma*b.';
+            % f2 = zeros(2,1);
+            % u(:,i) = quadprog(H,f2,b,-a_tilde);
+            if ((a_tilde >= 0) && (norm(b) ~= 0))
+                u_CLF = -a_tilde/(norm(b)^2)*b.';
             end
+            u(:,i) = u_CLF;
+            % u_CLF = -(p(:,i)-q_d(1:2));
             % Control Barrier Function
             c = F_rep.'*f(:,i);
             d = F_rep.'*g;
