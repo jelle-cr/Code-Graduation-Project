@@ -7,8 +7,8 @@ x = linspace(-range, range, num_steps);
 y = linspace(-range, range, num_steps);
 
 %% Simulation parameters
-N_a = 10;                    % Number of trajectories to simulate
-N_o = 8;                    % Number of obstacles
+N_a = 1;                    % Number of trajectories to simulate
+N_o = 1;                    % Number of obstacles
 A = [0, 0;
      0, 0];
 B = [1, 0;

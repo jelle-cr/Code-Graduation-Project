@@ -13,17 +13,18 @@ function plot_real_time_trajectories(x, y, Potential, Force, range, localMinX, l
     ylabel('$y$ [m]', 'Interpreter','latex', 'FontSize', 16);
     zlabel('$U(p)$', 'Interpreter','latex', 'FontSize', 16);
     title('Potential Function', 'Interpreter', 'latex', 'FontSize', 18);
-    
+    % hold on;
+
     % Contour/quiver plot
     figure('Position', [100 50 800 700]);  %Left Bottom Width Height
     hold on
     % step = floor(n/30);                % Subsample the amount of quiver vectors
     % quiver(x(1:step:end, 1:step:end), y(1:step:end, 1:step:end), Force(1:step:end, 1:step:end, 1)', Force(1:step:end, 1:step:end, 2)', 0.8, 'HandleVisibility', 'off');
-    
+
     % Plot contour lines
     contour(x,y,Potential', 20, 'HandleVisibility', 'off');
     c = colorbar;
-    
+
     % Plot obstacles
     plot(NaN, NaN, 'o', 'MarkerEdgeColor', 'black', ...
                         'MarkerFaceColor', 'black', ...
@@ -35,7 +36,7 @@ function plot_real_time_trajectories(x, y, Potential, Force, range, localMinX, l
         y_circle = r_o * sin(th) + p_o(2,o);
         patch(x_circle, y_circle, 'black', 'HandleVisibility', 'off');
     end
-    
+
     % Formatting
     ax = gca;
     set(ax, 'FontSize', 12);
@@ -54,21 +55,21 @@ function plot_real_time_trajectories(x, y, Potential, Force, range, localMinX, l
     handles_trajectories = zeros(N_a, 1);   % Handles for trajectories
 
     for t = 1:1:(t_stop/t_step + 1)
-        % for i = 1:N_a    % This for loop is required to always plot the repulsion regions under the agents
-        %     th = 0:pi/50:2*pi; % Angles for creating the circle shape
-        %     x_circle = (r_a+rho_0) * cos(th) + p(1,i,t);
-        %     y_circle = (r_a+rho_0) * sin(th) + p(2,i,t);
-        %     if handles_repulsive(i) == 0
-        %         handles_repulsive(i) = patch(x_circle, y_circle, colors(i,:), ...
-        %                                       'FaceColor', colors(i,:), ...
-        %                                       'FaceAlpha', 0.2, ...
-        %                                       'EdgeColor', 'none', ...
-        %                                       'HandleVisibility', 'off');
-        %     else
-        %         set(handles_repulsive(i), 'XData', x_circle, ...
-        %                                'YData', y_circle);
-        %     end
-        % end
+        for i = 1:N_a    % This for loop is required to always plot the repulsion regions under the agents
+            th = 0:pi/50:2*pi; % Angles for creating the circle shape
+            x_circle = (r_a+rho_0) * cos(th) + p(1,i,t);
+            y_circle = (r_a+rho_0) * sin(th) + p(2,i,t);
+            if handles_repulsive(i) == 0
+                handles_repulsive(i) = patch(x_circle, y_circle, colors(i,:), ...
+                                              'FaceColor', colors(i,:), ...
+                                              'FaceAlpha', 0.2, ...
+                                              'EdgeColor', 'none', ...
+                                              'HandleVisibility', 'off');
+            else
+                set(handles_repulsive(i), 'XData', x_circle, ...
+                                       'YData', y_circle);
+            end
+        end
         for i = 1:N_a    % This for loop plots the trajectories
             % Update or create the trajectory
             if handles_trajectories(i) == 0
@@ -122,14 +123,14 @@ function plot_real_time_trajectories(x, y, Potential, Force, range, localMinX, l
                                         'DisplayName', 'Equilibrium Point');
                 end
             end
-            
+
             % Plot Global minimum
             plot(globalMinX, globalMinY, '*', 'lineWidth', 1.5, ...
                                               'MarkerSize', 12, ...
                                               'MarkerEdgeColor', '#EDB120', ...
                                               'MarkerFaceColor', '#EDB120', ...
                                               'DisplayName', 'Global Minimum');
-        
+
             % Plot initial positions
             plot(NaN, NaN, 'o','MarkerSize', 10, ...
                                'MarkerEdgeColor', 'blue', ...
@@ -141,7 +142,7 @@ function plot_real_time_trajectories(x, y, Potential, Force, range, localMinX, l
                                'LineWidth', 2,...
                                'HandleVisibility', 'off');
             end
-            
+
             % Plot Goal
             plot(p_d(1), p_d(2), 'x','MarkerSize', 12, ...
                                      'MarkerEdgeColor', 'red', ...
@@ -152,6 +153,25 @@ function plot_real_time_trajectories(x, y, Potential, Force, range, localMinX, l
         % Update time in title
         title(['Trajectories From Various Initial Positions ($t$ = ', sprintf('%.2f', t*t_step-t_step), ' [s])'], ...
           'Interpreter', 'latex', 'FontSize', 18);
+
+        % % Generate the sphere data
+        % xpos = p(1,1,t);
+        % xindex = find(abs(x-xpos)==min(abs(x-xpos)));
+        % ypos = p(2,1,t);
+        % yindex = find(abs(y-ypos)==min(abs(y-ypos)));
+        % % [xpos, ypos, Potential(xindex, yindex)] = sphere;
+        % 
+        % [rX, rY, rZ] = sphere;
+        % 
+        % % Scale and position the sphere
+        % r = 0.5;  % Radius of the sphere
+        % x_center = 0;  % X-coordinate of the sphere's center
+        % y_center = 0;  % Y-coordinate of the sphere's center
+        % z_center = 1;  % Z-coordinate of the sphere's center (height)
+        % 
+        % % Plot the sphere with a single color (e.g., red)
+        % sphereSurface = surf(xpos + r_a * rX, ypos + r_a * rY, Potential(xindex,yindex) + r_a * rZ);
+        % set(sphereSurface, 'FaceColor', 'r', 'EdgeColor', 'none');  % Red sphere, no edges
 
         drawnow %limitrate; % Force plot update
     end

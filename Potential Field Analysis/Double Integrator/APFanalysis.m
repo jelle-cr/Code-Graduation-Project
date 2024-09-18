@@ -8,12 +8,12 @@ x = linspace(-range, range, num_steps);
 y = linspace(-range, range, num_steps);
 
 controller = 'APF';
-controller = 'semi-APF';
+% controller = 'semi-APF';
 controller = 'CLF-CBF';
 
 %% Simulation parameters
 N_a = 1;            % Number of trajectories to simulate
-N_o = 3;            % Number of obstacles
+N_o = 1;            % Number of obstacles
 A = [0, 0, 1, 0;    % State space
      0, 0, 0, 1;
      0, 0, 0, 0;
@@ -31,16 +31,20 @@ r_a = 0.5;          % Radius of agent
 K_att_p = 5;        % Attractive position gain
 K_att_v = 1;        % Attractive velocity gain
 K_rep = 0.001;      % Repulsive gain
-rho_0 = 0.1;        % Repulsive potential range
+rho_0 = 0.2;        % Repulsive potential range
 r_o = 0.4;          % Radius of obstacle
 
 % Obstacle states
 q_o = [rand(2, N_o)*((range-1)+(range-1))-(range-1);
        zeros(2, N_o)];
-q_o = [1.25, -1, -1;
-       1, 1, -1.25;
-       0, 0, 0;
-       0, 0, 0];
+% q_o = [-1, -1, 1.25;
+%        -1.25, 1, 1;
+%        0, 0, 0;
+%        0, 0, 0];
+q_o = [-1;
+       -1.25;
+       0;
+       0];
 
 % Desired state(s)
 q_d = [rand(2, 1)*((range-1)+(range-1))-(range-1);	 
@@ -65,7 +69,9 @@ fprintf('Saved System Parameters\n');
 
 %% Calculate Positional Potential Field
 p_o = q_o(1:2,:);
+v_o = q_o(3:4,:);
 p_d = q_d(1:2);
+v_d = q_d(3:4);
 
 U_att = zeros(length(x), length(y));
 F_att = zeros(length(x), length(y), height(p_d));
@@ -111,13 +117,57 @@ localMinY = y(localMinY_idx);
 fprintf('Potential Field Generated\n');
 
 %% Simulate
+tic
 [q] = reshape(Functions.ode4(@Functions.odefcn, t, reshape(q_0, [], 1)).', n, N_a, length(t)); % Column vector
 p = q(1:2,:,:);
+v = q(3:4,:,:);
 fprintf('Simulation Done\n');
+toc
 
 %% Plot results
+close all
+mu = 3;
+V = zeros(length(t),1);
+h = zeros(length(t),N_o);
+a_max = u_max;
+for i = 1:length(t)
+    V(i) = 1/2*K_att_p*norm(p(:,:,i)-p_d)^2 + 1/2*K_att_v*norm(v(:,:,i)-v_d+mu*(p(:,:,i)-p_d))^2;
+    for o = 1:N_o
+        p_ij = p(:,:,i) - p_o(:,o);
+        v_ij = v(:,:,i) - v_o(:,o);
+        p_ij_norm = norm(p_ij);             % To avoid unnecessary recalculation
+        p_ij_hat = -p_ij/p_ij_norm;
+        v_r_ij = v_ij.'*p_ij_hat;
+        rho = p_ij_norm - r_a - r_o;   
+        rho_m = v_r_ij^2/(2*a_max);
+        h(i,o) = rho-rho_m;
+    end
+end
+
+    figure('Position', [400 50 800 700]);  %Left Bottom Width Height
+    subplot(2,1,1);
+    plot(t,V,'LineWidth', 2)
+    ax = gca;
+    set(ax, 'FontSize', 12);
+    grid on;
+    xlabel('$t$ [s]', 'Interpreter','latex', 'FontSize', 16);
+    ylabel('$V(q)$', 'Interpreter','latex', 'FontSize', 16);
+    title('Lyapunov function over time', 'Interpreter', 'latex', 'FontSize', 18);
+    
+    subplot(2,1,2);
+    plot(t,h,'LineWidth', 2); hold on;
+    plot([t(1); t(end)],[rho_0; rho_0],'LineWidth', 2, 'Color','black','LineStyle', '--');
+    ax = gca;
+    set(ax, 'FontSize', 12);
+    grid on;
+    xlabel('$t$ [s]', 'Interpreter','latex', 'FontSize', 16);
+    ylabel('$h(q)$', 'Interpreter','latex', 'FontSize', 16);
+    title('Barrier functions over time', 'Interpreter', 'latex', 'FontSize', 18);
+    legend({'Obstacle 1', 'Obstacle 2', 'Obstacle 3', '$\rho_0$'}, 'Location', 'northwest', 'BackgroundAlpha', 0.7, 'Interpreter', 'latex', 'FontSize', 14);
+    
+
 delay = 0;
 
-close all
 t_stop = t_end;
 Functions.plot_real_time_trajectories(x, y, Potential, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop, delay);
+
