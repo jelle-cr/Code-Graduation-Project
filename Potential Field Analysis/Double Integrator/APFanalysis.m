@@ -1,6 +1,7 @@
 % Double integrator system
 % close all
 clear all
+clc
 
 range = 3;
 num_steps = 500;
@@ -28,9 +29,15 @@ u_max = 10;         % Maximum control input in 1 direction
 r_a = 0.5;          % Radius of agent 
 
 % Potential field parameters
-K_att_p = 5;        % Attractive position gain
-K_att_v = 1;        % Attractive velocity gain
-K_rep = 0.001;      % Repulsive gain
+k_att_p = 5;        % Attractive position gain
+k_att_v = 1;        % Attractive velocity gain
+k_att_c = 1;        % Attractive coupling gain, note k_p*k_v > k_c^2
+if k_att_p*k_att_v <= k_att_c^2
+    warning('W matrix is not positive definite');
+end
+W_att = [k_att_p*eye(m), k_att_c*eye(m); 
+         k_att_c*eye(m), k_att_v*eye(m)];
+k_rep = 0.001;      % Repulsive gain
 rho_0 = 0.2;        % Repulsive potential range
 r_o = 0.4;          % Radius of obstacle
 
@@ -57,13 +64,13 @@ q_0 = [Functions.generate_initial_positions(N_a, r_a, range, q_o(1:2,:), r_o);
 q_0 = [-2.5;-2.5;0;0];
 
 % Simulation time
-t_end = 10;
+t_end = 5;
 t_step = 0.01;
 t = 0:t_step:t_end;  % simulation time
 
 % Save necessary parameters
 % load('Data/Parameters.mat');
-save('Data/Parameters.mat', 'controller', 'A', 'B', 'n', 'm', 'N_a', 'r_a', 'u_max', 't_step', 'q_0', 'q_d', 'rho_0', 'K_att_p', 'K_att_v', 'K_rep', 'N_o', 'q_o', 'r_o');
+save('Data/Parameters.mat', 'controller', 'A', 'B', 'n', 'm', 'N_a', 'r_a', 'u_max', 't_step', 'q_0', 'q_d', 'rho_0', 'W_att', 'k_rep', 'N_o', 'q_o', 'r_o');
 
 fprintf('Saved System Parameters\n');
 
@@ -80,16 +87,16 @@ F_rep = zeros(length(x), length(y), height(p_d));
 for i = 1:length(x)
     for j = 1:length(y)
         p = [x(i); y(j)];
-        U_att(i,j) = 1/2*K_att_p*norm(p - p_d(1:2));
-        F_att(i,j,:) = K_att_p*(p - p_d(1:2));
+        U_att(i,j) = 1/2*k_att_p*norm(p - p_d(1:2));
+        F_att(i,j,:) = k_att_p*(p - p_d(1:2));
 
         for o = 1:N_o
             rho = norm(p - p_o(1:2,o)) - r_a - r_o;   
             if rho < rho_0
                 rho = max(rho, 1e-6);           % In order to fill in the cylinder
-                U_rep(i,j) = U_rep(i,j) + 1/2*K_rep*(1/rho - 1/rho_0)^2;
+                U_rep(i,j) = U_rep(i,j) + 1/2*k_rep*(1/rho - 1/rho_0)^2;
                 if rho > 1e-1                   % Only calculate this outside of the obstacles, otherwise we get scaling issues
-                    F_rep(i,j,:) = squeeze(F_rep(i,j,:)) -K_rep/rho^2*(1/rho - 1/rho_0)*(p - p_o(1:2,o))/norm(p - p_o(1:2,o));
+                    F_rep(i,j,:) = squeeze(F_rep(i,j,:)) -k_rep/rho^2*(1/rho - 1/rho_0)*(p - p_o(1:2,o))/norm(p - p_o(1:2,o));
                 else
                     F_att(i,j,:) = [0; 0];      % We don't want any quivers to be drawn near the obstacle
                 end
@@ -126,12 +133,12 @@ toc
 
 %% Plot results
 close all
-mu = 3;
 V = zeros(length(t),1);
 h = zeros(length(t),N_o);
 a_max = u_max;
 for i = 1:length(t)
-    V(i) = 1/2*K_att_p*norm(p(:,:,i)-p_d)^2 + 1/2*K_att_v*norm(v(:,:,i)-v_d+mu*(p(:,:,i)-p_d))^2;
+    e_q = [p(:,:,i)-p_d; v(:,:,i)-v_d];       % State error
+    V(i) = 1/2*e_q.'*W_att*e_q;    % Lyapunov function
     for o = 1:N_o
         p_ij = p(:,:,i) - p_o(:,o);
         v_ij = v(:,:,i) - v_o(:,o);

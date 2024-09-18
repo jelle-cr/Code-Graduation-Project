@@ -1,4 +1,4 @@
-function [grad_U_rep, rho, rho_m] = RepulsiveGradient(q_i, q_j, n, K_rep, rho_0, r_a, r_o, a_max)
+function [grad_U_rep, rho, rho_m] = RepulsiveGradient(q_i, q_j, n, k_rep, rho_0, r_a, r_o, a_max)
     p_i = q_i(1:2);
     v_i = q_i(3:4);
     p_j = q_j(1:2);
@@ -14,7 +14,7 @@ function [grad_U_rep, rho, rho_m] = RepulsiveGradient(q_i, q_j, n, K_rep, rho_0,
     grad_U_rep = zeros(n,1);
     if rho - rho_m < rho_0
         if v_r_ij > 0
-            grad_U_rep_base = -K_rep/(rho-rho_m)^2*(1/(rho-rho_m)-1/rho_0);
+            grad_U_rep_base = -k_rep/(rho-rho_m)^2*(1/(rho-rho_m)-1/rho_0);
             grad_U_rep_p = grad_U_rep_base*(v_r_ij/a_max*(v_ij - v_r_ij*p_ij_hat)/p_ij_norm - p_ij_hat);
             grad_U_rep_v = grad_U_rep_base*(-v_r_ij/a_max*p_ij_hat);
             if rho - rho_m >= 0
@@ -28,4 +28,9 @@ function [grad_U_rep, rho, rho_m] = RepulsiveGradient(q_i, q_j, n, K_rep, rho_0,
             end
         end
     end
+
+    v_r_ij
+    rho
+    rho_m
+    h = rho-rho_m
 end

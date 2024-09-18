@@ -5,55 +5,58 @@ function dqdt = odefcn(t,q)
     dqdt = zeros(n, N_a);
 
     % Current time
-    % t     % Printing this each time step approximately doubles required simulation time
+    t     % Printing this each time step approximately doubles required simulation time
 
     %% Dynamical model
     f = A*q;
     g = B;
 
     %% Controller APF
-    mu = 3;             
+                 
     p_d = q_d(1:2);
     v_d = q_d(3:4);
     u = zeros(m, N_a);
     for i = 1:N_a    
         p = q(1:2,i);                  
-        v = q(3:4,i);     
-        V = 1/2*K_att_p*norm(p-p_d)^2 + 1/2*K_att_v*norm(v-v_d+mu*(p-p_d))^2;
-        F_att_p = K_att_p*(p - p_d) + K_att_v*mu*(v - v_d + mu*(p - p_d));
-        F_att_v = K_att_v*(v - v_d + mu*(p - p_d));
+        v = q(3:4,i);  
+        e_q = [p-p_d; v-v_d];       % State error
+        V = 1/2*e_q.'*W_att*e_q;    % Lyapunov function
+        F_att = W_att*e_q;          % Gradient of Lyapunov function
         F_rep_p = zeros(m,1);
         F_rep_v = zeros(m,1);
         % for j = 1:N_a       % Add the repulsive force of all agents
         %     if i ~= j
-        %         grad_U_rep = Functions.RepulsiveGradient(q(:,i), q(:,j), n, K_rep, rho_0, r_a, r_a, u_max); %q_i, q_j, K_rep, rho_0, r_a, r_o, a_max
+        %         grad_U_rep = Functions.RepulsiveGradient(q(:,i), q(:,j), n, k_rep, rho_0, r_a, r_a, u_max); %q_i, q_j, k_rep, rho_0, r_a, r_o, a_max
         %         F_rep_p = F_rep_p + grad_U_rep(1:2);
         %         F_rep_v = F_rep_v + grad_U_rep(3:4);
         %     end
         % end
-        % [~, o] = min(sum((q_o(1:2,:) - p(:,i)).^2, 1));     % Find closest obstacle index
         for o = 1:N_o       % Add the repulsive force of all obstacles
-            [grad_U_rep, rho, rho_m] = Functions.RepulsiveGradient(q(:,i), q_o(:,o), n, K_rep, rho_0, r_a, r_o, u_max); %q_i, q_j, K_rep, rho_0, r_a, r_o, a_max
+            [grad_U_rep, rho, rho_m] = Functions.RepulsiveGradient(q(:,i), q_o(:,o), n, k_rep, rho_0, r_a, r_o, u_max); %q_i, q_j, k_rep, rho_0, r_a, r_o, a_max
             F_rep_p = F_rep_p + grad_U_rep(1:2);
             F_rep_v = F_rep_v + grad_U_rep(3:4);
         end
+        % rho
+        if t > 1
+            if norm(F_rep_p+F_rep_v)>0
+                warning('How')
+            end
+        end
 
         if strcmp(controller, 'APF')
-            F_att = F_att_p + F_att_v;
+            F_att = F_att(1:2) + F_att(3:4);
             F_rep = F_rep_p + F_rep_v;
             u(:,i) = -F_att - F_rep;
         else
             u_CLF = zeros(m, 1);
             u_CBF = zeros(m, 1);
-            F_att = [F_att_p;
-                     F_att_v];
             F_rep = [F_rep_p;
                      F_rep_v];
 
-            % Control Lyapunov Function
+            % Control Lyapunov Inequality
             a = F_att.'*f(:,i);
             b = F_att.'*g;
-            sigma = norm(b)^2;%5*V;%
+            sigma = 10*V;
             a_tilde = a + sigma;
 
             if ((a_tilde >= 0) && (norm(b) ~= 0))
@@ -61,49 +64,49 @@ function dqdt = odefcn(t,q)
             end
             u(:,i) = u_CLF;     % Initialization
     
-            % Control Barrier Function
+            % Control Barrier Inequality
             c = F_rep.'*f(:,i);
             d = F_rep.'*g;
 
             h = rho-rho_m;
-            gamma = -h;%norm(d)^2;%-h;
+            gamma = -h;%norm(d)^2;
             c_tilde = c + gamma;
-            phi = c_tilde;
-            u_CBF = u_CLF - phi/norm(d)^2*d.';
-            
+            phi = c_tilde + d*u_CLF;
+
+            H = eye(2);
+            F = -u_CLF;
+            options = optimoptions('quadprog', 'Display', 'none'); % Runs approx 2.5 times faster 
+            if norm(F_rep) ~= 0
+                u(:,i) = quadprog(H,F,d,-c_tilde, [],[],[],[],[], options);
+            end
+
             % if phi < 0  % if true S_AC-1 is nonempty
             %     t
             % end
             if strcmp(controller, 'CLF-CBF')
-                if ((phi < 0) || (phi == 0 && norm(d) == 0))  
-                    u(:,i) = u_CLF;
+                if (phi < 0) || (phi == 0 && norm(d) == 0)
+                    u_CBF = u_CLF;
                 elseif ((phi >= 0) && (norm(d) ~= 0))
-                    u(:,i) = u_CBF;
+                    u_CBF = u_CLF - phi/norm(d)^2*d.';
                 end
             elseif strcmp(controller, 'semi-APF')
                 if norm(F_rep) == 0 % only true if rho-rho_m > rho_0
-                    u(:,i) = u_CLF;
+                    u_CBF = u_CLF;
                 else
-                    u(:,i) = u_CBF;
+                    u_CBF = u_CLF - phi/norm(d)^2*d.';
                 end        
             end
 
-            % H = eye(2);
-            % f = -u_CLF;
-            % options = optimoptions('quadprog', 'Display', 'none'); % Runs approx 2.5 times faster 
-            % u(:,i) = quadprog(H,f,d,-c_tilde, [],[],[],[],[], options);
-
-            H = eye(2);
-            f = -u_CLF;
-            [A_closest, b_closest] = distanceToPolytope(p,r_a);;
-            A_CBF = -A_closest;
-            b_CBF = 1*A_closest*v+1*(A_closest*p+b_closest);
-            options = optimoptions('quadprog', 'Display', 'none'); % Runs approx 2.5 times faster 
-            u(:,i) = quadprog(H,f,A_CBF,b_CBF, [],[],[],[],[], options);
-
+            % if abs(u(:,i)-u_CBF) > 0.001
+            %     t
+            %     u_CLF
+            %     u_CBF
+            %     u(:,i)
+            % end
+            % u(:,i) = u_CBF;
         end
         % Limit control force
-        u(:,i) = min(max(u(:,i), -u_max), u_max);
+        % u(:,i) = min(max(u(:,i), -u_max), u_max);
     end 
 
 
