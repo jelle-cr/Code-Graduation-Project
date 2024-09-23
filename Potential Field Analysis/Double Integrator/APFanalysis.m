@@ -56,12 +56,12 @@ q_o = [-1;
 % Desired state(s)
 q_d = [rand(2, 1)*((range-1)+(range-1))-(range-1);	 
        0*ones(2, 1)];
-q_d = [2;2;0;0];
+q_d = [0;0;0;0];
 
 % Initial states
 q_0 = [Functions.generate_initial_positions(N_a, r_a, range, q_o(1:2,:), r_o);
        0*ones(2, N_a)];
-q_0 = [-2.5;-2.5;0;0];
+q_0 = [-3;-2.5;0;0];
 
 % Simulation time
 t_end = 5;
@@ -135,6 +135,7 @@ toc
 close all
 V = zeros(length(t),1);
 h = zeros(length(t),N_o);
+h_index = [];   % Doesn't work for multiple obstacles
 a_max = u_max;
 for i = 1:length(t)
     e_q = [p(:,:,i)-p_d; v(:,:,i)-v_d];       % State error
@@ -145,11 +146,19 @@ for i = 1:length(t)
         p_ij_norm = norm(p_ij);             % To avoid unnecessary recalculation
         p_ij_hat = -p_ij/p_ij_norm;
         v_r_ij = v_ij.'*p_ij_hat;
+        if v_r_ij > 0
+            h_index = [h_index;i];
+        end
         rho = p_ij_norm - r_a - r_o;   
         rho_m = v_r_ij^2/(2*a_max);
         h(i,o) = rho-rho_m;
     end
 end
+
+% Capture and plot only segments of h where v_r_ij > 0
+diffIndices = diff(h_index); % Compute the difference between consecutive indices
+splitPoints = find(diffIndices ~= 1); % Identify the points where a gap appears
+splitPoints = [0; splitPoints; length(h_index)];
 
     figure('Position', [400 50 800 700]);  %Left Bottom Width Height
     subplot(2,1,1);
@@ -161,8 +170,13 @@ end
     ylabel('$V(q)$', 'Interpreter','latex', 'FontSize', 16);
     title('Lyapunov function over time', 'Interpreter', 'latex', 'FontSize', 18);
     
-    subplot(2,1,2);
-    plot(t,h,'LineWidth', 2); hold on;
+    subplot(2,1,2); hold on;
+    for i = 1:length(splitPoints)-1
+        % Get the start and end indices of the current section
+        sectionStart = h_index(splitPoints(i)+1);
+        sectionEnd = h_index(splitPoints(i+1));
+        plot(t(sectionStart:sectionEnd),h(sectionStart:sectionEnd),'Color','#0072BD','LineWidth', 2); 
+    end
     plot([t(1); t(end)],[rho_0; rho_0],'LineWidth', 2, 'Color','black','LineStyle', '--');
     ax = gca;
     set(ax, 'FontSize', 12);
@@ -170,7 +184,7 @@ end
     xlabel('$t$ [s]', 'Interpreter','latex', 'FontSize', 16);
     ylabel('$h(q)$', 'Interpreter','latex', 'FontSize', 16);
     title('Barrier functions over time', 'Interpreter', 'latex', 'FontSize', 18);
-    legend({'Obstacle 1', 'Obstacle 2', 'Obstacle 3', '$\rho_0$'}, 'Location', 'northwest', 'BackgroundAlpha', 0.7, 'Interpreter', 'latex', 'FontSize', 14);
+    % legend({'Obstacle 1', 'Obstacle 2', 'Obstacle 3', '$\rho_0$'}, 'Location', 'northwest', 'BackgroundAlpha', 0.7, 'Interpreter', 'latex', 'FontSize', 14);
     
 
 delay = 0;

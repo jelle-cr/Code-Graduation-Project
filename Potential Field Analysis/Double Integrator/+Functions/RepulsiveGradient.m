@@ -24,13 +24,8 @@ function [grad_U_rep, rho, rho_m] = RepulsiveGradient(q_i, q_j, n, k_rep, rho_0,
                 grad_U_rep = -[grad_U_rep_p; grad_U_rep_v];    % Collision guaranteed (Also flip sign of repulsive force)
             end
             if rho < 0
-                warning('########################## Collision ################################')
+                % warning('########################## Collision ################################')
             end
         end
     end
-
-    v_r_ij
-    rho
-    rho_m
-    h = rho-rho_m
 end
