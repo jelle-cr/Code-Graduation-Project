@@ -65,21 +65,33 @@ function dqdt = odefcn(t,q)
             u(:,i) = u_CLF;     % Initialization
     
             Vdot = a + b*u_CLF;
-            if Vdot > 0%-sigma
+            % if Vdot > 0%-sigma
+            %     t
+            %     Vdot
+            %     hi = 1;
+            % end
+            % if t>0.48 && t < 0.8
+            %     t
+            %     V
+            %     Vdot
+            %     p
+            %     v
+            %     a
+            %     b
+            %     u_CLF
+            %     hi = 1;
+            % end
+            if abs(t-0.5)<0.01
                 t
-                Vdot
-                hi = 1;
             end
-            if t>0.48 && t < 0.8
+            if abs(t-1)<0.01
                 t
-                V
-                Vdot
-                p
-                v
-                a
-                b
-                u_CLF
-                hi = 1;
+            end
+            if abs(t-1.5)<0.01
+                t
+            end
+            if abs(t-1.7)<0.01
+                t
             end
 
             % % Control Barrier Inequality
