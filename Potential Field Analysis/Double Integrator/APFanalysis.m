@@ -9,7 +9,7 @@ x = linspace(-range, range, num_steps);
 y = linspace(-range, range, num_steps);
 
 controller = 'APF';
-% controller = 'semi-APF';
+% controller = 'APF-CBF';
 controller = 'CLF-CBF';
 
 %% Simulation parameters
@@ -25,7 +25,7 @@ B = [0, 0;
      0, 1];
 n = height(A);      % Number of states
 m = width(B);       % Number of inputs
-u_max = 10;         % Maximum control input in 1 direction
+u_max = 100;         % Maximum control input in 1 direction
 r_a = 0.5;          % Radius of agent 
 
 % Potential field parameters
@@ -67,7 +67,6 @@ q_0 = [-3;-2.5;0;0];
 t_end = 2;
 t_step = 0.01;
 t = 0:t_step:t_end;  % simulation time
-t_span = [0 t_end];
 
 % Save necessary parameters
 % load('Data/Parameters.mat');
@@ -127,7 +126,7 @@ fprintf('Potential Field Generated\n');
 %% Simulate
 tic
 % [q] = reshape(Functions.ode4(@Functions.odefcn, t, reshape(q_0, [], 1)).', n, N_a, length(t)); % Column vector
-[t, q] = ode45(@Functions.odefcn, t_span, reshape(q_0, [], 1)); % Column vector
+[t, q] = ode45(@Functions.odefcn, [0 t(end)], reshape(q_0, [], 1));
 q = reshape(q.',n,N_a,length(t));
 p = q(1:2,:,:);
 v = q(3:4,:,:);

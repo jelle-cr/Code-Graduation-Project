@@ -54,85 +54,51 @@ function dqdt = odefcn(t,q)
             sigma = 10*V;
             a_tilde = a + sigma;
 
-            % if ((a_tilde >= 0) && (norm(b) ~= 0))
-            %     u_CLF = -a_tilde/norm(b)^2*b.';
-            % end
+            if ((a_tilde >= 0) && (norm(b) ~= 0))
+                u_CLF = -a_tilde/norm(b)^2*b.';
+            end
 
-            options = optimoptions('quadprog', 'Display', 'none'); % Runs approx 2.5 times faster 
-            H=eye(2);
-            u_CLF = quadprog(H,[0;0],b,-a_tilde, [],[],[],[],[], options); 
-           
             u(:,i) = u_CLF;     % Initialization
     
-            Vdot = a + b*u_CLF;
-            % if Vdot > 0%-sigma
-            %     t
-            %     Vdot
-            %     hi = 1;
-            % end
-            % if t>0.48 && t < 0.8
-            %     t
-            %     V
-            %     Vdot
-            %     p
-            %     v
-            %     a
-            %     b
-            %     u_CLF
-            %     hi = 1;
-            % end
-            if abs(t-0.5)<0.01
-                t
-            end
-            if abs(t-1)<0.01
-                t
-            end
-            if abs(t-1.5)<0.01
-                t
-            end
-            if abs(t-1.7)<0.01
-                t
-            end
+            % Control Barrier Inequality
+            c = F_rep.'*f(:,i);
+            d = F_rep.'*g;
 
-            % % Control Barrier Inequality
-            % c = F_rep.'*f(:,i);
-            % d = F_rep.'*g;
-            % 
-            % h = rho-rho_m;
-            % gamma = -h;%norm(d)^2;
-            % c_tilde = c + gamma;
-            % phi = c_tilde + d*u_CLF;
-            % 
-            % H = eye(2);
-            % F = -u_CLF;
-            % options = optimoptions('quadprog', 'Display', 'none'); % Runs approx 2.5 times faster 
-            % if norm(F_rep) ~= 0
-            %     u(:,i) = quadprog(H,F,d,-c_tilde, [],[],[],[],[], options); 
-            % end
-            % 
-            % % if phi < 0  % if true S_AC-1 is nonempty
-            % %     t
-            % % end
-            % if strcmp(controller, 'CLF-CBF')
-            %     if (phi < 0) || (phi == 0 && norm(d) == 0)
-            %         u_CBF = u_CLF;
-            %     elseif ((phi >= 0) && (norm(d) ~= 0))
-            %         u_CBF = u_CLF - phi/norm(d)^2*d.';
-            %     end
-            % elseif strcmp(controller, 'semi-APF')
-            %     if norm(F_rep) == 0 % only true if rho-rho_m > rho_0
-            %         u_CBF = u_CLF;
-            %     else
-            %         u_CBF = u_CLF - phi/norm(d)^2*d.';
-            %     end        
-            % end
-            % u(:,i) = u_CBF;
-            % if t>1
-            %     u(:,i) = u_CLF;
-            % end
+            h = rho-rho_m;
+            gamma = -5*h;%norm(d)^2;
+            c_tilde = c + gamma;
+            c_tilde = 10^1*norm(d)^2;
+            phi = c_tilde + d*u_CLF;
+            phi = norm(d)^2;
+
+           %  H = eye(2);
+           %  F = -u_CLF;
+           %  options = optimoptions('quadprog', 'Display', 'none'); % Runs approx 2.5 times faster 
+           %  if norm(F_rep) ~= 0
+           %      % u(:,i) = quadprog(H,F,d,-c_tilde, [],[],[],[],[], options); 
+           %      u(:,i) = quadprog(H,F,d,-c_tilde, [],[],[],[],[], options); 
+           % end
+
+            if phi < 0  % if true S_AC-1 is nonempty
+                t
+            end
+            if strcmp(controller, 'CLF-CBF')
+                if (phi < 0) || (phi == 0 && norm(d) == 0)
+                    u_CBF = u_CLF;
+                elseif ((phi >= 0) && (norm(d) ~= 0))
+                    u_CBF = u_CLF - phi/norm(d)^2*d.';
+                end
+            elseif strcmp(controller, 'APF-CBF')
+                if norm(F_rep) == 0 % only true if rho-rho_m > rho_0
+                    u_CBF = u_CLF;
+                else
+                    u_CBF = u_CLF - phi/norm(d)^2*d.';
+                end        
+            end
+            u(:,i) = u_CBF;
         end
         % Limit control force
-        % u(:,i) = min(max(u(:,i), -u_max), u_max);
+        u(:,i) = min(max(u(:,i), -u_max), u_max);
     end 
 
 
