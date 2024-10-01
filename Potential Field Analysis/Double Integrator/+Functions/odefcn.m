@@ -52,6 +52,7 @@ function dqdt = odefcn(t,q)
             a = F_att.'*f(:,i);
             b = F_att.'*g;
             sigma = 10*V;
+            % sigma = norm(b)^2
             a_tilde = a + sigma;
 
             if ((a_tilde >= 0) && (norm(b) ~= 0))
@@ -69,7 +70,7 @@ function dqdt = odefcn(t,q)
             c_tilde = c + gamma;
             c_tilde = 10^1*norm(d)^2;
             phi = c_tilde + d*u_CLF;
-            phi = norm(d)^2;
+            % phi = norm(d)^2;
 
            %  H = eye(2);
            %  F = -u_CLF;
@@ -79,9 +80,9 @@ function dqdt = odefcn(t,q)
            %      u(:,i) = quadprog(H,F,d,-c_tilde, [],[],[],[],[], options); 
            % end
 
-            if phi < 0  % if true S_AC-1 is nonempty
-                t
-            end
+            % if phi < 0  % if true S_AC-1 is nonempty
+            %     t
+            % end
             if strcmp(controller, 'CLF-CBF')
                 if (phi < 0) || (phi == 0 && norm(d) == 0)
                     u_CBF = u_CLF;
