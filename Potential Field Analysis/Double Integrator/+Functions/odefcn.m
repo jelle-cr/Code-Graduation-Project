@@ -51,8 +51,8 @@ function dqdt = odefcn(t,q)
             % Control Lyapunov Inequality
             a = F_att.'*f(:,i);
             b = F_att.'*g;
-            sigma = 10*V;
-            % sigma = norm(b)^2
+            sigma = 20*V;
+            % sigma = 50*norm(b)^2;
             a_tilde = a + sigma;
 
             if ((a_tilde >= 0) && (norm(b) ~= 0))
@@ -67,6 +67,7 @@ function dqdt = odefcn(t,q)
 
             h = rho-rho_m;
             gamma = -5*h;%norm(d)^2;
+            gamma = norm(d)^2;
             c_tilde = c + gamma;
             c_tilde = 10^1*norm(d)^2;
             phi = c_tilde + d*u_CLF;
@@ -102,6 +103,7 @@ function dqdt = odefcn(t,q)
         u(:,i) = min(max(u(:,i), -u_max), u_max);
     end 
 
+    u(:,2) = 0;
 
     %% ODE
     for i = 1:N_a

@@ -1,4 +1,4 @@
-function plot_real_time_trajectories(x, y, Potential, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop, delay)
+function plot_real_time_trajectories(x, y, Potential, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop, delay, colorBar)
     load('./Data/Parameters.mat')
     p_0 = q_0(1:2,:);
     p_d = q_d(1:2,1);
@@ -12,12 +12,13 @@ function plot_real_time_trajectories(x, y, Potential, range, localMinX, localMin
     set(ax, 'FontSize', 12);
     xlabel('$x$ [m]', 'Interpreter','latex', 'FontSize', 16);
     ylabel('$y$ [m]', 'Interpreter','latex', 'FontSize', 16);
-    zlabel('$U_p(p)$', 'Interpreter','latex', 'FontSize', 16);
+    zlabel('$U(\mathbf{p}_{id})$', 'Interpreter','latex', 'FontSize', 16);
     title('Potential Function', 'Interpreter', 'latex', 'FontSize', 18);
     
     % Contour/quiver plot
     figure('Position', [100 50 800 700]);  %Left Bottom Width Height
     hold on
+    grid on
     % step = floor(n/30);                % Subsample the amount of quiver vectors
     % quiver(x(1:step:end, 1:step:end), y(1:step:end, 1:step:end), Force(1:step:end, 1:step:end, 1)', Force(1:step:end, 1:step:end, 2)', 0.8, 'HandleVisibility', 'off');
     
@@ -26,8 +27,10 @@ function plot_real_time_trajectories(x, y, Potential, range, localMinX, localMin
     end
 
     % Plot contour lines
-    contour(x,y,Potential', 20, 'HandleVisibility', 'off');
-    c = colorbar;
+    if colorBar
+        contour(x,y,Potential', 20, 'HandleVisibility', 'off');
+        c = colorbar;
+    end
     
     % Plot obstacles
     plot(NaN, NaN, 'o', 'MarkerEdgeColor', 'black', ...
@@ -46,7 +49,9 @@ function plot_real_time_trajectories(x, y, Potential, range, localMinX, localMin
     set(ax, 'FontSize', 12);
     xlabel('$x$ [m]', 'Interpreter','latex', 'FontSize', 16);
     ylabel('$y$ [m]', 'Interpreter','latex', 'FontSize', 16);
-    ylabel(c, '$U_p(p)$', 'Interpreter','latex', 'FontSize', 16);
+    if colorBar
+        ylabel(c, '$U_p(p)$', 'Interpreter','latex', 'FontSize', 16);
+    end
     legend('Location', 'northwest', 'BackgroundAlpha', 0.7, 'Interpreter', 'latex', 'FontSize', 14);
     axis equal
     xlim([-range, range]);
@@ -78,11 +83,19 @@ function plot_real_time_trajectories(x, y, Potential, range, localMinX, localMin
             y_circle = r_a * sin(th) + p(2,i,t);
             % Update or create the actual agent circle
             if handles_agents(i) == 0
-                handles_agents(i) = patch(x_circle, y_circle, colors(i,:), ...
+                % if i > 1
+                %     handles_agents(i) = patch(x_circle, y_circle, colors(i,:), ...
+                %                                   'FaceColor', 'black', ...
+                %                                   'FaceAlpha', 1, ...
+                %                                   'EdgeColor', 'black', ...
+                %                                   'HandleVisibility', 'off');
+                % else
+                    handles_agents(i) = patch(x_circle, y_circle, colors(i,:), ...
                                               'FaceColor', colors(i,:), ...
-                                              'FaceAlpha', 0.1, ...
+                                              'FaceAlpha', 0.4, ...
                                               'EdgeColor', colors(i,:), ...
                                               'HandleVisibility', 'off');
+                % end
                 if i == 1 && t == 1
                     % Create circle in legend
                     plot(NaN, NaN, 'o', 'MarkerEdgeColor', colors(1,:), ...
@@ -114,17 +127,17 @@ function plot_real_time_trajectories(x, y, Potential, range, localMinX, localMin
             % end
             
             % Plot Global minimum
-            plot(globalMinX, globalMinY, '*', 'lineWidth', 1.5, ...
-                                              'MarkerSize', 12, ...
-                                              'MarkerEdgeColor', '#EDB120', ...
-                                              'MarkerFaceColor', '#EDB120', ...
-                                              'DisplayName', 'Global Minimum');
-        
+            % plot(globalMinX, globalMinY, '*', 'lineWidth', 1.5, ...
+            %                                   'MarkerSize', 12, ...
+            %                                   'MarkerEdgeColor', '#EDB120', ...
+            %                                   'MarkerFaceColor', '#EDB120', ...
+            %                                   'DisplayName', 'Global Minimum');
+            % 
             % Plot initial positions
             plot(NaN, NaN, 'o','MarkerSize', 10, ...
                                'MarkerEdgeColor', 'blue', ...
                                'LineWidth', 2,...
-                               'DisplayName', 'Initial Positions');
+                               'DisplayName', 'Initial Position');
             for i = 1:N_a
                 plot(p_0(1,i), p_0(2,i), 'o','MarkerSize', 10, ...
                                'MarkerEdgeColor', colors(i,:), ...
@@ -140,7 +153,7 @@ function plot_real_time_trajectories(x, y, Potential, range, localMinX, localMin
         end
 
         % Update time in title
-        title(['Trajectories From Various Initial Positions ($t$ = ', sprintf('%.2f', t*t_step-t_step), ' [s])'], ...
+        title(['Real-time trajectory ($t$ = ', sprintf('%.2f', t*t_step-t_step), ' [s])'], ...
           'Interpreter', 'latex', 'FontSize', 18);
 
         drawnow %limitrate; % Force plot update

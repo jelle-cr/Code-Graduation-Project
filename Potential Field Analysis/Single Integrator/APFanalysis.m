@@ -8,7 +8,7 @@ y = linspace(-range, range, num_steps);
 
 %% Simulation parameters
 N_a = 1;                    % Number of trajectories to simulate
-N_o = 1;                    % Number of obstacles
+N_o = 2;                    % Number of obstacles
 A = [0, 0;
      0, 0];
 B = [1, 0;
@@ -22,16 +22,24 @@ K_att = 1;
 K_rep = 0.001;
 rho_0 = 0.5;
 p_o = rand(2,N_o)*((range-1)+(range-1))-(range-1);
+p_o = [-1, -1, 1.25;
+       -1.25, 0.75, 1];
+p_o = [0,0.25;
+       0.5,-1.25];
+% p_o = [0;
+%        0.5]
 
 r_a = 0.5;                  % Radius of agent
 r_o = 0.4;                  % Radius of obstacle
 p_d = rand(2, 1)*((range-1)+(range-1))-(range-1);	% Desired position
+p_d = [-2;-2];
 
 % Initial positions
 p_0 = Functions.generate_initial_positions(N_a, r_a, range, p_o, r_o);
+p_0 = [2;2];
 
 % Simulation time
-t_end = 2.5;
+t_end = 5;
 t_step = 0.01;
 t = 0:t_step:t_end;  % simulation time
 
@@ -90,6 +98,7 @@ fprintf('Potential Field Generated\n');
 fprintf('Simulation Done\n');
 
 %% Plot results
+delay = 0;
 close all
 t_stop = t_end;
-Functions.plot_real_time_trajectories(x, y, Potential, Force, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop);
+Functions.plot_real_time_trajectories(x, y, Potential, Force, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop, delay);

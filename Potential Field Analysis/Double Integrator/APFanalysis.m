@@ -10,11 +10,11 @@ y = linspace(-range, range, num_steps);
 
 controller = 'APF';
 % controller = 'APF-CBF';
-controller = 'CLF-CBF';
+% controller = 'CLF-CBF';
 
 %% Simulation parameters
 N_a = 1;            % Number of trajectories to simulate
-N_o = 1;            % Number of obstacles
+N_o = 3;            % Number of obstacles
 A = [0, 0, 1, 0;    % State space
      0, 0, 0, 1;
      0, 0, 0, 0;
@@ -29,7 +29,7 @@ u_max = 30;         % Maximum control input in 1 direction
 r_a = 0.5;          % Radius of agent 
 
 % Potential field parameters
-k_att_p = 5;        % Attractive position gain
+k_att_p = 6;        % Attractive position gain
 k_att_v = 1;        % Attractive velocity gain
 k_att_c = 1;        % Attractive coupling gain, note k_p*k_v > k_c^2
 if k_att_p*k_att_v <= k_att_c^2
@@ -44,24 +44,26 @@ r_o = 0.4;          % Radius of obstacle
 % Obstacle states
 q_o = [rand(2, N_o)*((range-1)+(range-1))-(range-1);
        zeros(2, N_o)];
-% q_o = [-1, -1, 1.25;
-%        -1.25, 1, 1;
-%        0, 0, 0;
-%        0, 0, 0];
-q_o = [-1;
-       -1.25;
-       0;
-       0];
+q_o = [-1, -1, 1.25;
+       -1.25, 0.75, 1;
+       0, 0, 0;
+       0, 0, 0];
+
+% q_o = [-8;-8;0;0 ];
 
 % Desired state(s)
 q_d = [rand(2, 1)*((range-1)+(range-1))-(range-1);	 
        0*ones(2, 1)];
-q_d = [0;0;0;0];
+q_d = [2;2;0;0];
 
 % Initial states
 q_0 = [Functions.generate_initial_positions(N_a, r_a, range, q_o(1:2,:), r_o);
        0*ones(2, N_a)];
-q_0 = [-3;-2.5;0;0];
+q_0 = [-2.5;-2.5;0;0];
+% q_0 = [-2.5, 2.5;
+%        -2.5, 1.5;
+%         0, -2.3;
+%         0, -1.5];
 
 % Simulation time
 t_end = 5;
@@ -140,11 +142,11 @@ h = zeros(length(t),N_o);
 h_index = [];   % Doesn't work for multiple obstacles
 a_max = u_max;
 for i = 1:length(t)
-    e_q = [p(:,:,i)-p_d; v(:,:,i)-v_d];       % State error
+    e_q = [p(:,1,i)-p_d; v(:,1,i)-v_d];       % State error
     V(i) = 1/2*e_q.'*W_att*e_q;    % Lyapunov function
     for o = 1:N_o
-        p_ij = p(:,:,i) - p_o(:,o);
-        v_ij = v(:,:,i) - v_o(:,o);
+        p_ij = p(:,1,i) - p_o(:,o);
+        v_ij = v(:,1,i) - v_o(:,o);
         p_ij_norm = norm(p_ij);             % To avoid unnecessary recalculation
         p_ij_hat = -p_ij/p_ij_norm;
         v_r_ij = v_ij.'*p_ij_hat;
@@ -169,28 +171,34 @@ splitPoints = [0; splitPoints; length(h_index)];
     set(ax, 'FontSize', 12);
     grid on;
     xlabel('$t$ [s]', 'Interpreter','latex', 'FontSize', 16);
-    ylabel('$V(q)$', 'Interpreter','latex', 'FontSize', 16);
+    ylabel('$V(\mathbf{q}_{id})$', 'Interpreter','latex', 'FontSize', 16);
     title('Lyapunov function over time', 'Interpreter', 'latex', 'FontSize', 18);
     
     subplot(2,1,2); hold on;
-    for i = 1:length(splitPoints)-1
-        % Get the start and end indices of the current section
-        sectionStart = h_index(splitPoints(i)+1);
-        sectionEnd = h_index(splitPoints(i+1));
-        plot(t(sectionStart:sectionEnd),h(sectionStart:sectionEnd),'Color','#0072BD','LineWidth', 2); 
+    % for i = 1:length(splitPoints)-1
+    %     % Get the start and end indices of the current section
+    %     sectionStart = h_index(splitPoints(i)+1);
+    %     sectionEnd = h_index(splitPoints(i+1));
+    %     plot(t(sectionStart:sectionEnd),h(sectionStart:sectionEnd),'Color','#0072BD','LineWidth', 2); 
+    % end
+    for o = 1:N_o
+        plot(t,h(:,o),'LineWidth', 2); 
     end
     plot([t(1); t(end)],[rho_0; rho_0],'LineWidth', 2, 'Color','black','LineStyle', '--');
     ax = gca;
     set(ax, 'FontSize', 12);
     grid on;
+    ylim([0 15]);
     xlabel('$t$ [s]', 'Interpreter','latex', 'FontSize', 16);
-    ylabel('$h(q)$', 'Interpreter','latex', 'FontSize', 16);
-    title('Barrier functions over time', 'Interpreter', 'latex', 'FontSize', 18);
+    ylabel('$h(\mathbf{q}_{ij})$', 'Interpreter','latex', 'FontSize', 16);
+    title('Distance function over time', 'Interpreter', 'latex', 'FontSize', 18);
     % legend({'Obstacle 1', 'Obstacle 2', 'Obstacle 3', '$\rho_0$'}, 'Location', 'northwest', 'BackgroundAlpha', 0.7, 'Interpreter', 'latex', 'FontSize', 14);
     
 
-delay = 0;
+delay = 5;
 
+colorBar = true;
+colorBar = false;
 t_stop = t_end;
-Functions.plot_real_time_trajectories(x, y, Potential, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop, delay);
+Functions.plot_real_time_trajectories(x, y, Potential, range, localMinX, localMinY, globalMinX, globalMinY, p, t, t_stop, delay, colorBar);
 
