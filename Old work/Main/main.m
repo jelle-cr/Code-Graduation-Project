@@ -9,7 +9,7 @@ x = linspace(-range, range, num_steps);
 y = linspace(-range, range, num_steps);
 
 controller = 'APF';         % Standard APF
-controller = 'CBF-APF';     % No assumptions 
+% controller = 'CBF-APF';     % No assumptions 
 % controller = 'CLF-CBF-APF'; % With assumptions
 
 dynamics = 'Single Integrator';
