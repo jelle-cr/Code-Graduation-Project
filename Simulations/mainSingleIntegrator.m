@@ -5,8 +5,8 @@ clc
 dynamics = 'Single Integrator';
 
 %% Simulation parameters
-N_a = 5;            % Number of trajectories to simulate
-N_o = 1;            % Number of obstacles
+N_a = 1;            % Number of trajectories to simulate
+N_o = 3;            % Number of obstacles
 
 A = [0, 0;          % State space
      0, 0];
@@ -17,21 +17,21 @@ n = height(A);      % Number of states
 m = width(B);       % Number of inputs
 u_max = 30;         % Maximum control input in 1 direction
 r_a = 0;            % Radius of agent 
-r_o = 1;          % Radius of obstacle
+r_o = 0.75;          % Radius of obstacle
 
 % Potential field parameters
 k_att = 1;          % Attractive potential gain
 k_rep = 0.01;          % Repulsive potential gain
-rho_0 = 0.15;        % Repulsive potential range
+rho_0 = 1.5;        % Repulsive potential range
 
 % x_0 = [-2.5;        % Initial position
 %        -2.5];
-x_0 = [-2.5, -2.5, -2.5, -2.5, -2.5;     % Initial positions
-       1.5, 0.75, 0, -0.75, -1.5];
+x_0 = [-2.5;     % Initial positions
+       -1.5];
 x_d = [2;           % Desired position
-       0];
-x_o = [0;           % Obstacle positions
-       0];
+       1];
+x_o = [-1, -0.25, 1.5;           % Obstacle positions
+       -1, 1, -0.25];
 
 % Simulation time
 t_end = 5;
@@ -59,7 +59,6 @@ save('Data/SimulationData.mat', 'x', 'u');
 %% Plot results
 close all
 
-t_stop = t_end;
 rangeX = [-3; 3];
 rangeY = [-2; 2];
 Functions.plot_stationary(rangeX, rangeY, t_stop);
