@@ -35,7 +35,7 @@ plot(NaN, NaN, 'x', 'MarkerSize', 20, ...
 plot(NaN, NaN, 'o', 'MarkerEdgeColor', 'black', ...
                     'MarkerFaceColor', '#9aa3b3', ...
                     'MarkerSize', 15, ...
-                    'DisplayName', 'Obstacle');
+                    'DisplayName', 'Obstacles');
 th = 0:pi/50:2*pi;
 rgbColor = hex2rgb('#9aa3b3');
 for j = 1:N_o
@@ -51,9 +51,9 @@ for j = 1:N_o
 end
 
 %% Trajectory plotting
-
-load('Data/Simulations APF 15-11/Parameters.mat');
-load('Data/Simulations APF 15-11/SimulationData.mat');
+% Load desired datasets
+load('Data/Parameters.mat');
+load('Data/SimulationData.mat');
 colors = lines(N_a);  
 
 p = x(1:2,:,:);

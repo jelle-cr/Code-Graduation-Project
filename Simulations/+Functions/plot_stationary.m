@@ -1,4 +1,4 @@
-function plot_stationary(rangeX, rangeY, t_stop)
+function plot_stationary(rangeX, rangeY)
     load('Data/Parameters.mat');
     load('Data/SimulationData.mat');
     t = 0:t_step:t_end; 
@@ -35,7 +35,7 @@ function plot_stationary(rangeX, rangeY, t_stop)
     plot(NaN, NaN, 'o', 'MarkerEdgeColor', 'black', ...
                         'MarkerFaceColor', '#9aa3b3', ...
                         'MarkerSize', 15, ...
-                        'DisplayName', 'Obstacle');
+                        'DisplayName', 'Obstacles');
     th = 0:pi/50:2*pi;
     rgbColor = hex2rgb('#9aa3b3');
     for j = 1:N_o

@@ -3,6 +3,8 @@ clear all
 clc
 
 dynamics = 'Single Integrator';
+controller = 'APF'; 
+controller = 'CBF';
 
 %% Simulation parameters
 N_a = 1;            % Number of trajectories to simulate
@@ -42,7 +44,7 @@ num_steps = length(t);
 % Save necessary parameters
 save('Data/Parameters.mat', 'N_a', 'N_o', 'A', 'B', 'n', 'm', 'u_max', 'r_a', 'r_o', ...
                             'k_att', 'k_rep', 'rho_0', 'x_0', 'x_d', 'x_o', ...
-                            't_end', 't_step');
+                            't_end', 't_step', 'controller');
 
 fprintf('Saved System Parameters\n');
 
@@ -61,5 +63,5 @@ close all
 
 rangeX = [-3; 3];
 rangeY = [-2; 2];
-Functions.plot_stationary(rangeX, rangeY, t_stop);
+Functions.plot_stationary(rangeX, rangeY);
 
