@@ -3,19 +3,30 @@ function dxdt = odefcn(t, x)
     persistent u_save
 
     x = reshape(x, n, N_a);         % Full state matrix
-    % dxdt = zeros(n, 1);
-
-    %% Dynamical model (for nonlinear model, override A)
-    % f = A*x;
-    % g = B;
+    dxdt = zeros(n, N_a);
 
     %% Controller
     u = zeros(m, N_a);              % Initialize controller
     
+    p = x;
+    p_d = x_d;
+    p_o = x_o;
     for i = 1:N_a
-        e_p = x(:,i)-x_d;                    % State error
-    
-        u(:,i) = -e_p;
+        gradU_att = zeros(m,1);
+        gradU_rep = zeros(m,1);
+
+        gradU_att = k_att*(p(:,i)-p_d);
+        
+        for j = 1:N_o
+            p_ij = p(:,i)-p_o(:,j);
+
+            h = norm(p_ij) - r_a - r_o;
+
+            if h < rho_0
+                gradU_rep = gradU_rep - k_rep/h^2*(1/h-1/rho_0)*p_ij/norm(p_ij);
+            end
+        end
+        u(:,i) = -gradU_att - gradU_rep;
     end
 
     %% ODE
