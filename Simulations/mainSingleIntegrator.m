@@ -4,7 +4,7 @@ clc
 
 dynamics = 'Single Integrator';
 controller = 'APF'; 
-% controller = 'CBF';
+controller = 'CBF';
 
 %% Simulation parameters
 N_a = 1;            % Number of trajectories to simulate
@@ -18,7 +18,7 @@ B = [1, 0;
 n = height(A);      % Number of states
 m = width(B);       % Number of inputs
 u_max = 30;         % Maximum control input in 1 direction
-r_a = 0.3;            % Radius of agent 
+r_a = 0;            % Radius of agent 
 r_o = 0.75;         % Radius of obstacle
 
 % Potential field parameters

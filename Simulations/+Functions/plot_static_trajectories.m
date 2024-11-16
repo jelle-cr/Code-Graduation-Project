@@ -1,4 +1,6 @@
 function plot_static_trajectories(rangeX, rangeY, plottingFolder)
+    close all
+
     if nargin == 0
         rangeX = [-3; 3];
         rangeY = [-2; 2];
@@ -11,7 +13,8 @@ function plot_static_trajectories(rangeX, rangeY, plottingFolder)
     
     
     %% Trajectory plotting
-    
+    load(params);
+
     % Get a list of all .mat files in the plottingFolder
     fileList = dir(fullfile(plottingFolder, '*.mat'));
     
@@ -31,6 +34,11 @@ function plot_static_trajectories(rangeX, rangeY, plottingFolder)
                 colors = lines(length(fileList));       % All simulations different color -> colors(k,:)
             end
             trajectoryHandles = gobjects(N_a, 1); 
+
+            timepointInterval = 0.5;                  % Plots a point every 0.5 s
+            timepointHandles = gobjects(N_a, 1); 
+            t = 0:t_step:t_end;
+            tp_ind = mod(t/0.5,1) == 0;
     
             p = x(1:2,:,:);
     
@@ -45,15 +53,20 @@ function plot_static_trajectories(rangeX, rangeY, plottingFolder)
                                         'LineStyle', '-',...
                                         'DisplayName', 'temp');
                                         % 'DisplayName', [sprintf('Agent %d', i), '\hspace{1.2mm}']);
+                timepointHandles(i) = scatter(squeeze(p(1,i,tp_ind)),squeeze(p(2,i,tp_ind)), 750, ...
+                                        'Marker', '.',...
+                                        'MarkerEdgeColor', col,...
+                                        'HandleVisibility','off');
             end
             
+            uistack(timepointHandles, 'bottom');
             uistack(trajectoryHandles, 'bottom');
         end
     end
     
     % Save the figure if this function was run explicitly
     if nargin == 0
-        timestamp = datestr(now, 'dd-mm_HH-MM');
+        timestamp = datestr(now, 'dd-mm_HH-MM-SS');
         filename = ['Images/Simulations/static_trajectory_' timestamp '.fig'];
         saveas(gcf, filename);
     end
