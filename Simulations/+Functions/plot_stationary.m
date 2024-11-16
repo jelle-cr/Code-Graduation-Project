@@ -1,6 +1,6 @@
 function plot_stationary(rangeX, rangeY)
     load('Data/Parameters.mat');
-    load('Data/SimulationData.mat');
+    load('Data/SimulationDataRecent.mat');
     t = 0:t_step:t_end; 
     colors = lines(N_a);  
     p_d = x_d(1:2);

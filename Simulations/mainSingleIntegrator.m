@@ -4,7 +4,7 @@ clc
 
 dynamics = 'Single Integrator';
 controller = 'APF'; 
-controller = 'CBF';
+% controller = 'CBF';
 
 %% Simulation parameters
 N_a = 1;            % Number of trajectories to simulate
@@ -18,18 +18,18 @@ B = [1, 0;
 n = height(A);      % Number of states
 m = width(B);       % Number of inputs
 u_max = 30;         % Maximum control input in 1 direction
-r_a = 0;            % Radius of agent 
-r_o = 0.75;          % Radius of obstacle
+r_a = 0.3;            % Radius of agent 
+r_o = 0.75;         % Radius of obstacle
 
 % Potential field parameters
 k_att = 1;          % Attractive potential gain
-k_rep = 0.01;          % Repulsive potential gain
+k_rep = 0.01;       % Repulsive potential gain
 rho_0 = 1.5;        % Repulsive potential range
 
-% x_0 = [-2.5;        % Initial position
-%        -2.5];
-x_0 = [-2.5;     % Initial positions
+x_0 = [-2.5;        % Initial position
        -1.5];
+% x_0 = [-2.5, 0;     % Initial positions
+%        -1.5, -1];
 x_d = [2;           % Desired position
        1];
 x_o = [-1, -0.25, 1.5;           % Obstacle positions
@@ -55,13 +55,14 @@ fprintf('Simulation Done\n');
 toc
 
 % Save complete state and control input 
-load('Data/SimulationData.mat');    % Loads u that was saved
-save('Data/SimulationData.mat', 'x', 'u');
+load('Data/SimulationDataRecent.mat');    % Loads u that was saved
+save('Data/SimulationDataRecent.mat', 'x', 'u', 'N_a');
 
 %% Plot results
 close all
 
 rangeX = [-3; 3];
 rangeY = [-2; 2];
-Functions.plot_stationary(rangeX, rangeY);
+plottingFolder = 'Data';
+Functions.plot_static_trajectories(rangeX, rangeY, plottingFolder);
 

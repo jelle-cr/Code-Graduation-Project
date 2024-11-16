@@ -16,7 +16,7 @@ function dxdt = odefcn(t, x)
         gradU_rep = zeros(m,1);
     
         % Attractive gradient
-        gradU_att = k_att*(p-p_d);
+        gradU_att = k_att*(p(:,i)-p_d);
            
         % Repulsive gradient
         for j = 1:N_o
@@ -76,6 +76,6 @@ function dxdt = odefcn(t, x)
                 ind = ind + 1;
             end
         end
-        save('./Data/SimulationData.mat', 'u');
+        save('./Data/SimulationDataRecent.mat', 'u');
     end
 end
