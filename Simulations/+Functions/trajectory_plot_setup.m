@@ -1,5 +1,4 @@
-function trajectory_plot_setup(rangeX, rangeY, params)
-    load(params);
+function trajectory_plot_setup(rangeX, rangeY, x_0, x_d, x_o, N_a, r_o, N_o)
 
     p_0 = x_0(1:2,:);
     p_d = x_d(1:2);
@@ -64,5 +63,6 @@ function trajectory_plot_setup(rangeX, rangeY, params)
     legend([initialPositionHandle, desiredPositionHandle, obstacleHandle, trajectories], ...
        'Location', 'northeastoutside', ...
        'Interpreter', 'latex', ...
-       'FontSize', 26);
+       'FontSize', 26,...
+       'BackgroundAlpha',0.6);
 end

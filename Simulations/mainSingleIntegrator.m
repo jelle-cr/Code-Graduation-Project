@@ -1,6 +1,6 @@
 % Single integrator system
+close all
 clear all
-clc
 
 dynamics = 'Single Integrator';
 controller = 'APF'; 
@@ -56,11 +56,48 @@ toc
 
 % Save complete state and control input 
 load('Data/SimulationDataRecent.mat');    % Loads u that was saved
-save('Data/SimulationDataRecent.mat', 'x', 'u', 'N_a');
+save('Data/SimulationDataRecent.mat', 'x', 'u', 'N_a', 'N_o', 'A', 'B', 'n', 'm', 'u_max', 'r_a', 'r_o', ...
+                                           'k_att', 'k_rep', 'rho_0', 'x_0', 'x_d', 'x_o', ...
+                                           't_end', 't_step', 'controller');
+delete('Data/Parameters.mat');
 
-%% Plot results
-close all
+%% Plot potentials
+save = false;
+% Control input
+u_norm = zeros(N_a,length(t));
+for t_ind = 1:length(t)
+    for i = 1:N_a
+        u_norm(i,t_ind) = 1/2*norm(squeeze(u(:,i,t_ind)))^2;
+    end
+end
+% Functions.plot_over_time(u_norm, t_step, t_end, '\frac{1}{2}||\mathbf{u}||^2', save);
+u_norm_avg = mean(u_norm,2)
 
+% Attractive potential
+U_att = zeros(N_a, length(t));
+for t_ind = 1:length(t)
+    for i = 1:N_a
+        U_att(i,t_ind) = 1/2*norm(x(:,i,t_ind)-x_d)^2;
+    end
+end
+% Functions.plot_over_time(U_att, t_step, t_end, 'U_{att}(\mathbf{x})', save);
+
+% Repulsive potential
+U_rep = zeros(N_o, length(t));
+h = zeros(N_o, length(t));
+for t_ind = 1:length(t)
+    for j = 1:N_o
+        p_ij = x(1:2,1,t_ind)-x_o(1:2,j);
+        h(j, t_ind) = norm(p_ij) - r_a - r_o;
+        if h(j, t_ind) < rho_0
+            U_rep(j,t_ind) = U_rep(j,t_ind) + 1/2*k_rep*(1/h(j, t_ind)-1/rho_0)^2;
+        end
+    end
+end
+% Functions.plot_over_time(h, t_step, t_end, 'h(\mathbf{x})', save);
+% Functions.plot_over_time(U_rep, t_step, t_end, 'U_{rep}(\mathbf{x})', save);
+
+%% Plot trajectories
 rangeX = [-3; 3];
 rangeY = [-2; 2];
 plottingFolder = 'Data';

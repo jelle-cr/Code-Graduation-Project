@@ -1,32 +1,32 @@
 function plot_static_trajectories(rangeX, rangeY, plottingFolder)
-    close all
 
     if nargin == 0
+        close all
         rangeX = [-3; 3];
         rangeY = [-2; 2];
         % Place a Parameter file, along with all of the simulation outputs in the plottingFolder
         plottingFolder = 'Data/plottingData';
     end
 
-    params = [plottingFolder '/Parameters.mat'];
-    Functions.trajectory_plot_setup(rangeX, rangeY, params);      % Sets up obstacles, initial and desired positions, and legend
+    % Get a list of all .mat files in the plottingFolder
+    fileList = dir(fullfile(plottingFolder, '*.mat'));
+
+    % Select first file and load specific parameters
+    params = fullfile(fileList(1).folder, fileList(1).name);
+    load(params, 'x_0', 'x_d', 'x_o', 'N_a', 'r_o', 'N_o', 't_step', 't_end');
+   
+    Functions.trajectory_plot_setup(rangeX, rangeY, x_0, x_d, x_o, N_a, r_o, N_o);      % Sets up obstacles, initial and desired positions, and legend
     
     
     %% Trajectory plotting
-    load(params);
 
-    % Get a list of all .mat files in the plottingFolder
-    fileList = dir(fullfile(plottingFolder, '*.mat'));
-    
-    % Exclude 'Parameters.mat' from the list
-    fileList = fileList(~strcmp({fileList.name}, 'Parameters.mat'));
-    
+        
     if ~isempty(fileList)
-        for k = 1:length(fileList)
+        for k = length(fileList):-1:1   % Reverse order, to plot last file on top
             % Load desired datasets
             dataFile = fullfile(fileList(k).folder, fileList(k).name);
             fprintf('Processing file: %s\n', dataFile);
-            load(dataFile);
+            load(dataFile, 'x');
     
             if N_a > 1
                 colors = lines(N_a);                  % All agents different color -> colors(i,:)
@@ -57,10 +57,10 @@ function plot_static_trajectories(rangeX, rangeY, plottingFolder)
                                         'Marker', '.',...
                                         'MarkerEdgeColor', col,...
                                         'HandleVisibility','off');
-            end
             
-            uistack(timepointHandles, 'bottom');
-            uistack(trajectoryHandles, 'bottom');
+                uistack(timepointHandles(i), 'bottom');
+                uistack(trajectoryHandles(i), 'bottom');
+            end
         end
     end
     

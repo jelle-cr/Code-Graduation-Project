@@ -1,7 +1,7 @@
 function plot_animated_trajectories(rangeX, rangeY, plottingFolder)
-    close all
 
     if nargin == 0
+        close all
         rangeX = [-3; 3];
         rangeY = [-2; 2];
         % Place a Parameter file, along with all of the simulation outputs in the plottingFolder
@@ -12,24 +12,22 @@ function plot_animated_trajectories(rangeX, rangeY, plottingFolder)
         videoFileName = ['Videos/Simulations/animated_trajectory_' timestamp '.mp4'];  % Output file name
         vidObj = VideoWriter(videoFileName, 'MPEG-4');              % 'MPEG-4' for .mp4 format
         vidObj.FrameRate = 60;                                      % Set the frame rate (frames per second)
-        % vidObj.Quality = 10;                                        % Set the video quality (0-100, higher is better)
         open(vidObj);                                               % Open the video file for writing
     end
-
-    params = [plottingFolder '/Parameters.mat'];
-    Functions.trajectory_plot_setup(rangeX, rangeY, params);      % Sets up obstacles, initial and desired positions, and legend
     
-    %% Loading data
-    load(params);
-    load('Data/SimulationDataRecent.mat');
+    %% Loading data (only loads a single file
+    % Get a list of all .mat files in the plottingFolder
+    fileList = dir(fullfile(plottingFolder, '*.mat'));
 
-    % % Get a list of all .mat files in the plottingFolder
-    % fileList = dir(fullfile(plottingFolder, '*.mat'));
-    % % Exclude 'Parameters.mat' from the list
-    % fileList = fileList(~strcmp({fileList.name}, 'Parameters.mat'));
-    % dataFile = fullfile(fileList(1).folder, fileList(1).name);
-    % fprintf('Processing file: %s\n', dataFile);
-    % load(dataFile);
+    % Select first file and load it
+    data = fullfile(fileList(1).folder, fileList(1).name);
+
+    % Override filename
+    data = './Data/SimulationDataRecent.mat';
+
+    load(data, 'x', 'x_0', 'x_d', 'x_o', 'r_a', 'N_a', 'r_o', 'N_o', 't_step', 't_end');
+
+    Functions.trajectory_plot_setup(rangeX, rangeY, x_0, x_d, x_o, N_a, r_o, N_o);      % Sets up obstacles, initial and desired positions, and legend
 
     %% Trajectory plotting    
     colors = lines(N_a);                  % All agents different color -> colors(i,:)
