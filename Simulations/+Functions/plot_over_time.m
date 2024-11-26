@@ -2,15 +2,15 @@ function plot_over_time(data, t_step, t_end, label, save)
     
     if nargin == 0
         close all
-        load('./Data/SimulationDataRecent.mat', 'u', 't_step', 't_end');
-        data = vecnorm(squeeze(u(:,1,:)));
+        load('./Data/SimulationDataRecent.mat', 'u_att', 'u_rep', 't_step', 't_end');
+        data = vecnorm(squeeze(u_att(:,1,:)) + squeeze(u_rep(:,1,:)));
         label = 'temp';
         save = false;
     end
     t = 0:t_step:t_end;
 
     %% Setup plot
-    figure('Position', [100 450 1000 500]);  %Left Bottom Width Height
+    figure('Position', [100 250 1000 500]);  %Left Bottom Width Height
     hold on; grid on;
     ax = gca; set(ax, 'FontSize', 22); ax.TickLabelInterpreter = 'latex';
     xlim([t(1), t(end)]); %ylim(rangeY);
