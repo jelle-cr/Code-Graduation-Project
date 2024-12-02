@@ -1,87 +1,119 @@
 % Double integrator system
-% close all
+close all
 clear all
-clc
 
-dynamics = 'Single Integrator';
+dynamics = 'Double Integrator';
+environment = 'tripleObstacle';
+% environment = 'corridor';
+% environment = 'goalNearObstacle';
+controller = 'APF'; 
+% controller = 'APF-SafetyFilter';
+% controller = 'CBF';
 
 %% Simulation parameters
 N_a = 1;            % Number of trajectories to simulate
-N_o = 1;            % Number of obstacles
-if strcmp(dynamics, 'Double Integrator')
-    A = [0, 0, 1, 0;    % State space
-         0, 0, 0, 1;
-         0, 0, 0, 0;
-         0, 0, 0, 0];
-    B = [0, 0;
-         0, 0;
-         1, 0;
-         0, 1];
-else
-    A = [0, 0;      % State space
-         0, 0];
-    B = [1, 0;
-         0, 1];
-end
+N_o = 3;            % Number of obstacles
+
+M = 2;              % Mass
+d = 0.1;              % Damping coefficient
+
+A = [0, 0, 1, 0;    % State space
+     0, 0, 0, 1;
+     0, 0, -d/M, 0;
+     0, 0, 0, -d/M];
+B = [0, 0;
+     0, 0;
+     1/M, 0;
+     0, 1/M];
+
 n = height(A);      % Number of states
 m = width(B);       % Number of inputs
 u_max = 30;         % Maximum control input in 1 direction
-r_a = 0.5;          % Radius of agent 
-r_o = 0.5;          % Radius of obstacle
+r_a = 0;            % Radius of agent 
+r_o = 0.75;         % Radius of obstacle
 
 % Potential field parameters
-k_att_p = 5;        % Attractive position gain
-k_att_v = 1;        % Attractive velocity gain
-k_att_c = 1;        % Attractive coupling gain, note k_p*k_v > k_c^2
+k_att = 1;          % Attractive potential gain
+k_rep = 0.01;       % Repulsive potential gain
+rho_0 = 1.5;        % Repulsive potential range
 
-if strcmp(dynamics, 'Double Integrator')
-    if k_att_p*k_att_v <= k_att_c^2
-        warning('W matrix is not positive definite');
-    end
-    W_att = [k_att_p*eye(n/2), k_att_c*eye(n/2); 
-             k_att_c*eye(n/2), k_att_v*eye(n/2)];
-else
-    W_att = k_att_p*eye(n);
-end
-k_rep = 0.001;      % Repulsive gain
-rho_0 = 0.2;        % Repulsive potential range
-r_o = 0.6;          % Radius of obstacle
-
-% Obstacle states, desired states, and initial states
-if strcmp(dynamics, 'Double Integrator')
-    q_o = [-0.1; -0.4; 0; 0];
-    q_d = [2; 1; 0; 0];
-    q_0 = [-2.5; -2.5; 0; 0];
-else
-    q_o = [-0.1; -0.4];
-    q_d = [2; 1];
-    q_0 = [-2.5; -2.5];
-end
+[p_0, p_d, p_o] = Functions.environment_setup(environment, dynamics, N_a);
+x_0 = [p_0; 0*p_0];
+x_d = [p_d; 0*p_d];
+x_o = [p_o; 0*p_o];
 
 % Simulation time
 t_end = 5;
 t_step = 0.01;
 t = 0:t_step:t_end;  % simulation time
+num_steps = length(t);
 
 % Save necessary parameters
-% load('Data/Parameters.mat');
-save('Data/Parameters.mat', 'controller', 'A', 'B', 'n', 'm', 'N_a', 'r_a', 'u_max', 't_step', 'q_0', 'q_d', 'rho_0', 'W_att', 'k_rep', 'N_o', 'q_o', 'r_o');
+save('Data/Parameters.mat', 'N_a', 'N_o', 'A', 'B', 'n', 'm', 'u_max', 'r_a', 'r_o', ...
+                            'k_att', 'k_rep', 'rho_0', 'x_0', 'x_d', 'x_o', ...
+                            't_end', 't_step', 'dynamics', 'controller');
 
 fprintf('Saved System Parameters\n');
 
 %% Simulate
 tic
-[q] = reshape(Functions.ode4(@Functions.odefcn, t, reshape(q_0, [], 1)).', n, length(t)); % Column vector
-% [t, q] = ode45(@Functions.odefcn, [0 t(end)], reshape(q_0, [], 1));
-% q = reshape(q.',n,length(t));
-p = q(1:2,:);
+x = reshape(Functions.ode4(@Functions.odefcn, t, reshape(x_0, [], 1)).', n, N_a, length(t)); % Column vector
 fprintf('Simulation Done\n');
 toc
+x = x(1:2,:,:); %Extract position
 
-%% Plot results
-close all
-delay = 0;
+% Save complete state and control input 
+load('Data/SimulationDataRecent.mat');    % Loads u that was saved
+save('Data/SimulationDataRecent.mat', 'x', 'u_att', 'u_rep', 'N_a', 'N_o', 'A', 'B', 'n', 'm', 'u_max', 'r_a', 'r_o', ...
+                                           'k_att', 'k_rep', 'rho_0', 'x_0', 'x_d', 'x_o', ...
+                                           't_end', 't_step', 'controller');
+delete('Data/Parameters.mat');
 
-t_stop = t_end;
-Functions.plot_real_time_trajectories(p, range, t_stop, t_step, delay);
+%% Plot potentials
+save = false;
+% Control input
+u_norm = zeros(N_a,length(t));
+u_att_norm = zeros(N_a,length(t));
+u_rep_norm = zeros(N_a,length(t));
+for t_ind = 1:length(t)
+    for i = 1:N_a
+        u_norm(i,t_ind) = 1/2*norm(squeeze(u_att(:,i,t_ind)) + squeeze(u_rep(:,i,t_ind)))^2;
+        u_att_norm(i,t_ind) = 1/2*norm(squeeze(u_att(:,i,t_ind)))^2;
+        u_rep_norm(i,t_ind) = 1/2*norm(squeeze(u_rep(:,i,t_ind)))^2;
+    end
+end
+% Functions.plot_over_time(u_norm, t_step, t_end, '\frac{1}{2}||\mathbf{u}||^2', save);
+Functions.plot_over_time(u_rep_norm, t_step, t_end, '\frac{1}{2}||\mathbf{u}_{rep}||^2', save);
+u_norm_avg = mean(u_norm,2)
+u_rep_norm_avg = mean(u_rep_norm,2)
+
+% Attractive potential
+U_att = zeros(N_a, length(t));
+for t_ind = 1:length(t)
+    for i = 1:N_a
+        U_att(i,t_ind) = 1/2*norm(x(1:2,i,t_ind)-x_d(1:2))^2;
+    end
+end
+% Functions.plot_over_time(U_att, t_step, t_end, 'U_{att}(\mathbf{x})', save);
+
+% Repulsive potential
+U_rep = zeros(N_o, length(t));
+h = zeros(N_o, length(t));
+for t_ind = 1:length(t)
+    for j = 1:N_o
+        p_ij = x(1:2,1,t_ind)-x_o(1:2,j);
+        h(j, t_ind) = norm(p_ij) - r_a - r_o;
+        if h(j, t_ind) < rho_0
+            U_rep(j,t_ind) = U_rep(j,t_ind) + 1/2*k_rep*(1/h(j, t_ind)-1/rho_0)^2;
+        end
+    end
+end
+% Functions.plot_over_time(h, t_step, t_end, 'h(\mathbf{x})', save);
+% Functions.plot_over_time(U_rep, t_step, t_end, 'U_{rep}(\mathbf{x})', save);
+
+%% Plot trajectories
+rangeX = [-3; 3];
+rangeY = [-2; 2];
+plottingFolder = 'Data';
+Functions.plot_static_trajectories(rangeX, rangeY, plottingFolder);
 

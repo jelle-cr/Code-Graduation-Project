@@ -2,7 +2,7 @@ function [x_0, x_d, x_o] = environment_setup(environment, dynamics, N_a)
     x_0 = 0;
     x_d = 0;
     x_o = 0;
-    if strcmp(dynamics, 'Single Integrator')
+    % if strcmp(dynamics, 'Single Integrator')
         if strcmp(environment, 'tripleObstacle')
             x_0 = [-2.5;        % Initial position
                    -1.5];
@@ -31,6 +31,6 @@ function [x_0, x_d, x_o] = environment_setup(environment, dynamics, N_a)
             x_o = [0;           % Obstacle positions
                    0];
         end
-    end
+    % end
 end
 

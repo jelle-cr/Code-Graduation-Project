@@ -5,7 +5,7 @@ function plot_static_trajectories(rangeX, rangeY, plottingFolder)
         rangeX = [-3; 3];
         rangeY = [-2; 2];
         % Place a Parameter file, along with all of the simulation outputs in the plottingFolder
-        plottingFolder = 'Data/plottingData';
+        plottingFolder = 'Data';
     end
 
     % Get a list of all .mat files in the plottingFolder
@@ -15,24 +15,20 @@ function plot_static_trajectories(rangeX, rangeY, plottingFolder)
     params = fullfile(fileList(1).folder, fileList(1).name);
     load(params, 'x_0', 'x_d', 'x_o', 'N_a', 'r_o', 'N_o', 't_step', 't_end');
    
-    Functions.trajectory_plot_setup(rangeX, rangeY, x_0, x_d, x_o, N_a, r_o, N_o);      % Sets up obstacles, initial and desired positions, and legend
+    quality = 'SD'; % Standard Definition
+    [~] = Functions.trajectory_plot_setup(rangeX, rangeY, x_0, x_d, x_o, N_a, r_o, N_o, quality);      % Sets up obstacles, initial and desired positions, and legend
     
     
     %% Trajectory plotting
-
-        
+    load('+Functions\customColors.mat');
+    colors = DesmosColors;
     if ~isempty(fileList)
         for k = length(fileList):-1:1   % Reverse order, to plot last file on top
             % Load desired datasets
             dataFile = fullfile(fileList(k).folder, fileList(k).name);
             fprintf('Processing file: %s\n', dataFile);
-            load(dataFile, 'x');
-    
-            if N_a > 1
-                colors = lines(N_a);                  % All agents different color -> colors(i,:)
-            else
-                colors = lines(length(fileList));       % All simulations different color -> colors(k,:)
-            end
+            load(dataFile, 'x');           
+           
             trajectoryHandles = gobjects(N_a, 1); 
 
             timepointInterval = 0.5;                  % Plots a point every 0.5 s

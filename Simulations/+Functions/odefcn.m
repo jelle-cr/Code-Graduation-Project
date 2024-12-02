@@ -8,11 +8,11 @@ function dxdt = odefcn(t, x)
     %% Controller
     u = zeros(m, N_a);              % Initialize controller
     u_att = zeros(m, N_a);          
-    u_rep = zeros(m, N_a);              
+    u_rep = zeros(m, N_a);       
     
-    p = x;
-    p_d = x_d;
-    p_o = x_o;
+    p = x(1:2,:);
+    p_d = x_d(1:2);
+    p_o = x_o(1:2,:);
     for i = 1:N_a
         gradU_att = zeros(m,1);
         gradU_rep = zeros(m,1);
@@ -27,6 +27,7 @@ function dxdt = odefcn(t, x)
             if h(j) < rho_0
                 gradU_rep = gradU_rep - k_rep/h(j)^2*(1/h(j)-1/rho_0)*p_ij/norm(p_ij);
             end
+            % gradU_rep = gradU_rep - k_rep/h(j)^2*p_ij/norm(p_ij); % U_rep=1/h
         end
 
         if strcmp(controller, 'APF')
@@ -45,7 +46,8 @@ function dxdt = odefcn(t, x)
 
             u_att(:,i) = k_att*F_att;
             if k_rep > 0
-                u_rep(:,i) = k_rep*F_rep;
+                % u_rep(:,i) = k_rep*F_rep;           % Original
+                u_rep(:,i) = min(1,k_rep)*F_rep;    % Optimized
             end
         elseif strcmp(controller, 'CBF')    % CBF-QP + CLF
             u_nom = zeros(m,1);
@@ -74,6 +76,13 @@ function dxdt = odefcn(t, x)
             end
         end
         u(:,i) = u_att(:,i) + u_rep(:,i);
+    end
+
+    if strcmp(dynamics, 'Double Integrator')
+        v_d = u;
+        v = x(3:4,:);
+        e_v = v_d-v;
+        u = 100*e_v;
     end
 
     %% ODE

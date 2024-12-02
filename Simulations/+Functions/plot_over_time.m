@@ -9,6 +9,9 @@ function plot_over_time(data, t_step, t_end, label, save)
     end
     t = 0:t_step:t_end;
 
+    load('+Functions\customColors.mat');
+    colors = DesmosColors;
+
     %% Setup plot
     figure('Position', [100 250 1000 500]);  %Left Bottom Width Height
     hold on; grid on;
@@ -18,7 +21,10 @@ function plot_over_time(data, t_step, t_end, label, save)
     xlabel('$t$ [s]', 'Interpreter','latex', 'FontSize', 30);
     ylabel(['$' label '$'], 'Interpreter','latex', 'FontSize', 30);
 
-    plot(t, data, 'LineWidth', 4);
+    numPlots = height(data);
+    for i = 1:numPlots
+        plot(t, data(i,:), 'Color', colors(i,:), 'LineWidth', 4);
+    end
 
     legend('Location', 'northeast', ...
            'Interpreter', 'latex', ...
