@@ -22,13 +22,14 @@ function legendHandle = trajectory_plot_setup(rangeX, rangeY, x_0, x_d, x_o, N_a
 
     %% Static plotting
     % Plot obstacles
-    th = 0:pi/50:2*pi;
     load('+Functions\customColors.mat');
     grey = DesmosColors(6,:);
+    th = 0:pi/50:2*pi;
     for j = 1:N_o
         x_obs = r_o * cos(th) + p_o(1,j);
         y_obs = r_o * sin(th) + p_o(2,j);
         patch(x_obs, y_obs, grey,'FaceColor', grey, ...
+                            'FaceAlpha', 1,...
                             'EdgeColor', 'black', ...
                             'HandleVisibility', 'off');
         text(p_o(1,j)-0.2*r_o, p_o(2,j)-0.027*r_o, sprintf('%d', j), ...

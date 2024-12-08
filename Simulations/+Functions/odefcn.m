@@ -1,9 +1,18 @@
 function dxdt = odefcn(t, x)      
     load('./Data/parameters.mat');
-    persistent u_att_save u_rep_save
+    persistent u_att_save u_rep_save gamma_min norm_e_vprev
+
+    if t == 0
+        gamma_min = 0;
+        norm_e_vprev = 0;
+    end
 
     x = reshape(x, n, N_a);         % Full state matrix
     dxdt = zeros(n, N_a);
+
+    if mod(t,0.5)==0               % Display time at certain intervals
+        % t
+    end
 
     %% Controller
     u = zeros(m, N_a);              % Initialize controller
@@ -40,14 +49,17 @@ function dxdt = odefcn(t, x)
             sigma = norm(F_att)^2;
             k_att = sigma/norm(F_att)^2;
 
-            gamma = 0;
+            gamma = 1*norm(F_rep)^2;
+            % gamma = 1.01*gamma_min;
+            % gamma = norm_e_vprev*norm(F_rep);
+            % gamma = 0;
             alpha = 1*min(h);
             k_rep = (gamma - alpha - k_att*F_rep.'*F_att)/norm(F_rep)^2;
 
             u_att(:,i) = k_att*F_att;
             if k_rep > 0
-                % u_rep(:,i) = k_rep*F_rep;           % Original
-                u_rep(:,i) = min(1,k_rep)*F_rep;    % Optimized
+                u_rep(:,i) = k_rep*F_rep;           % Original
+                % u_rep(:,i) = min(1,k_rep)*F_rep;    % Saturated
             end
         elseif strcmp(controller, 'CBF')    % CBF-QP + CLF
             u_nom = zeros(m,1);
@@ -67,6 +79,7 @@ function dxdt = odefcn(t, x)
             alpha = 1*min(h);
             c = gradU_rep.'*f - alpha;
             d = gradU_rep.'*g;
+            % gamma = norm(d)^2;
             gamma = 0;%alpha - d*u_nom + norm(d)^2;
             c_tilde = c + gamma;
             phi = c_tilde + d*u_nom;
@@ -82,7 +95,15 @@ function dxdt = odefcn(t, x)
         v_d = u;
         v = x(3:4,:);
         e_v = v_d-v;
-        u = 100*e_v;
+        u = 10*e_v;
+
+        norm_e_vprev = norm(e_v);
+        
+        % t
+        % desired = gamma - alpha - F_rep.'*v_d
+        % actual = gamma - alpha - F_rep.'*v
+        % gamma
+        % gamma_min = max(0,F_rep.'*e_v)
     end
 
     %% ODE

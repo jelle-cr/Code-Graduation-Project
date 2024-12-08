@@ -3,16 +3,16 @@ close all
 clear all
 
 dynamics = 'Single Integrator';
-environment = 'tripleObstacle';
-% environment = 'corridor';
-% environment = 'goalNearObstacle';
+environment = 'tripleObstacle'; N_o = 3;
+environment = 'corridor'; N_o = 2;
+% environment = 'goalNearObstacle'; N_o = 1;
 controller = 'APF'; 
 controller = 'APF-SafetyFilter';
 % controller = 'CBF';
 
 %% Simulation parameters
 N_a = 1;            % Number of trajectories to simulate
-N_o = 3;            % Number of obstacles
+% N_o = 3;            % Number of obstacles
 
 A = [0, 0;          % State space
      0, 0];
@@ -22,8 +22,8 @@ B = [1, 0;
 n = height(A);      % Number of states
 m = width(B);       % Number of inputs
 u_max = 30;         % Maximum control input in 1 direction
-r_a = 0.4;            % Radius of agent 
-r_o = 0.5;         % Radius of obstacle
+r_a = 0;            % Radius of agent 
+r_o = 0.75;         % Radius of obstacle
 
 % Potential field parameters
 k_att = 1;          % Attractive potential gain
@@ -60,7 +60,7 @@ save('Data/SimulationDataRecent.mat', 'x', 'u_att', 'u_rep', 'N_a', 'N_o', 'A', 
 delete('Data/Parameters.mat');
 
 %% Plot potentials
-save = false;
+savePlots = false;
 % Control input
 u_norm = zeros(N_a,length(t));
 u_att_norm = zeros(N_a,length(t));
@@ -73,7 +73,10 @@ for t_ind = 1:length(t)
     end
 end
 % Functions.plot_over_time(u_norm, t_step, t_end, '\frac{1}{2}||\mathbf{u}||^2', save);
-Functions.plot_over_time(u_rep_norm, t_step, t_end, '\frac{1}{2}||\mathbf{u}_{rep}||^2', save);
+% save('temp.mat', 'u_rep_norm')
+% tempData = u_rep_norm;
+% load('temp.mat');
+Functions.plot_over_time([u_rep_norm], t_step, t_end, '\frac{1}{2}||\mathbf{u}_{rep}||^2', savePlots);
 u_norm_avg = mean(u_norm,2)
 u_rep_norm_avg = mean(u_rep_norm,2)
 
@@ -84,7 +87,7 @@ for t_ind = 1:length(t)
         U_att(i,t_ind) = 1/2*norm(x(:,i,t_ind)-x_d)^2;
     end
 end
-% Functions.plot_over_time(U_att, t_step, t_end, 'U_{att}(\mathbf{x})', save);
+% Functions.plot_over_time(U_att, t_step, t_end, 'U_{att}(\mathbf{x})', savePlots);
 
 % Repulsive potential
 U_rep = zeros(N_o, length(t));
@@ -99,7 +102,7 @@ for t_ind = 1:length(t)
     end
 end
 % Functions.plot_over_time(h, t_step, t_end, 'h(\mathbf{x})', save);
-% Functions.plot_over_time(U_rep, t_step, t_end, 'U_{rep}(\mathbf{x})', save);
+% Functions.plot_over_time(U_rep, t_step, t_end, 'U_{rep}(\mathbf{x})', savePlots);
 
 %% Plot trajectories
 rangeX = [-3; 3];

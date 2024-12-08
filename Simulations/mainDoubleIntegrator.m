@@ -3,19 +3,19 @@ close all
 clear all
 
 dynamics = 'Double Integrator';
-environment = 'tripleObstacle';
-% environment = 'corridor';
-% environment = 'goalNearObstacle';
+environment = 'tripleObstacle'; N_o = 3;
+% environment = 'corridor'; N_o = 2;
+% environment = 'goalNearObstacle'; N_o = 1;
 controller = 'APF'; 
-% controller = 'APF-SafetyFilter';
+controller = 'APF-SafetyFilter';
 % controller = 'CBF';
 
 %% Simulation parameters
 N_a = 1;            % Number of trajectories to simulate
-N_o = 3;            % Number of obstacles
+% N_o = 3;            % Number of obstacles
 
-M = 2;              % Mass
-d = 0.1;              % Damping coefficient
+M = 1;              % Mass
+d = 0;              % Damping coefficient
 
 A = [0, 0, 1, 0;    % State space
      0, 0, 0, 1;
@@ -35,7 +35,7 @@ r_o = 0.75;         % Radius of obstacle
 % Potential field parameters
 k_att = 1;          % Attractive potential gain
 k_rep = 0.01;       % Repulsive potential gain
-rho_0 = 1.5;        % Repulsive potential range
+rho_0 = 3;        % Repulsive potential range
 
 [p_0, p_d, p_o] = Functions.environment_setup(environment, dynamics, N_a);
 x_0 = [p_0; 0*p_0];
@@ -82,8 +82,8 @@ for t_ind = 1:length(t)
         u_rep_norm(i,t_ind) = 1/2*norm(squeeze(u_rep(:,i,t_ind)))^2;
     end
 end
-% Functions.plot_over_time(u_norm, t_step, t_end, '\frac{1}{2}||\mathbf{u}||^2', save);
-Functions.plot_over_time(u_rep_norm, t_step, t_end, '\frac{1}{2}||\mathbf{u}_{rep}||^2', save);
+Functions.plot_over_time(u_norm, t_step, t_end, '\frac{1}{2}||\mathbf{u}||^2', save);
+% Functions.plot_over_time(u_rep_norm, t_step, t_end, '\frac{1}{2}||\mathbf{u}_{rep}||^2', save);
 u_norm_avg = mean(u_norm,2)
 u_rep_norm_avg = mean(u_rep_norm,2)
 
