@@ -31,6 +31,14 @@ function [x_0, x_d, x_o] = environment_setup(environment, dynamics, N_a)
             x_o = [0;           % Obstacle positions
                    0];
         end
+        if strcmp(environment, 'singletary')
+            x_0 = [0;        % Initial position
+                   0];
+            x_d = [3;           % Desired position
+                   5];
+            x_o = [1, 2.5;           % Obstacle positions
+                   2, 3];
+        end
     % end
 end
 

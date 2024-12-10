@@ -5,7 +5,7 @@ function plot_static_trajectories(rangeX, rangeY, plottingFolder)
         rangeX = [-3; 3];
         rangeY = [-2; 2];
         % Place a Parameter file, along with all of the simulation outputs in the plottingFolder
-        plottingFolder = 'Data';
+        plottingFolder = 'Data/plottingData';
     end
 
     % Get a list of all .mat files in the plottingFolder

@@ -10,8 +10,8 @@ function dxdt = odefcn(t, x)
     x = reshape(x, n, N_a);         % Full state matrix
     dxdt = zeros(n, N_a);
 
-    if mod(t,0.5)==0               % Display time at certain intervals
-        % t
+    if mod(t,1)==0               % Display time at certain intervals
+        t
     end
 
     %% Controller
@@ -23,79 +23,53 @@ function dxdt = odefcn(t, x)
     p_d = x_d(1:2);
     p_o = x_o(1:2,:);
     for i = 1:N_a
-        gradU_att = zeros(m,1);
-        gradU_rep = zeros(m,1);
-    
-        % Attractive gradient
-        gradU_att = k_att*(p(:,i)-p_d);
-           
-        % Repulsive gradient
-        for j = 1:N_o
-            p_ij = p(:,i)-p_o(:,j);
-            h(j) = norm(p_ij) - r_a - r_o;
-            if h(j) < rho_0
-                gradU_rep = gradU_rep - k_rep/h(j)^2*(1/h(j)-1/rho_0)*p_ij/norm(p_ij);
-            end
-            % gradU_rep = gradU_rep - k_rep/h(j)^2*p_ij/norm(p_ij); % U_rep=1/h
-        end
-
+        [gradU_att, gradU_rep, h] = Functions.potential_gradients(m, p(:,i), p_d, p_o, k_att, k_rep, r_a, r_o, rho_0);
+        F_att = -gradU_att;
+        F_rep = -gradU_rep;
         if strcmp(controller, 'APF')
-            u_att(:,i) = -gradU_att;
-            u_rep(:,i) = -gradU_rep;
-        elseif strcmp(controller, 'APF-SafetyFilter')    % APF with safety filter properties
-            F_att = -gradU_att;
-            F_rep = -gradU_rep;
-
+            u_att(:,i) = F_att;
+            u_rep(:,i) = F_rep;
+        elseif strcmp(controller, 'SF')    % APF with safety filter properties
             sigma = norm(F_att)^2;
-            k_att = sigma/norm(F_att)^2;
-
-            gamma = 1*norm(F_rep)^2;
-            % gamma = 1.01*gamma_min;
-            % gamma = norm_e_vprev*norm(F_rep);
+            gamma = k_gamma*norm(F_rep)^2;
             % gamma = 0;
-            alpha = 1*min(h);
-            k_rep = (gamma - alpha - k_att*F_rep.'*F_att)/norm(F_rep)^2;
-
-            u_att(:,i) = k_att*F_att;
-            if k_rep > 0
-                u_rep(:,i) = k_rep*F_rep;           % Original
-                % u_rep(:,i) = min(1,k_rep)*F_rep;    % Saturated
-            end
+            alpha = k_alpha*min(h);
+            [u_att(:,i), u_rep(:,i)] = Functions.APF_safety_filter(m, F_att, F_rep, sigma, gamma, alpha);
         elseif strcmp(controller, 'CBF')    % CBF-QP + CLF
-            u_nom = zeros(m,1);
-            f = A*x(:,i);
-            g = B;
-            
-            a = gradU_att.'*f;
-            b = gradU_att.'*g;
-            sigma = norm(b)^2;
-            a_tilde = a + sigma;
-
-            if a_tilde > 0
-                u_nom = -a_tilde/norm(b)^2*b.';
-            end
-            u_att(:,i) = u_nom;
-            
-            alpha = 1*min(h);
-            c = gradU_rep.'*f - alpha;
-            d = gradU_rep.'*g;
-            % gamma = norm(d)^2;
-            gamma = 0;%alpha - d*u_nom + norm(d)^2;
-            c_tilde = c + gamma;
-            phi = c_tilde + d*u_nom;
-
-            if phi > 0
-                u_rep(:,i) = -phi/norm(d)^2*d.';
-            end
+            % u_nom = zeros(m,1);
+            % f = A*x(:,i);
+            % g = B;
+            % 
+            % a = gradU_att.'*f;
+            % b = gradU_att.'*g;
+            % sigma = norm(b)^2;
+            % a_tilde = a + sigma;
+            % 
+            % if a_tilde > 0
+            %     u_nom = -a_tilde/norm(b)^2*b.';
+            % end
+            % u_att(:,i) = u_nom;
+            % 
+            % alpha = 1*min(h);
+            % c = gradU_rep.'*f - alpha;
+            % d = gradU_rep.'*g;
+            % % gamma = norm(d)^2;
+            % gamma = 0;%alpha - d*u_nom + norm(d)^2;
+            % c_tilde = c + gamma;
+            % phi = c_tilde + d*u_nom;
+            % 
+            % if phi > 0
+            %     u_rep(:,i) = -phi/norm(d)^2*d.';
+            % end
         end
         u(:,i) = u_att(:,i) + u_rep(:,i);
     end
 
-    if strcmp(dynamics, 'Double Integrator')
+    if strcmp(dynamics, 'Double Integrator')    % Proportional velocity feedback controller
         v_d = u;
         v = x(3:4,:);
         e_v = v_d-v;
-        u = 10*e_v;
+        u = k_pid*e_v;
 
         norm_e_vprev = norm(e_v);
         
