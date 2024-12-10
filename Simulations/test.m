@@ -50,8 +50,8 @@ environment = 'tripleObstacle'; N_o = 3;
 % environment = 'corridor'; N_o = 2;
 % environment = 'goalNearObstacle'; N_o = 1;
 
-rangeX = [-3; 3];
-rangeY = [-2; 2];
+rangeX = [-5; 5];
+rangeY = [-3; 3];
 num_steps = 500;
 x = linspace(rangeX(1), rangeX(2), num_steps);
 y = linspace(rangeY(1), rangeY(2), num_steps);
@@ -69,8 +69,8 @@ u_max = 10;
 
 % Potential field parameters
 k_att = 1;
-k_rep = 0.1;
-rho_0 = 1;
+k_rep = 1;
+rho_0 = 10;
 p_o = [0;
        0];
 
@@ -129,7 +129,7 @@ for i = 1:skipSteps:length(x)
         sigma = norm(F_att)^2;
         gamma = 1*norm(F_rep)^2;
         gamma = 0;
-        alpha = 1*min(h);
+        alpha = 10*min(h);
         [F_att, F_rep] = Functions.APF_safety_filter(m, F_att, F_rep, sigma, gamma, alpha);
         F_total = F_att + F_rep;
         F_apfsf(i,j,:) = F_total/norm(F_total);
@@ -140,12 +140,12 @@ fprintf('Vector Field Generated\n');
 %% Plot results
 close all
 % figure('Position', [100 50 810 700]);   %Left Bottom Width Height
-figure('Position', [100 50 820 500]);  %SD
+figure('Position', [100 50 900 500]);  %SD
 hold on; grid on;
 % surf(x, y, Potential','FaceAlpha',1, 'EdgeColor','none')
 contour(x, y, Potential', 20, 'LineWidth', 1.5);
 quiver(x, y, squeeze(F_apf(:,:,1))', squeeze(F_apf(:,:,2))', 4, 'r', 'LineWidth', 1);
-% quiver(x, y, squeeze(F_apfsf(:,:,1))', squeeze(F_apfsf(:,:,2))', 4, 'k', 'LineWidth', 1);
+quiver(x, y, squeeze(F_apfsf(:,:,1))', squeeze(F_apfsf(:,:,2))', 4, 'k', 'LineWidth', 1);
 % plot(x,y)
 clim([0 1]);  % Ensure color scale goes from 0 to 1
 cb = colorbar;
@@ -157,6 +157,9 @@ ax = gca;
 ax.ZTick = linspace(0, 1, 5); % Set z-axis ticks evenly
 ax.ZTickLabel = linspace(0, 1, 5); % Override z-axis labels to match [0, 1]
 set(ax, 'FontSize', 22); ax.TickLabelInterpreter = 'latex';
+
+ax.XTick = linspace(rangeX(1), rangeX(2), rangeX(2)-rangeX(1) + 1);
+ax.YTick = linspace(rangeY(1), rangeY(2), rangeY(2)-rangeY(1) + 1);
 
 % % Plot obstacles
 load('+Functions\customColors.mat');

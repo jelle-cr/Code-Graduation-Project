@@ -4,16 +4,22 @@ function [x_0, x_d, x_o] = environment_setup(environment, dynamics, N_a)
     x_o = 0;
     % if strcmp(dynamics, 'Single Integrator')
         if strcmp(environment, 'tripleObstacle')
-            x_0 = [-2.5;        % Initial position
-                   -1.5];
+            % x_0 = [-2.5;        % Initial position
+            %        -1.5];
+            x_0 = [-4;        % Initial position
+                   -2];
             if N_a == 2
                 x_0 = [-2.5, 0;     % Initial positions
                        -1.5, -1];
             end
-            x_d = [2;           % Desired position
-                   1];
-            x_o = [-1, -0.25, 1.5;           % Obstacle positions
-                   -1, 1, -0.25];
+            % x_d = [2;           % Desired position
+            %        1];
+            % x_o = [-1, 0, 1.5;           % Obstacle positions
+            %        -1, 0.5, -0.25];
+            x_d = [3.5;           % Desired position
+                   2];
+            x_o = [-2, -0.5, 2;           % Obstacle positions
+                   -1, 1.25, 0.75];
         end
         if strcmp(environment, 'corridor')
             x_0 = [-2.5;        % Initial position

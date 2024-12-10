@@ -11,9 +11,14 @@ controller = 'APF';
 controller = 'SF';
 % controller = 'CBF';
 
-k_gamma = 1;
+k_gamma = 0;
 k_alpha = 1;
-k_pid = 2.5;
+k_pid = 10;
+
+% Potential field parameters
+k_att = 1;          % Attractive potential gain
+k_rep = 1;       % Repulsive potential gain
+rho_0 = 10;        % Repulsive potential range
 
 %% Simulation parameters
 N_a = 1;            % Number of trajectories to simulate
@@ -36,11 +41,6 @@ m = width(B);       % Number of inputs
 u_max = 30;         % Maximum control input in 1 direction
 r_a = 0;            % Radius of agent 
 r_o = 0.5;         % Radius of obstacle
-
-% Potential field parameters
-k_att = 1;          % Attractive potential gain
-k_rep = 0.1;       % Repulsive potential gain
-rho_0 = 0.1;        % Repulsive potential range
 
 [p_0, p_d, p_o] = Functions.environment_setup(environment, dynamics, N_a);
 x_0 = [p_0; 0*p_0];
@@ -113,9 +113,9 @@ end
 
 %% Save complete state and control input 
 if strcmp(controller, 'APF')
-    filename = ['DI-', controller, '-N_o', num2str(N_o), '-rho', num2str(rho_0), '-k_pid', num2str(k_pid)];
+    filename = ['DI-', controller, '-N_o', num2str(N_o), '-rho', num2str(rho_0), '-k_rep', num2str(k_rep), '-k_pid', num2str(k_pid)];
 else
-    filename = ['DI-', controller, '-N_o', num2str(N_o), '-rho', num2str(rho_0), '-k_gamma', num2str(k_gamma), '-k_alpha', num2str(k_alpha), '-k_pid', num2str(k_pid)];
+    filename = ['DI-', controller, '-N_o', num2str(N_o), '-rho', num2str(rho_0), '-k_gamma', num2str(k_gamma), '-k_alpha', num2str(k_alpha), '-k_rep', num2str(k_rep), '-k_pid', num2str(k_pid)];
 end
 save(['Data/', filename, '.mat'], 'x', 'u_att', 'u_rep', 'N_a', 'N_o', 'A', 'B', 'n', 'm', 'u_max', 'r_a', 'r_o', ...
                                            'k_att', 'k_rep', 'rho_0', 'x_0', 'x_d', 'x_o', ...
@@ -127,8 +127,8 @@ delete('Data/SimulationDataRecent.mat');
 %% Plot trajectories
 % rangeX = [-1.2; 5];
 % rangeY = [0; 5];
-rangeX = [-3; 3];
-rangeY = [-2; 2];
+rangeX = [-5; 5];
+rangeY = [-3; 3];
 plottingFolder = 'Data';
 Functions.plot_static_trajectories(rangeX, rangeY, plottingFolder);
 

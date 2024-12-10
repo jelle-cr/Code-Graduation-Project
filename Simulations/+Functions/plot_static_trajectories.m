@@ -23,7 +23,7 @@ function plot_static_trajectories(rangeX, rangeY, plottingFolder)
     load('+Functions\customColors.mat');
     colors = DesmosColors;
     if ~isempty(fileList)
-        for k = length(fileList):-1:1   % Reverse order, to plot last file on top
+        for k = 1:length(fileList)   % Reverse order, to plot last file on top
             % Load desired datasets
             dataFile = fullfile(fileList(k).folder, fileList(k).name);
             fprintf('Processing file: %s\n', dataFile);
@@ -45,17 +45,17 @@ function plot_static_trajectories(rangeX, rangeY, plottingFolder)
                     col = colors(k,:);
                 end
                 trajectoryHandles(i) = plot(squeeze(p(1,i,:)), squeeze(p(2,i,:)), 'Color', col,...
-                                        'LineWidth', 4,...
+                                        'LineWidth', 2,...
                                         'LineStyle', '-',...
                                         'DisplayName', 'temp');
                                         % 'DisplayName', [sprintf('Agent %d', i), '\hspace{1.2mm}']);
-                timepointHandles(i) = scatter(squeeze(p(1,i,tp_ind)),squeeze(p(2,i,tp_ind)), 750, ...
+                timepointHandles(i) = scatter(squeeze(p(1,i,tp_ind)),squeeze(p(2,i,tp_ind)), 350, ...
                                         'Marker', '.',...
                                         'MarkerEdgeColor', col,...
                                         'HandleVisibility','off');
             
-                uistack(timepointHandles(i), 'bottom');
-                uistack(trajectoryHandles(i), 'bottom');
+                % uistack(timepointHandles(i), 'bottom');
+                % uistack(trajectoryHandles(i), 'bottom');
             end
         end
     end

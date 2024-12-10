@@ -6,7 +6,8 @@ function legendHandle = trajectory_plot_setup(rangeX, rangeY, x_0, x_d, x_o, N_a
 
     %% Setup plot
     if strcmp(quality, 'SD')
-        figure('Position', [100 50 1000 500]);  %Left Bottom Width Height
+        % figure('Position', [100 50 1000 450]);  %Left Bottom Width Height
+        figure('Position', [100 50 700 450]);  %Left Bottom Width Height
         fontMul = 1;
     end
     if strcmp(quality, 'HD')
@@ -17,8 +18,11 @@ function legendHandle = trajectory_plot_setup(rangeX, rangeY, x_0, x_d, x_o, N_a
     ax = gca; set(ax, 'FontSize', fontMul*22); ax.TickLabelInterpreter = 'latex';
     xlim(rangeX); ylim(rangeY);
     xticks(rangeX(1):1:rangeX(2)); yticks(rangeY(1):1:rangeY(2));
-    xlabel('$x_1$ [m]', 'Interpreter','latex', 'FontSize', fontMul*30);
-    ylabel('$x_2$ [m]', 'Interpreter','latex', 'FontSize', fontMul*30);
+    xlabel_handle = xlabel('$x_1$', 'Interpreter','latex', 'FontSize', fontMul*30);
+    ylabel_handle = ylabel('$x_2$', 'Interpreter','latex', 'FontSize', fontMul*30);
+
+    xlabel_handle.Position(2) = xlabel_handle.Position(2) + 0.3;    % move the label 0.3 data-units further up
+    % ylabel_handle.Position(1) = ylabel_handle.Position(1) + 0.15;    % move the label 0.3 data-units further up
 
     %% Static plotting
     % Plot obstacles
@@ -32,10 +36,10 @@ function legendHandle = trajectory_plot_setup(rangeX, rangeY, x_0, x_d, x_o, N_a
                             'FaceAlpha', 1,...
                             'EdgeColor', 'black', ...
                             'HandleVisibility', 'off');
-        text(p_o(1,j)-0.2*r_o, p_o(2,j)-0.027*r_o, sprintf('%d', j), ...
+        text(p_o(1,j)-0.24*r_o, p_o(2,j)-0.0827*r_o, sprintf('%d', j), ...
                                          'Color', 'white', ...
                                          'Interpreter','latex', ...
-                                         'FontSize', fontMul*25);
+                                         'FontSize', fontMul*20);
     end
 
     % Plot initial positions
@@ -69,9 +73,10 @@ function legendHandle = trajectory_plot_setup(rangeX, rangeY, x_0, x_d, x_o, N_a
                         'MarkerSize', fontMul*15, ...
                         'DisplayName', 'Obstacles');
     trajectories = [];
-    legendHandle = legend([initialPositionHandle, desiredPositionHandle, obstacleHandle, trajectories], ...
-                           'Location', 'northeastoutside', ...
-                           'Interpreter', 'latex', ...
-                           'FontSize', fontMul*26,...
-                           'BackgroundAlpha',0.6);
+    % legendHandle = legend([initialPositionHandle, desiredPositionHandle, obstacleHandle, trajectories], ...
+    %                        'Location', 'northeastoutside', ...
+    %                        'Interpreter', 'latex', ...
+    %                        'FontSize', fontMul*26,...
+    %                        'BackgroundAlpha',0.6);
+    legendHandle = [];
 end
