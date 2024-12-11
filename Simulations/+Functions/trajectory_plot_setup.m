@@ -15,7 +15,7 @@ function legendHandle = trajectory_plot_setup(rangeX, rangeY, x_0, x_d, x_o, N_a
         fontMul = 1.75;
     end
     hold on; grid on; axis equal; 
-    ax = gca; set(ax, 'FontSize', fontMul*22); ax.TickLabelInterpreter = 'latex';
+    ax = gca; set(ax, 'FontSize', fontMul*18); ax.TickLabelInterpreter = 'latex';
     xlim(rangeX); ylim(rangeY);
     xticks(rangeX(1):1:rangeX(2)); yticks(rangeY(1):1:rangeY(2));
     xlabel_handle = xlabel('$x_1$', 'Interpreter','latex', 'FontSize', fontMul*30);

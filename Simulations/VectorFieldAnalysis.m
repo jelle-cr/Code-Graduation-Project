@@ -5,14 +5,14 @@ clear all
 
 dynamics = 'Single Integrator';
 % environment = 'singletary'; N_o = 2;
-environment = 'tripleObstacle'; N_o = 3;
+% environment = 'tripleObstacle'; N_o = 3;
 % environment = 'corridor'; N_o = 2;
 % environment = 'goalNearObstacle'; N_o = 1;
 
 %% Cartesian coordinates
 rangeX = [-1; 1];
 rangeY = [-1; 1];
-num_steps = 40;
+num_steps = 30;
 x = linspace(rangeX(1), rangeX(2), num_steps);
 y = linspace(rangeY(1), rangeY(2), num_steps);
 
@@ -28,6 +28,10 @@ m = width(B);
 u_max = 10;
 
 % Potential field parameters
+k_alpha = 1;
+k_gamma = 0;
+gamma_static = 10000000000;
+
 k_att = 1;
 k_rep = 0.1;
 rho_0 = 1;
@@ -35,7 +39,7 @@ p_o = [0;
        0];
 
 r_a = 0;                  % Radius of agent
-r_o = 0.5;
+r_o = 0.4;
 % p_d = rand(2, 1)*((range-1)+(range-1))-(range-1);	% Desired position
 p_d = [-0.75;-0.75];
 
@@ -72,19 +76,10 @@ Potential = (Potential - Potential_min) / (Potential_max - Potential_min);  % Re
 fprintf('Potential Field Generated\n');
 
 %% Calculate Vector Field
-num_vectors = 20;
-skipSteps = 1;%length(x)/num_vectors;
 F_apf = zeros(length(x), length(y), m);
 F_apfsf = zeros(length(x), length(y), m);
-for i = 1:skipSteps:length(x)
-    % if i == length(x)+1
-    %     i = length(x)
-    % end
-    i
-    for j = 1:skipSteps:length(y)
-        % if j == length(y)+1
-        %     j = length(y)
-        % end
+for i = 1:length(x)
+    for j = 1:length(y)
         p = [x(i); y(j)];
         [gradU_att, gradU_rep, h] = Functions.potential_gradients(m, p, p_d, p_o, k_att, k_rep, r_a, r_o, rho_0);
         F_att = -gradU_att; 
@@ -93,9 +88,8 @@ for i = 1:skipSteps:length(x)
         F_apf(i,j,:) = F_total/norm(F_total);
 
         sigma = norm(F_att)^2;
-        gamma = 1*norm(F_rep)^2;
-        gamma = 0;
-        alpha = 100*min(h);
+        gamma = k_gamma*norm(F_rep)^2 + gamma_static;
+        alpha = k_alpha*min(h);
         [F_att, F_rep] = Functions.APF_safety_filter(m, F_att, F_rep, sigma, gamma, alpha);
         F_total = F_att + F_rep;
         F_apfsf(i,j,:) = F_total/norm(F_total);
@@ -123,7 +117,7 @@ quiver(x, y, squeeze(F_apfsf(:,:,1))', squeeze(F_apfsf(:,:,2))', 0.5, 'Color', D
 ax = gca; 
 % ax.ZTick = linspace(0, 1, 5); % Set z-axis ticks evenly
 % ax.ZTickLabel = linspace(0, 1, 5); % Override z-axis labels to match [0, 1]
-set(ax, 'FontSize', 16); ax.TickLabelInterpreter = 'latex';
+set(ax, 'FontSize', 22); ax.TickLabelInterpreter = 'latex';
 % ax.XTickLabel = linspace(-1, 1, 5);
 % ax.YTickLabel = linspace(-1, 1, 5);
 ax.XTick = linspace(-1, 1, 5);
@@ -154,8 +148,13 @@ plot(p_d(1), p_d(2), 'x','MarkerSize', 30, ...
 axis('equal')
 xlim([rangeX(1) rangeX(2)]); ylim([rangeY(1) rangeY(2)]); 
 % zlim([0 1]);
-xlabel('$x_1$', 'Interpreter','latex', 'FontSize', 24);
-ylabel('$x_2$', 'Interpreter','latex', 'FontSize', 24);
+xlabel_handle = xlabel('$x_1$', 'Interpreter','latex', 'FontSize', 32);
+ylabel_handle = ylabel('$x_2$', 'Interpreter','latex', 'FontSize', 32);
+
+xlabel_handle.Position(2) = xlabel_handle.Position(2) + 0.075;    % move the label 0.3 data-units further up
+ylabel_handle.Position(1) = ylabel_handle.Position(1) + 0.08;    % move the label 0.3 data-units further up
+
+
 % ylabel(cb,'$U_{{\scriptscriptstyle \!A\!P\!F}}(\mathbf{x})$', 'Interpreter','latex', 'FontSize', 34,'Rotation',270);
 % zlabel('$U_{tot}(\mathbf{x})$', 'Interpreter','latex', 'FontSize', 28);
 % title('Repulsive Potential Function', 'Interpreter', 'latex', 'FontSize', 22);
