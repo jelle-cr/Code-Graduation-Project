@@ -29,8 +29,7 @@ u_max = 10;
 
 % Potential field parameters
 k_alpha = 1;
-k_gamma = 0;
-gamma_static = 10000000000;
+k_gamma = 10;
 
 k_att = 1;
 k_rep = 0.1;
@@ -88,8 +87,8 @@ for i = 1:length(x)
         F_apf(i,j,:) = F_total/norm(F_total);
 
         sigma = norm(F_att)^2;
-        gamma = k_gamma*norm(F_rep)^2 + gamma_static;
-        alpha = k_alpha*min(h);
+        gamma = k_gamma*norm(F_rep)^2
+        alpha = k_alpha*min(h)
         [F_att, F_rep] = Functions.APF_safety_filter(m, F_att, F_rep, sigma, gamma, alpha);
         F_total = F_att + F_rep;
         F_apfsf(i,j,:) = F_total/norm(F_total);
@@ -105,7 +104,7 @@ figure('Position', [100 50 730 700]);   %Left Bottom Width Height
 hold on; grid on;
 % surf(x, y, Potential','FaceAlpha',1, 'EdgeColor','none')
 % contour(x, y, Potential', 20, 'LineWidth', 1.5);
-quiver(x, y, squeeze(F_apf(:,:,1))', squeeze(F_apf(:,:,2))', 0.5, 'Color', DesmosColors(2,:), 'LineWidth', 1.5);
+% quiver(x, y, squeeze(F_apf(:,:,1))', squeeze(F_apf(:,:,2))', 0.5, 'Color', DesmosColors(2,:), 'LineWidth', 1.5);
 quiver(x, y, squeeze(F_apfsf(:,:,1))', squeeze(F_apfsf(:,:,2))', 0.5, 'Color', DesmosColors(1,:), 'LineWidth', 1.5);
 % plot(x,y)
 % clim([0 1]);  % Ensure color scale goes from 0 to 1
