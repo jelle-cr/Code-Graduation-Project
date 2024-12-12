@@ -151,8 +151,7 @@ x_rho_0 = (r_o + rho_0) * cos(th) + p_o(1,1);
 y_rho_0 = (r_o + rho_0) * sin(th) + p_o(2,1);
 patch(x_rho_0, y_rho_0, 'b', 'FaceAlpha', 0, 'EdgeColor', colors(2,:), 'LineWidth', 1.2);
 
-
-surf(x2, y2, safeRegionSF','FaceAlpha',0.25, 'EdgeColor','none');
+imagesc(x2, y2, safeRegionSF','AlphaData',0.25);
 quiver(x, y, squeeze(F_apf(:,:,1))', squeeze(F_apf(:,:,2))', 0.5, 'Color', DesmosColors(2,:), 'LineWidth', 1.5);
 quiver(x, y, squeeze(F_apfsf(:,:,1))', squeeze(F_apfsf(:,:,2))', 0.5, 'Color', DesmosColors(1,:), 'LineWidth', 1.5);
 
@@ -165,14 +164,12 @@ obs = patch(x_obs, y_obs, grey,'FaceColor', grey, ...
                         'FaceAlpha', 1,...
                         'EdgeColor', 'black', ...
                         'HandleVisibility', 'off');
-obs.ZData = ones(size(obs.XData));  % Ensure obstacles are plotted above the surface
 
 % Plot desired position
 des = plot(p_d(1), p_d(2), 'x','MarkerSize', 30, ...
                          'MarkerEdgeColor', 'red', ...
                          'LineWidth', 6,...
                          'HandleVisibility', 'off');
-des.ZData = 1;  % Ensure the desired position is plotted above the surface
 
 % Setup
 colormap(customColormap);
