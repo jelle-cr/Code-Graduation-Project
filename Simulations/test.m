@@ -70,7 +70,7 @@ u_max = 10;
 % Potential field parameters
 k_att = 1;
 k_rep = 1;
-rho_0 = 10;
+rho_0 = 1;
 p_o = [0;
        0];
 
@@ -144,8 +144,8 @@ figure('Position', [100 50 900 500]);  %SD
 hold on; grid on;
 % surf(x, y, Potential','FaceAlpha',1, 'EdgeColor','none')
 contour(x, y, Potential', 20, 'LineWidth', 1.5);
-quiver(x, y, squeeze(F_apf(:,:,1))', squeeze(F_apf(:,:,2))', 4, 'r', 'LineWidth', 1);
-quiver(x, y, squeeze(F_apfsf(:,:,1))', squeeze(F_apfsf(:,:,2))', 4, 'k', 'LineWidth', 1);
+% quiver(x, y, squeeze(F_apf(:,:,1))', squeeze(F_apf(:,:,2))', 4, 'r', 'LineWidth', 1);
+% quiver(x, y, squeeze(F_apfsf(:,:,1))', squeeze(F_apfsf(:,:,2))', 4, 'k', 'LineWidth', 1);
 % plot(x,y)
 clim([0 1]);  % Ensure color scale goes from 0 to 1
 cb = colorbar;
@@ -156,7 +156,7 @@ colormap('parula');
 ax = gca; 
 ax.ZTick = linspace(0, 1, 5); % Set z-axis ticks evenly
 ax.ZTickLabel = linspace(0, 1, 5); % Override z-axis labels to match [0, 1]
-set(ax, 'FontSize', 22); ax.TickLabelInterpreter = 'latex';
+set(ax, 'FontSize', 18); ax.TickLabelInterpreter = 'latex';
 
 ax.XTick = linspace(rangeX(1), rangeX(2), rangeX(2)-rangeX(1) + 1);
 ax.YTick = linspace(rangeY(1), rangeY(2), rangeY(2)-rangeY(1) + 1);
@@ -172,10 +172,10 @@ for j = 1:N_o
                         'FaceAlpha', 1,...
                         'EdgeColor', 'black', ...
                         'HandleVisibility', 'off');
-    text(p_o(1,j)-0.2*r_o, p_o(2,j)-0.027*r_o, sprintf('%d', j), ...
+    text(p_o(1,j)-0.24*r_o, p_o(2,j)-0.0827*r_o, sprintf('%d', j), ...
                                      'Color', 'white', ...
                                      'Interpreter','latex', ...
-                                     'FontSize', 25);
+                                     'FontSize', 20);
 end
 % Plot desired position
 plot(p_d(1), p_d(2), 'x','MarkerSize', 30, ...
@@ -187,8 +187,12 @@ plot(p_d(1), p_d(2), 'x','MarkerSize', 30, ...
 axis('equal')
 xlim([rangeX(1) rangeX(2)]); ylim([rangeY(1) rangeY(2)]); 
 zlim([0 1]);
-xlabel('$x_1$', 'Interpreter','latex', 'FontSize', 34);
-ylabel('$x_2$', 'Interpreter','latex', 'FontSize', 34);
+xlabel_handle = xlabel('$x_1$', 'Interpreter','latex', 'FontSize', 30);
+ylabel_handle = ylabel('$x_2$', 'Interpreter','latex', 'FontSize', 30);
+
+    xlabel_handle.Position(2) = xlabel_handle.Position(2) + 0.22;    % move the label 0.3 data-units further up
+    % ylabel_handle.Position(1) = ylabel_handle.Position(1) + 0.15;    % move the label 0.3 data-units further up
+
 ylabel(cb,'$U_{{\scriptscriptstyle \!A\!P\!F}}(\mathbf{x})$', 'Interpreter','latex', 'FontSize', 34,'Rotation',270);
 zlabel('$U_{tot}(\mathbf{x})$', 'Interpreter','latex', 'FontSize', 28);
 % title('Repulsive Potential Function', 'Interpreter', 'latex', 'FontSize', 22);

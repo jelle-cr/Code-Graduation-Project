@@ -11,8 +11,8 @@ controller = 'APF';
 controller = 'SF';
 % controller = 'CBF';
 
-k_gamma = 0;
-k_alpha = 1;
+k_gamma = 1;
+k_alpha = 10000;
 
 % Potential field parameters
 k_att = 1;          % Attractive potential gain

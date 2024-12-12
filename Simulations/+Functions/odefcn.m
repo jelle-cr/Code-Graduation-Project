@@ -34,7 +34,7 @@ function dxdt = odefcn(t, x)
             gamma = k_gamma*norm(F_rep)^2;
             % gamma = 0;
             alpha = k_alpha*min(h);
-            [u_att(:,i), u_rep(:,i)] = Functions.APF_safety_filter(m, F_att, F_rep, sigma, gamma, alpha);
+            [u_att(:,i), u_rep(:,i), ~] = Functions.APF_safety_filter(m, F_att, F_rep, sigma, gamma, alpha);
         elseif strcmp(controller, 'CBF')    % CBF-QP + CLF
             % u_nom = zeros(m,1);
             % f = A*x(:,i);

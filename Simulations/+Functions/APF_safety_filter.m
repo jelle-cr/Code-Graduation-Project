@@ -1,4 +1,4 @@
-function [u_att, u_rep] = APF_safety_filter(m, F_att, F_rep, sigma, gamma, alpha)
+function [u_att, u_rep, K_rep] = APF_safety_filter(m, F_att, F_rep, sigma, gamma, alpha)
     u_att = zeros(m,1);
     u_rep = zeros(m,1);
 
