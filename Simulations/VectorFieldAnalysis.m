@@ -29,11 +29,11 @@ u_max = 10;
 
 % Potential field parameters
 k_alpha = 1;
-k_gamma = 0;
+k_gamma = 10;
 
 k_att = 1;
 k_rep = 0.1;
-rho_0 = 0.1;
+rho_0 = 1.1;
 p_o = [0;
        0];
 
@@ -146,13 +146,19 @@ figure('Position', [100 50 730 700]);   %Left Bottom Width Height
 hold on; grid on;
 % surf(x, y, Potential','FaceAlpha',1, 'EdgeColor','none')
 % surf(x2, y2, safeRegionAPF','FaceAlpha',0.25, 'EdgeColor','none');
+th = 0:pi/50:2*pi;
+x_rho_0 = (r_o + rho_0) * cos(th) + p_o(1,1);
+y_rho_0 = (r_o + rho_0) * sin(th) + p_o(2,1);
+patch(x_rho_0, y_rho_0, 'b', 'FaceAlpha', 0, 'EdgeColor', colors(2,:), 'LineWidth', 1.2);
+
+
 surf(x2, y2, safeRegionSF','FaceAlpha',0.25, 'EdgeColor','none');
-% quiver(x, y, squeeze(F_apf(:,:,1))', squeeze(F_apf(:,:,2))', 0.5, 'Color', DesmosColors(2,:), 'LineWidth', 1.5);
+quiver(x, y, squeeze(F_apf(:,:,1))', squeeze(F_apf(:,:,2))', 0.5, 'Color', DesmosColors(2,:), 'LineWidth', 1.5);
 quiver(x, y, squeeze(F_apfsf(:,:,1))', squeeze(F_apfsf(:,:,2))', 0.5, 'Color', DesmosColors(1,:), 'LineWidth', 1.5);
+
 
 % Plot obstacles
 grey = DesmosColors(6,:);
-th = 0:pi/50:2*pi;
 x_obs = r_o * cos(th) + p_o(1,1);
 y_obs = r_o * sin(th) + p_o(2,1);
 obs = patch(x_obs, y_obs, grey,'FaceColor', grey, ...
@@ -171,19 +177,16 @@ des.ZData = 1;  % Ensure the desired position is plotted above the surface
 % Setup
 colormap(customColormap);
 ax = gca; 
-set(ax, 'FontSize', 22); ax.TickLabelInterpreter = 'latex';
+set(ax, 'FontSize', 22); ax.TickLabelInterpreter = 'latex';                 % Small plots, 22
 ax.XTick = linspace(-1, 1, 5);
 ax.YTick = linspace(-1, 1, 5);
 xlim([rangeX(1) rangeX(2)]); ylim([rangeY(1) rangeY(2)]); 
-xlabel_handle = xlabel('$x_1$', 'Interpreter','latex', 'FontSize', 32);
+xlabel_handle = xlabel('$x_1$', 'Interpreter','latex', 'FontSize', 32);     % Small plots, 32    
 ylabel_handle = ylabel('$x_2$', 'Interpreter','latex', 'FontSize', 32);
-xlabel_handle.Position(2) = xlabel_handle.Position(2) + 0.075;    % move the label 0.3 data-units further up
-ylabel_handle.Position(1) = ylabel_handle.Position(1) + 0.08;    % move the label 0.3 data-units further up
+xlabel_handle.Position(2) = xlabel_handle.Position(2) + 0.065;              % Small plots, 0.065  
+ylabel_handle.Position(1) = ylabel_handle.Position(1) + 0.08;               % Small plots, 0.08  
 axis('equal')
 view(0,90);
-
-
-
 
 
 
