@@ -123,7 +123,7 @@ fprintf('Safe Region Generated\n');
 load('+Functions\customColors.mat');
 colors = DesmosColors;
 minColor = colors(2, :); % Minimum color
-maxColor = colors(5, :); % Maximum color
+maxColor = [1,1,1]%colors(5, :); % Maximum color
 
 % Create a custom colormap with a smooth gradient between minColor and maxColor
 customColormap = [linspace(minColor(1), maxColor(1), 256)', ...
@@ -144,7 +144,7 @@ y_rho_0 = (r_o + rho_0) * sin(th) + p_o(2,1);
 imagesc(x2, y2, safeRegionSF','AlphaData',0.25);
 plot(x_rho_0, y_rho_0, '--', 'Color', colors(6,:), 'LineWidth', 4);
 quiver(x, y, squeeze(F_apf(:,:,1))', squeeze(F_apf(:,:,2))', 0.5, 'Color', DesmosColors(2,:), 'LineWidth', 1.7);
-quiver(x, y, squeeze(F_apfsf(:,:,1))', squeeze(F_apfsf(:,:,2))', 0.5, 'Color', DesmosColors(1,:), 'LineWidth', 2);
+% quiver(x, y, squeeze(F_apfsf(:,:,1))', squeeze(F_apfsf(:,:,2))', 0.5, 'Color', DesmosColors(5,:), 'LineWidth', 2);
 
 
 % Plot obstacles
@@ -173,4 +173,6 @@ xlabel_handle = xlabel('$x_1$', 'Interpreter','latex', 'FontSize', 32);     % Sm
 ylabel_handle = ylabel('$x_2$', 'Interpreter','latex', 'FontSize', 32);
 xlabel_handle.Position(2) = xlabel_handle.Position(2) + 0.055;              % Small plots, 0.055  
 ylabel_handle.Position(1) = ylabel_handle.Position(1) + 0.11;               % Small plots, 0.011  
-axis('equal')
+xlim([-1, 1]);
+ylim([-1, 1]);
+% axis('equal')
