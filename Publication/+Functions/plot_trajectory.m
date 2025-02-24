@@ -1,11 +1,13 @@
-function plot_trajectory(rangeX, rangeY, x, x_0, x_d, x_o, r_o, N_o)
-    p = x(1:2,:);
+function plot_trajectory(rangeX, rangeY, x, x_0, x_d, x_o, r_o, N_o, rho_0)
+    p_CLF = squeeze(x(1:2,3,:));
+    p_CBF = squeeze(x(1:2,1,:));
+    p_APF = squeeze(x(1:2,2,:));
     p_0 = x_0(1:2);
     p_d = x_d(1:2);
     p_o = x_o(1:2,:);
 
     %% Setup plot
-    figure('Position', [100 50 700 450]);  %Left Bottom Width Height
+    figure('Position', [100 50 800 700]);  %Left Bottom Width Height
     hold on; grid on; axis equal; 
     ax = gca; set(ax, 'FontSize', 18); ax.TickLabelInterpreter = 'latex';
     xlim(rangeX); ylim(rangeY);
@@ -20,6 +22,9 @@ function plot_trajectory(rangeX, rangeY, x, x_0, x_d, x_o, r_o, N_o)
                                      'FaceAlpha', 1,...
                                      'EdgeColor', 'black', ...
                                      'HandleVisibility', 'off');
+        x_obs = (r_o + rho_0) * cos(th) + p_o(1,j);
+        y_obs = (r_o + rho_0) * sin(th) + p_o(2,j);
+        plot(x_obs, y_obs, 'Color', '#aaaaaa', 'LineStyle', '--', 'LineWidth', 2);
     end
 
     % Plot initial position
@@ -35,7 +40,9 @@ function plot_trajectory(rangeX, rangeY, x, x_0, x_d, x_o, r_o, N_o)
                              'HandleVisibility', 'off');
 
     %% Trajectory plotting
-    plot(p(1,:), p(2,:), 'LineWidth', 2, 'Color', 'blue');
+    plot(p_CLF(1,:), p_CLF(2,:), 'LineWidth', 2, 'Color', 'black', 'LineStyle','--');
+    plot(p_CBF(1,:), p_CBF(2,:), 'LineWidth', 2, 'Color', 'blue');
+    plot(p_APF(1,:), p_APF(2,:), 'LineWidth', 2, 'Color', 'red');
 end
 
 
