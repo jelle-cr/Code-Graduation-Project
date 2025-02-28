@@ -9,7 +9,7 @@ function [F_att, F_rep, h] = potential_gradients(m, p, p_d, p_o, k_att, k_rep, r
 
     % Repulsive gradient
     h = zeros(N_o, 1);
-    for j = 1:N_o
+    for j = 1:N_o       % Add repulsive force for all obstacles
         p_ij = p - p_o(:,j);
         h(j) = norm(p_ij) - r_a - r_o;
         if h(j) < rho_0
